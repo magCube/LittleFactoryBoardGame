@@ -1,4 +1,11 @@
 package org.magcube.card;
 
-public class Factory extends Card{
+import lombok.Builder;
+
+public class Factory extends Card {
+
+  @Builder(builderMethodName = "factoryBuilder")
+  public Factory(int value, String name, Card[] cost, int typeId) {
+    super(value, name, cost, typeId);
+  }
 }

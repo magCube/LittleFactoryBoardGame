@@ -1,4 +1,5 @@
 package org.magcube.exception;
 
-public class GameStartupException  extends Exception{
+public class GameStartupException extends Exception {
+
 }
