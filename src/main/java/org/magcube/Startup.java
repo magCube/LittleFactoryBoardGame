@@ -87,11 +87,11 @@ public class Startup {
     //TODO: initialize pile of factories
   }
 
-  public ArrayList<ArrayList<FirstTierResource>> getDisplayingFirstTierResources() {
+  public List<ArrayList<FirstTierResource>> getDisplayingFirstTierResources() {
     return firstTierResourcesPile.getDisplaying();
   }
 
-  public ArrayList<ArrayList<Factory>> getDisplayingFactories() {
+  public List<ArrayList<Factory>> getDisplayingFactories() {
     return factoriesPile.getDisplaying();
   }
 }

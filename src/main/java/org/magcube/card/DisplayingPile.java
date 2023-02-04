@@ -23,12 +23,24 @@ public class DisplayingPile<T extends Card> {
     }
   }
 
-  public ArrayList<ArrayList<T>> getDisplaying() {
-    return displaying;
+  public List<ArrayList<T>> getDisplaying() {
+    return Collections.unmodifiableList(displaying);
+  }
+
+  public boolean takeCard(T card) throws DisplayPileException {
+    var containingListOpt = displaying.stream().filter(list -> list.contains(card))
+        .findAny();
+    var containingList = containingListOpt.orElseThrow();
+    containingList.remove(card);
+    if (displaying.stream().anyMatch(ArrayList::isEmpty)) {
+      displaying.removeIf(ArrayList::isEmpty);
+      refillCards();
+    }
+    return true;
   }
 
   public void insertCard(ArrayList<T> deck) {
-
+  //TODO insertCard back to the deck
   }
 
   public void refillCards() throws DisplayPileException {
@@ -36,7 +48,8 @@ public class DisplayingPile<T extends Card> {
     while (displaying.size() < 5) {
       var card = deck.remove(0);
       if (displaying.stream().anyMatch(ary -> ary.stream()
-          .anyMatch(displaying -> card.getTypeId() == (displaying.getTypeId())))) {
+          .anyMatch(displaying -> card.getTypeId()
+              == displaying.getTypeId()))) { //same kind of card already in display
         var arrayList = displaying.stream().filter(ary -> ary.stream()
             .anyMatch(displaying -> card.getTypeId() == (displaying.getTypeId()))).findFirst();
         if (arrayList.isEmpty()) {
@@ -44,10 +57,10 @@ public class DisplayingPile<T extends Card> {
               "Found match type in display pile but cannot find the corresponding list in displaying piles!");
         }
         arrayList.get().add(card);
-      } else {
-        var newArrayList = new ArrayList<Card>();
+      } else {//no same kind displaying, can add as a new column directly
+        var newArrayList = new ArrayList<T>();
         newArrayList.add(card);
-        displaying.add((ArrayList<T>) newArrayList);
+        displaying.add(newArrayList);
       }
     }
   }

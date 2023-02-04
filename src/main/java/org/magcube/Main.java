@@ -12,7 +12,6 @@ public class Main {
   public static List<Factory> factories = new ArrayList<>();
 
   static {
-    System.out.println("Static block called!");
     for (var i = 0; i < 20; i++) {
       firstTierResources.add(
           FirstTierResource.firstTierBuilder().value(1).cost(new Card[1]).name("wood").typeId(i)
