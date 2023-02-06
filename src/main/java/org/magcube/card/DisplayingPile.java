@@ -27,6 +27,10 @@ public class DisplayingPile<T extends Card> {
     return Collections.unmodifiableList(displaying);
   }
 
+  public int deckSize() {
+    return deck.size();
+  }
+
   public boolean takeCard(T card) throws DisplayPileException {
     var containingListOpt = displaying.stream().filter(list -> list.contains(card))
         .findAny();
@@ -39,7 +43,7 @@ public class DisplayingPile<T extends Card> {
     return true;
   }
 
-  public void insertCard(ArrayList<T> deck) {
+  public void insertCard(List<T> deck) {
   //TODO insertCard back to the deck
   }
 

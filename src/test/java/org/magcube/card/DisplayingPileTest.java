@@ -58,4 +58,18 @@ public class DisplayingPileTest {
       assertEquals(oldFirstCardsSize - 1, pile.getDisplaying().get(0).size());
     }
   }
+
+  @ParameterizedTest
+  @MethodSource("provideFirstTierResourcesPiles")
+  void insertCardTest(DisplayingPile<FirstTierResource> pile) {
+    var originalDeckSize = pile.deckSize();
+    var cardToInsert = FirstTierResource.firstTierBuilder()
+        .value(1)
+        .typeId(1)
+        .name("test")
+        .cost(new Card[1])
+        .build();
+    pile.insertCard(List.of(cardToInsert));
+    assertEquals(originalDeckSize + 1, pile.deckSize());
+  }
 }
