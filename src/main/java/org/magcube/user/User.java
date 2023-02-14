@@ -1,14 +1,16 @@
 package org.magcube.user;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.magcube.card.Card;
 import org.magcube.card.Factory;
 
 public class User {
 
-  private String name;
   private final ArrayList<Factory> factories;
   private final ArrayList<Card> cards;
+  private String name;
   private int coin;
   private int points;
 
@@ -17,16 +19,26 @@ public class User {
     this.factories = new ArrayList<>();
   }
 
-  public ArrayList<Card> getCards() {
-    return cards;
+  public List<Card> getCards() {
+    return Collections.unmodifiableList(this.cards);
   }
 
-  public void takeCards(ArrayList<Card> cards) {
-    //TODO take cards from user, should support factories as well
+  public List<Card> getFactories() {
+    return Collections.unmodifiableList(this.factories);
   }
 
-  public void giveCards(ArrayList<Card> cards) {
-    //TODO give cards to user
+  public void takeCards(List<Card> cards) {
+    cards.forEach(card -> {
+      if (card instanceof Factory) {
+        this.factories.add((Factory) card);
+      } else {
+        this.cards.add(card);
+      }
+    });
+  }
+
+  public void giveCards(List<Card> cards) {
+    this.cards.removeAll(cards);
   }
 
   public int getCoin() {
@@ -38,11 +50,15 @@ public class User {
   }
 
   public int getPoints() {
-    return points;
+    return points + this.factories.size();
   }
 
-  public void setPoints(int points) {
-    this.points = points;
+  public void addPoints(int points) {
+    if (points < 0) {
+      System.out.println("Negative number is not expected in addPoints!");
+      return;
+    }
+    this.points += points;
   }
 
   public String getName() {

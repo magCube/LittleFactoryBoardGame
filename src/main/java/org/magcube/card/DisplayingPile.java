@@ -44,12 +44,12 @@ public class DisplayingPile<T extends Card> {
   }
 
   public void insertCard(List<T> deck) {
-  //TODO insertCard back to the deck
+    this.deck.addAll(deck);
   }
 
   public void refillCards() throws DisplayPileException {
     Collections.shuffle(deck);
-    while (displaying.size() < 5) {
+    while (displaying.size() < 5 && !deck.isEmpty()) {
       var card = deck.remove(0);
       if (displaying.stream().anyMatch(ary -> ary.stream()
           .anyMatch(displaying -> card.getTypeId()
