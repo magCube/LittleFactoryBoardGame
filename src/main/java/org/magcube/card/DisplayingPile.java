@@ -31,25 +31,24 @@ public class DisplayingPile<T extends Card> {
     return deck.size();
   }
 
-  public boolean takeCard(T card) throws DisplayPileException {
+  public boolean takeCard(T card) {
     var containingListOpt = displaying.stream().filter(list -> list.contains(card))
         .findAny();
     var containingList = containingListOpt.orElseThrow();
     containingList.remove(card);
     if (displaying.stream().anyMatch(ArrayList::isEmpty)) {
       displaying.removeIf(ArrayList::isEmpty);
-      refillCards();
     }
     return true;
   }
 
   public void insertCard(List<T> deck) {
-  //TODO insertCard back to the deck
+    this.deck.addAll(deck);
   }
 
   public void refillCards() throws DisplayPileException {
     Collections.shuffle(deck);
-    while (displaying.size() < 5) {
+    while (displaying.size() < 5 && !deck.isEmpty()) {
       var card = deck.remove(0);
       if (displaying.stream().anyMatch(ary -> ary.stream()
           .anyMatch(displaying -> card.getTypeId()
