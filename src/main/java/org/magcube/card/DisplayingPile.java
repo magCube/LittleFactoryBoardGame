@@ -31,14 +31,13 @@ public class DisplayingPile<T extends Card> {
     return deck.size();
   }
 
-  public boolean takeCard(T card) throws DisplayPileException {
+  public boolean takeCard(T card) {
     var containingListOpt = displaying.stream().filter(list -> list.contains(card))
         .findAny();
     var containingList = containingListOpt.orElseThrow();
     containingList.remove(card);
     if (displaying.stream().anyMatch(ArrayList::isEmpty)) {
       displaying.removeIf(ArrayList::isEmpty);
-      refillCards();
     }
     return true;
   }

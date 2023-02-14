@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.magcube.card.Card;
+import org.magcube.card.Coin;
 import org.magcube.card.Factory;
 
 public class User {
@@ -11,7 +12,8 @@ public class User {
   private final ArrayList<Factory> factories;
   private final ArrayList<Card> cards;
   private String name;
-  private int coin;
+  private String name;
+  private Coin coin;
   private int points;
 
   public User() {
@@ -41,12 +43,12 @@ public class User {
     this.cards.removeAll(cards);
   }
 
-  public int getCoin() {
-    return coin;
+  public Coin getCoin() {
+    return this.coin;
   }
 
   public void giveCoin(int coin) {
-    this.coin += coin;
+    this.coin = new Coin(coin);
   }
 
   public int getPoints() {
@@ -67,6 +69,10 @@ public class User {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public boolean ownCard(Card card) {
+    return true;
   }
 
 }

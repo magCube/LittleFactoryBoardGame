@@ -3,6 +3,7 @@ package org.magcube;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.magcube.card.Card;
 import org.magcube.card.DisplayingPile;
 import org.magcube.card.Factory;
 import org.magcube.card.FirstTierResource;
@@ -10,13 +11,16 @@ import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.user.User;
 
-public class Startup {
+public class GameInstance {
 
   private final DisplayingPile<FirstTierResource> firstTierResourcesPile;
   private final DisplayingPile<Factory> factoriesPile;
   private List<User> users;
+  private User currentUser; //need to be thread safe
+  private List<Card> availableFactories;//need to be thread safe
+  private boolean isTraded;
 
-  public Startup() throws DisplayPileException {
+  public GameInstance() throws DisplayPileException {
     this.users = new ArrayList<>();
     this.firstTierResourcesPile = new DisplayingPile<>(Main.firstTierResources);
     this.factoriesPile = new DisplayingPile<>(Main.factories);
@@ -46,10 +50,12 @@ public class Startup {
     distributeCoin();
     prepareFirstTierResources();
     prepareFactories();
-
+    currentUser = users.get(0);
+    availableFactories = currentUser.getFactories();
+    isTraded = false;
 //        REPEAT for Each user (in order)
 //        currentuser = reference of the user in action
-//                availabeFactories = new ArrayList(currentuser.getFactories());
+//        availabeFactories = new ArrayList(currentuser.getFactories());
 //        isTraded = false
 //        wait for actions = actions
 //        SWITCH(actions)
@@ -70,6 +76,31 @@ public class Startup {
 //                no: continue
 //                END REPEAT
 //        display winner
+  }
+
+  public void tradeCard(Card payment, List<Card> targets) {
+    if (isTraded) {
+      System.out.println("User already traded!");
+      return;
+    }
+    if (!currentUser.ownCard(payment)) {
+      System.out.println("User do not own the payment cards! Will not trade!");
+      return;
+    }
+    if (payment.getValue() >= targets.stream().map(Card::getValue)
+        .reduce(0, Integer::sum)) { //valid trade
+      currentUser.giveCards(List.of(payment));
+      for (var card:targets) {
+        if (card instanceof FirstTierResource) {
+          this.firstTierResourcesPile.takeCard((FirstTierResource) card);
+        }
+        if (card instanceof Factory) {
+          this.factoriesPile.takeCard((Factory) card);
+        }
+      }
+      isTraded = true;
+      System.out.println(currentUser.getName() + " traded " + targets + " using " + payment);
+    }
   }
 
   private void distributeCoin() {
