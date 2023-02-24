@@ -63,8 +63,9 @@ public class GameInstanceTest {
     var gameInstance = new GameInstance();
     gameInstance.setUsers(6);
     gameInstance.startGame();
-    assertFalse(gameInstance.getDisplayingFirstTierResources().isEmpty());
-    assertFalse(gameInstance.getDisplayingFactories().isEmpty());
+    var gameBoard = gameInstance.getGameBoard();
+    assertFalse(gameBoard.getDisplayingFirstTierResources().isEmpty());
+    assertFalse(gameBoard.getDisplayingFactories().isEmpty());
   }
 
   @Test
@@ -74,7 +75,8 @@ public class GameInstanceTest {
     gameInstance.startGame();
     var user = gameInstance.getUsers().get(0);
     var coins = user.getCoin();
-    var displayingFirstTiers = gameInstance.getDisplayingFirstTierResources();
+    var gameBoard = gameInstance.getGameBoard();
+    var displayingFirstTiers = gameBoard.getDisplayingFirstTierResources();
     List<Card> targets = List.of(displayingFirstTiers.get(0).get(0), displayingFirstTiers.get(1).get(0),
         displayingFirstTiers.get(2).get(0));
     gameInstance.tradeCard(coins, targets);

@@ -12,7 +12,6 @@ public class User {
   private final ArrayList<Factory> factories;
   private final ArrayList<Card> cards;
   private String name;
-  private String name;
   private Coin coin;
   private int points;
 

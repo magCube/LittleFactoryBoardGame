@@ -3,18 +3,16 @@ package org.magcube;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
 import org.magcube.card.Card;
-import org.magcube.card.DisplayingPile;
-import org.magcube.card.Factory;
-import org.magcube.card.FirstTierResource;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.user.User;
 
 public class GameInstance {
 
-  private final DisplayingPile<FirstTierResource> firstTierResourcesPile;
-  private final DisplayingPile<Factory> factoriesPile;
+  @Getter
+  private final GameBoard gameBoard;
   private List<User> users;
   private User currentUser; //need to be thread safe
   private List<Card> availableFactories;//need to be thread safe
@@ -22,8 +20,7 @@ public class GameInstance {
 
   public GameInstance() throws DisplayPileException {
     this.users = new ArrayList<>();
-    this.firstTierResourcesPile = new DisplayingPile<>(Main.firstTierResources);
-    this.factoriesPile = new DisplayingPile<>(Main.factories);
+    this.gameBoard = new GameBoard();
   }
 
   public List<User> getUsers() {
@@ -90,16 +87,11 @@ public class GameInstance {
     if (payment.getValue() >= targets.stream().map(Card::getValue)
         .reduce(0, Integer::sum)) { //valid trade
       currentUser.giveCards(List.of(payment));
-      for (var card:targets) {
-        if (card instanceof FirstTierResource) {
-          this.firstTierResourcesPile.takeCard((FirstTierResource) card);
-        }
-        if (card instanceof Factory) {
-          this.factoriesPile.takeCard((Factory) card);
-        }
-      }
+      gameBoard.takeCards(targets);
       isTraded = true;
       System.out.println(currentUser.getName() + " traded " + targets + " using " + payment);
+    } else {
+      System.out.println(currentUser.getName() + " traded " + targets + " using " + payment + "is not applicable");
     }
   }
 
@@ -116,13 +108,5 @@ public class GameInstance {
 
   private void prepareFactories() {
     //TODO: initialize pile of factories
-  }
-
-  public List<ArrayList<FirstTierResource>> getDisplayingFirstTierResources() {
-    return firstTierResourcesPile.getDisplaying();
-  }
-
-  public List<ArrayList<Factory>> getDisplayingFactories() {
-    return factoriesPile.getDisplaying();
   }
 }

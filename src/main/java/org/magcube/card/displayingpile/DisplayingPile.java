@@ -1,13 +1,14 @@
-package org.magcube.card;
+package org.magcube.card.displayingpile;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.magcube.card.Card;
 import org.magcube.exception.DisplayPileException;
 
 public class DisplayingPile<T extends Card> {
 
-  private final ArrayList<T> deck;
+  protected final ArrayList<T> deck;
   private final ArrayList<ArrayList<T>> displaying;
 
   public DisplayingPile(List<T> deck) throws DisplayPileException {
@@ -17,13 +18,13 @@ public class DisplayingPile<T extends Card> {
     refillCards();
   }
 
-  private void verifyDeck(List<T> deck) throws DisplayPileException {
+  protected void verifyDeck(List<T> deck) throws DisplayPileException {
     if (deck.size() < 8) {
       throw new DisplayPileException("deck have too few cards! At least 8!");
     }
   }
 
-  public List<ArrayList<T>> getDisplaying() {
+  public List<ArrayList<T>> getDisplaying() throws DisplayPileException {
     return Collections.unmodifiableList(displaying);
   }
 

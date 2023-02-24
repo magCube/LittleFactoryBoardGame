@@ -7,43 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.magcube.Main;
+import org.magcube.card.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
 
 public class DisplayingPileTest {
 
-  private static Stream<DisplayingPile<FirstTierResource>> provideFirstTierResourcesPiles()
-      throws DisplayPileException {
-    return Stream.of(
-        getFirstTierResourcesPile(),
-        getTestingFirstTierResourcesPile()
-    );
-  }
-
-  private static DisplayingPile<FirstTierResource> getFirstTierResourcesPile()
-      throws DisplayPileException {
-    return new DisplayingPile<>(Main.firstTierResources);
-  }
-
-  private static DisplayingPile<FirstTierResource> getTestingFirstTierResourcesPile()
-      throws DisplayPileException {
-    var firstTierResources = new ArrayList<FirstTierResource>();
-    for (var i = 0; i < 10; i++) {
-      firstTierResources.add(
-          FirstTierResource.firstTierBuilder().value(1).cost(new Card[1]).name(String.valueOf(i))
-              .typeId(i % 5)
-              .build()
-      );
-    }
-    return new DisplayingPile<>(firstTierResources);
-  }
-
   @ParameterizedTest
-  @MethodSource("provideFirstTierResourcesPiles")
+  @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
   void takeCardTest(DisplayingPile<FirstTierResource> pile) throws DisplayPileException {
     var oldDisplaying = List.copyOf(pile.getDisplaying());
     assertEquals(5, oldDisplaying.size());
@@ -61,7 +34,7 @@ public class DisplayingPileTest {
   }
 
   @ParameterizedTest
-  @MethodSource("provideFirstTierResourcesPiles")
+  @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
   void insertCardTest(DisplayingPile<FirstTierResource> pile) {
     var originalDeckSize = pile.deckSize();
     var cardToInsert = FirstTierResource.firstTierBuilder()
