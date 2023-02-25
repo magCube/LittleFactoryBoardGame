@@ -22,13 +22,13 @@ public class GameBoardTest {
   void takeCardsTest2() throws DisplayPileException {
     var gameBoard = new GameBoard();
     var firstCard = gameBoard.getDisplayingFirstTierResources().get(0).get(0);
-    var secondCard = gameBoard.getDisplayingFirstTierResources().get(1).get(1);
+    var secondCard = gameBoard.getDisplayingFirstTierResources().get(1).get(0);
     var factoryCard = gameBoard.getDisplayingFactories().get(0).get(0);
     Assertions.assertDoesNotThrow(
         () -> gameBoard.takeCards(List.of(firstCard, secondCard, factoryCard)));
     Assertions.assertNotSame(firstCard, gameBoard.getDisplayingFirstTierResources().get(0).get(0));
-    Assertions.assertNotSame(secondCard, gameBoard.getDisplayingFirstTierResources().get(1).get(1));
-    Assertions.assertNotSame(factoryCard, gameBoard.getDisplayingFactories().get(0));
+    Assertions.assertNotSame(secondCard, gameBoard.getDisplayingFirstTierResources().get(1).get(0));
+    Assertions.assertNotSame(factoryCard, gameBoard.getDisplayingFactories().get(0).get(0));
   }
 
   @Test
@@ -37,7 +37,7 @@ public class GameBoardTest {
     var firstCard = Card.builder().build();
     var secondCard = FirstTierResource.firstTierBuilder().build();
     var factoryCard = Factory.factoryBuilder().build();
-    Assertions.assertDoesNotThrow(
+    Assertions.assertThrows(DisplayPileException.class,
         () -> gameBoard.takeCards(List.of(firstCard, secondCard, factoryCard)));
   }
 
