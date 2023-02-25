@@ -8,18 +8,18 @@ import org.magcube.card.Card;
 import org.magcube.card.Factory;
 import org.magcube.card.FirstTierResource;
 
-public class UserTest {
+public class PlayerTest {
 
   @Test
   void userNameOperationsTest() {
-    var user = new User();
+    var user = new Player();
     user.setName("test12312412312");
     assertEquals("test12312412312", user.getName());
   }
 
   @Test
   void userGiveAndTakeCardAndPointTest() {
-    var user = new User();
+    var user = new Player();
     assertEquals(0, user.getPoints());
     var card1 = FirstTierResource.firstTierBuilder()
         .value(1)

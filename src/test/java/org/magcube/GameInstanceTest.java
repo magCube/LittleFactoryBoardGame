@@ -10,22 +10,22 @@ import org.junit.jupiter.api.Test;
 import org.magcube.card.Card;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
-import org.magcube.user.User;
+import org.magcube.user.Player;
 
 public class GameInstanceTest {
 
   @Test
   void setUsersTest() throws DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setUsers(5);
-    var users = gameInstance.getUsers();
+    gameInstance.setPlayers(5);
+    var users = gameInstance.getPlayers();
     assertEquals(5, users.size());
   }
 
   @Test
   void startGameNormally() throws DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setUsers(6);
+    gameInstance.setPlayers(6);
     assertDoesNotThrow(gameInstance::startGame);
   }
 
@@ -38,19 +38,19 @@ public class GameInstanceTest {
   @Test
   void usersAreUnmodifiableAfterStartGame() throws GameStartupException, DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setUsers(6);
+    gameInstance.setPlayers(6);
     gameInstance.startGame();
-    var resultList = gameInstance.getUsers();
-    assertThrows(UnsupportedOperationException.class, () -> resultList.add(new User()));
+    var resultList = gameInstance.getPlayers();
+    assertThrows(UnsupportedOperationException.class, () -> resultList.add(new Player()));
   }
 
   @Test
   void usersWereDistributedWithCorrectAmountOfCoinsAfterStartGame()
       throws GameStartupException, DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setUsers(6);
+    gameInstance.setPlayers(6);
     gameInstance.startGame();
-    var resultList = gameInstance.getUsers();
+    var resultList = gameInstance.getPlayers();
     var expectedCoins = 3;
     for (var user : resultList) {
       assertEquals(expectedCoins++, user.getCoin().getValue());
@@ -61,7 +61,7 @@ public class GameInstanceTest {
   void haveCorrectCardsDisplayingAfterStartGame()
       throws GameStartupException, DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setUsers(6);
+    gameInstance.setPlayers(6);
     gameInstance.startGame();
     var gameBoard = gameInstance.getGameBoard();
     assertFalse(gameBoard.getDisplayingFirstTierResources().isEmpty());
@@ -71,9 +71,9 @@ public class GameInstanceTest {
   @Test
   void tradeFirstTierResourceTest() throws DisplayPileException, GameStartupException {
     var gameInstance = new GameInstance();
-    gameInstance.setUsers(3);
+    gameInstance.setPlayers(3);
     gameInstance.startGame();
-    var user = gameInstance.getUsers().get(0);
+    var user = gameInstance.getPlayers().get(0);
     var coins = user.getCoin();
     var gameBoard = gameInstance.getGameBoard();
     var displayingFirstTiers = gameBoard.getDisplayingFirstTierResources();

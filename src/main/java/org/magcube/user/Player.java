@@ -7,7 +7,7 @@ import org.magcube.card.Card;
 import org.magcube.card.Coin;
 import org.magcube.card.Factory;
 
-public class User {
+public class Player {
 
   private final ArrayList<Factory> factories;
   private final ArrayList<Card> cards;
@@ -15,7 +15,7 @@ public class User {
   private Coin coin;
   private int points;
 
-  public User() {
+  public Player() {
     this.cards = new ArrayList<>();
     this.factories = new ArrayList<>();
   }
