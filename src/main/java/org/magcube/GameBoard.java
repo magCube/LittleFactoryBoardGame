@@ -52,7 +52,13 @@ public class GameBoard {
     }
   }
 
-  public boolean putCards(List<Card> cards) {
-    return true;
+  public void putCards(List<Card> cards) {
+    cards.forEach(card -> {
+      if (card instanceof FirstTierResource) {
+        firstTierResourcesPile.insertCard((FirstTierResource) card);
+      } else if (card instanceof Factory){
+        factoriesPile.insertCard((Factory) card);
+      }
+    });
   }
 }

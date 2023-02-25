@@ -47,6 +47,10 @@ public class DisplayingPile<T extends Card> {
     this.deck.addAll(deck);
   }
 
+  public void insertCard(T card) {
+    this.deck.add(card);
+  }
+
   public void refillCards() throws DisplayPileException {
     Collections.shuffle(deck);
     while (displaying.size() < 5 && !deck.isEmpty()) {

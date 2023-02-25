@@ -48,7 +48,7 @@ public class GameBoardTest {
     var card = FirstTierResource.firstTierBuilder()
         .name("test1")
         .build();
-    Assertions.assertTrue(gameBoard.putCards(List.of(card)));
+    Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));
     Assertions.assertEquals(oldFirstTierResourcesDeckSize + 1,
         gameBoard.getFirstTierResourcesPile().deckSize());
   }
