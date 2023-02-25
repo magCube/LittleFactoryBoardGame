@@ -75,7 +75,7 @@ public class GameInstance {
 //        display winner
   }
 
-  public void tradeCard(Card payment, List<Card> targets) {
+  public void tradeCard(Card payment, List<Card> targets) throws DisplayPileException {
     if (isTraded) {
       System.out.println("User already traded!");
       return;
