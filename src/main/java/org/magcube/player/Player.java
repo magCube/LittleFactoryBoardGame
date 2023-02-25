@@ -1,4 +1,4 @@
-package org.magcube.user;
+package org.magcube.player;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,7 +71,7 @@ public class Player {
   }
 
   public boolean ownCard(Card card) {
-    return true;
+    return cards.contains(card) || factories.contains(card);
   }
 
 }

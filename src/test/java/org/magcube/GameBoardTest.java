@@ -53,4 +53,14 @@ public class GameBoardTest {
         gameBoard.getFirstTierResourcesPile().deckSize());
   }
 
+  @Test
+  void giveCardsTest2() throws DisplayPileException {
+    var gameBoard = new GameBoard();
+    var oldFactoryDeckSize = gameBoard.getFactoriesPile().deckSize();
+    var card = Factory.factoryBuilder().build();
+    Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));
+    Assertions.assertEquals(oldFactoryDeckSize + 1,
+        gameBoard.getFactoriesPile().deckSize());
+  }
+
 }

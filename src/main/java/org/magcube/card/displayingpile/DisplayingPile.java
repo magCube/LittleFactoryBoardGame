@@ -24,7 +24,7 @@ public class DisplayingPile<T extends Card> {
     }
   }
 
-  public List<ArrayList<T>> getDisplaying() throws DisplayPileException {
+  public List<ArrayList<T>> getDisplaying() {
     return Collections.unmodifiableList(displaying);
   }
 
@@ -32,7 +32,7 @@ public class DisplayingPile<T extends Card> {
     return deck.size();
   }
 
-  public boolean takeCard(T card) {
+  public void takeCard(T card) {
     var containingListOpt = displaying.stream().filter(list -> list.contains(card))
         .findAny();
     var containingList = containingListOpt.orElseThrow();
@@ -40,7 +40,6 @@ public class DisplayingPile<T extends Card> {
     if (displaying.stream().anyMatch(ArrayList::isEmpty)) {
       displaying.removeIf(ArrayList::isEmpty);
     }
-    return true;
   }
 
   public void insertCard(List<T> deck) {

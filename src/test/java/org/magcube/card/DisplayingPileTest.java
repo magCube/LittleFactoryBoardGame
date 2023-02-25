@@ -17,15 +17,14 @@ public class DisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
-  void takeCardTest(DisplayingPile<FirstTierResource> pile) throws DisplayPileException {
+  void takeCardTest(DisplayingPile<FirstTierResource> pile) {
     var oldDisplaying = List.copyOf(pile.getDisplaying());
     assertEquals(5, oldDisplaying.size());
     assertTrue(oldDisplaying.stream().noneMatch(ArrayList::isEmpty));
     var oldFirstCards = oldDisplaying.get(0);
     var oldFirstCardsSize = oldFirstCards.size();
     assertFalse(oldFirstCards.isEmpty());
-    var result = pile.takeCard(oldFirstCards.get(0));
-    assertTrue(result);
+    pile.takeCard(oldFirstCards.get(0));
     if (oldFirstCardsSize == 1) {
       assertNotSame(oldDisplaying.get(0), pile.getDisplaying().get(0));
     } else {

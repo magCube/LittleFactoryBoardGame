@@ -8,8 +8,8 @@ import org.magcube.card.FirstTierResource;
 
 public class Main {
 
-  public static List<FirstTierResource> firstTierResources = new ArrayList<>();
-  public static List<Factory> factories = new ArrayList<>();
+  public static final List<FirstTierResource> firstTierResources = new ArrayList<>();
+  public static final List<Factory> factories = new ArrayList<>();
 
   static {
     for (var i = 0; i < 20; i++) {

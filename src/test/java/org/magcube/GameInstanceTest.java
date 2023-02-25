@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.magcube.card.Card;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
-import org.magcube.user.Player;
+import org.magcube.player.Player;
 
 public class GameInstanceTest {
 

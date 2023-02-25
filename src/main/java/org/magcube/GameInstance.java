@@ -7,7 +7,7 @@ import lombok.Getter;
 import org.magcube.card.Card;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
-import org.magcube.user.Player;
+import org.magcube.player.Player;
 
 public class GameInstance {
 

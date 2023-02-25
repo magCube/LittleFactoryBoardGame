@@ -1,8 +1,10 @@
-package org.magcube.user;
+package org.magcube.player;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.magcube.card.Card;
 import org.magcube.card.Factory;
@@ -50,6 +52,30 @@ public class PlayerTest {
     assertEquals(card3, user.getCards().get(0));
     user.giveCards(List.of(card2));
     assertEquals(2, user.getFactories().size());
+  }
+
+  @Test
+  void userOwnCardTest() {
+    var user = new Player();
+    assertEquals(0, user.getPoints());
+    var card1 = FirstTierResource.firstTierBuilder()
+        .value(1)
+        .cost(new Card[1])
+        .typeId(1)
+        .build();
+    assertFalse(user.ownCard(card1));
+    user.takeCards(List.of(card1));
+    Assertions.assertTrue(user.ownCard(card1));
+  }
+
+  @Test
+  void userOwnFactoryCardTest() {
+    var user = new Player();
+    assertEquals(0, user.getPoints());
+    var card1 = Factory.factoryBuilder().build();
+    assertFalse(user.ownCard(card1));
+    user.takeCards(List.of(card1));
+    Assertions.assertTrue(user.ownCard(card1));
   }
 
 }
