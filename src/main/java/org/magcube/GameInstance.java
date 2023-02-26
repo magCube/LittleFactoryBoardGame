@@ -16,7 +16,7 @@ public class GameInstance {
 
   private List<Player> players;
   @Getter
-  private Player currentPlayer; //need to be thread safe
+  private Player currentPlayer; //only accessible by this object itself, need to be thread safe
   @Getter
   private List<Card> availableFactories;//need to be thread safe
   @Getter
@@ -52,7 +52,7 @@ public class GameInstance {
     prepareFirstTierResources();
     prepareFactories();
     currentPlayer = players.get(0);
-    availableFactories = currentPlayer.getFactories();
+    availableFactories = currentPlayer.getBuildings();
     isTraded = false;
 //        REPEAT for Each user (in order)
 //        currentuser = reference of the user in action
@@ -115,6 +115,8 @@ public class GameInstance {
   }
 
   public void endTurn() {
-
+    currentPlayer = players.get((players.indexOf(currentPlayer) + 1) % players.size());
+    availableFactories = currentPlayer.getBuildings();
+    isTraded = false;
   }
 }

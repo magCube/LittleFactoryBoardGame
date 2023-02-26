@@ -3,13 +3,13 @@ package org.magcube;
 import java.util.ArrayList;
 import java.util.List;
 import org.magcube.card.Card;
-import org.magcube.card.Factory;
+import org.magcube.card.Building;
 import org.magcube.card.BasicResource;
 
 public class Main {
 
   public static final List<BasicResource> BASIC_RESOURCES = new ArrayList<>();
-  public static final List<Factory> factories = new ArrayList<>();
+  public static final List<Building> factories = new ArrayList<>();
 
   static {
     for (var i = 0; i < 20; i++) {
@@ -18,7 +18,7 @@ public class Main {
               .build()
       );
       factories.add(
-          Factory.factoryBuilder().value(4).cost(new Card[1]).name("factory " + i).typeId(100 + i)
+          Building.factoryBuilder().value(4).cost(new Card[1]).name("factory " + i).typeId(100 + i)
               .build()
       );
     }

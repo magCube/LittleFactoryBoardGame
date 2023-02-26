@@ -2,10 +2,10 @@ package org.magcube.card;
 
 import lombok.Builder;
 
-public class Factory extends Card {
+public class Building extends Card {
 
   @Builder(builderMethodName = "factoryBuilder")
-  public Factory(int value, String name, Card[] cost, int typeId) {
+  public Building(int value, String name, Card[] cost, int typeId) {
     super(value, name, cost, typeId);
   }
 }

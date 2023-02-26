@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import org.magcube.card.Card;
-import org.magcube.card.Factory;
+import org.magcube.card.Building;
 import org.magcube.card.BasicResource;
 import org.magcube.card.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
@@ -12,25 +12,25 @@ import org.magcube.exception.DisplayPileException;
 public class GameBoard {
 
   @Getter
-  private final DisplayingPile<BasicResource> firstTierResourcesPile;
+  private final DisplayingPile<BasicResource> basicResourcesPile;
   @Getter
-  private final DisplayingPile<Factory> factoriesPile;
+  private final DisplayingPile<Building> factoriesPile;
 
   public GameBoard() throws DisplayPileException {
-    this.firstTierResourcesPile = new DisplayingPile<>(Main.BASIC_RESOURCES);
+    this.basicResourcesPile = new DisplayingPile<>(Main.BASIC_RESOURCES);
     this.factoriesPile = new DisplayingPile<>(Main.factories);
   }
 
-  public List<ArrayList<BasicResource>> getDisplayingFirstTierResources() {
-    return firstTierResourcesPile.getDisplaying();
+  public List<ArrayList<BasicResource>> getDisplayingBasicResources() {
+    return basicResourcesPile.getDisplaying();
   }
 
-  public List<ArrayList<Factory>> getDisplayingFactories() {
+  public List<ArrayList<Building>> getDisplayingFactories() {
     return factoriesPile.getDisplaying();
   }
 
   public void takeCards(List<Card> cards) throws DisplayPileException {
-    var firstTierResourcesPileDisplaying = firstTierResourcesPile.getDisplaying().stream()
+    var firstTierResourcesPileDisplaying = basicResourcesPile.getDisplaying().stream()
         .flatMap(List::stream)
         .toList();
     var factoriesPileDisplaying = factoriesPile.getDisplaying().stream()
@@ -41,9 +41,9 @@ public class GameBoard {
     if (isValidRequest) {
       cards.forEach(card -> {
         if (card instanceof BasicResource) {
-          firstTierResourcesPile.takeCard((BasicResource) card);
-        } else if (card instanceof Factory) {
-          factoriesPile.takeCard((Factory) card);
+          basicResourcesPile.takeCard((BasicResource) card);
+        } else if (card instanceof Building) {
+          factoriesPile.takeCard((Building) card);
         }
       });
     } else {
@@ -54,10 +54,15 @@ public class GameBoard {
   public void putCards(List<Card> cards) {
     cards.forEach(card -> {
       if (card instanceof BasicResource) {
-        firstTierResourcesPile.insertCard((BasicResource) card);
-      } else if (card instanceof Factory){
-        factoriesPile.insertCard((Factory) card);
+        basicResourcesPile.insertCard((BasicResource) card);
+      } else if (card instanceof Building){
+        factoriesPile.insertCard((Building) card);
       }
     });
+  }
+
+  public void refillCards() throws DisplayPileException {
+    basicResourcesPile.refillCards();
+    factoriesPile.refillCards();
   }
 }

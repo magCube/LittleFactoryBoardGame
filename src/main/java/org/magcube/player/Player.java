@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import org.magcube.card.Card;
 import org.magcube.card.Coin;
-import org.magcube.card.Factory;
+import org.magcube.card.Building;
 
 public class Player {
 
-  private final ArrayList<Factory> factories;
+  private final ArrayList<Building> buildings;
   private final ArrayList<Card> cards;
   private String name;
   private Coin coin;
@@ -17,21 +17,21 @@ public class Player {
 
   public Player() {
     this.cards = new ArrayList<>();
-    this.factories = new ArrayList<>();
+    this.buildings = new ArrayList<>();
   }
 
   public List<Card> getCards() {
     return Collections.unmodifiableList(this.cards);
   }
 
-  public List<Card> getFactories() {
-    return Collections.unmodifiableList(this.factories);
+  public List<Card> getBuildings() {
+    return Collections.unmodifiableList(this.buildings);
   }
 
   public void takeCards(List<Card> cards) {
     cards.forEach(card -> {
-      if (card instanceof Factory) {
-        this.factories.add((Factory) card);
+      if (card instanceof Building) {
+        this.buildings.add((Building) card);
       } else {
         this.cards.add(card);
       }
@@ -51,7 +51,7 @@ public class Player {
   }
 
   public int getPoints() {
-    return points + this.factories.size();
+    return points + this.buildings.size();
   }
 
   public void addPoints(int points) {
@@ -79,7 +79,7 @@ public class Player {
   }
 
   private boolean isOwnFactory(Card card) {
-    return factories.contains(card);
+    return buildings.contains(card);
   }
 
   private boolean isOwnCoin(Card card) {
