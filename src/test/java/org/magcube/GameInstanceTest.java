@@ -83,4 +83,14 @@ public class GameInstanceTest {
     gameInstance.tradeCard(coins, targets);
     assertTrue(gameInstance.isTraded());
   }
+
+  @Test
+  void endTurnTest() throws DisplayPileException, GameStartupException {
+    var gameInstance = new GameInstance();
+    gameInstance.setPlayers(2);
+    gameInstance.startGame();
+    var user1 = gameInstance.getPlayers().get(0);
+    var user2 = gameInstance.getPlayers().get(1);
+    gameInstance.endTurn();
+  }
 }
