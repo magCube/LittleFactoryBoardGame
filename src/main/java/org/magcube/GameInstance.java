@@ -13,7 +13,9 @@ public class GameInstance {
 
   @Getter
   private final GameBoard gameBoard;
+
   private List<Player> players;
+  @Getter
   private Player currentPlayer; //need to be thread safe
   @Getter
   private List<Card> availableFactories;//need to be thread safe
@@ -110,5 +112,9 @@ public class GameInstance {
 
   private void prepareFactories() {
     //TODO: initialize pile of factories
+  }
+
+  public void endTurn() {
+
   }
 }

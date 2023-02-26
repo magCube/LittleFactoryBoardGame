@@ -1,8 +1,10 @@
 package org.magcube.card;
 
 import lombok.Builder;
+import lombok.Getter;
 
 @Builder
+@Getter
 public class Card {
 
   public Card(int value, String name, Card[] cost, int typeId) {
@@ -12,24 +14,9 @@ public class Card {
     this.typeId = typeId;
   }
 
-  protected int value; // the coin value of this card
-  protected String name;
-  protected Card[] cost;
-  protected int typeId;
+  protected final int value; // the coin value of this card
+  protected final String name;
+  protected final Card[] cost;
+  protected final int typeId;
 
-  public int getValue() {
-    return value;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public Card[] getCost() {
-    return cost;
-  }
-
-  public int getTypeId() {
-    return typeId;
-  }
 }
