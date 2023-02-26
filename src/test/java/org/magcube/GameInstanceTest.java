@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import org.magcube.player.Player;
 public class GameInstanceTest {
 
   @Test
-  void setUsersTest() throws DisplayPileException {
+  void setPlayersTest() throws DisplayPileException {
     var gameInstance = new GameInstance();
     gameInstance.setPlayers(5);
     var users = gameInstance.getPlayers();
@@ -80,5 +81,6 @@ public class GameInstanceTest {
     List<Card> targets = List.of(displayingFirstTiers.get(0).get(0), displayingFirstTiers.get(1).get(0),
         displayingFirstTiers.get(2).get(0));
     gameInstance.tradeCard(coins, targets);
+    assertTrue(gameInstance.isTraded());
   }
 }

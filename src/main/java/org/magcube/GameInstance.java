@@ -15,7 +15,9 @@ public class GameInstance {
   private final GameBoard gameBoard;
   private List<Player> players;
   private Player currentPlayer; //need to be thread safe
+  @Getter
   private List<Card> availableFactories;//need to be thread safe
+  @Getter
   private boolean isTraded;
 
   public GameInstance() throws DisplayPileException {

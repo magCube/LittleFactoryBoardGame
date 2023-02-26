@@ -5,28 +5,27 @@ import java.util.List;
 import lombok.Getter;
 import org.magcube.card.Card;
 import org.magcube.card.Factory;
-import org.magcube.card.FirstTierResource;
+import org.magcube.card.BasicResource;
 import org.magcube.card.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
 
 public class GameBoard {
 
   @Getter
-  private final DisplayingPile<FirstTierResource> firstTierResourcesPile;
+  private final DisplayingPile<BasicResource> firstTierResourcesPile;
   @Getter
   private final DisplayingPile<Factory> factoriesPile;
 
   public GameBoard() throws DisplayPileException {
-    this.firstTierResourcesPile = new DisplayingPile<>(Main.firstTierResources);
+    this.firstTierResourcesPile = new DisplayingPile<>(Main.BASIC_RESOURCES);
     this.factoriesPile = new DisplayingPile<>(Main.factories);
   }
 
-  public List<ArrayList<FirstTierResource>> getDisplayingFirstTierResources()
-      throws DisplayPileException {
+  public List<ArrayList<BasicResource>> getDisplayingFirstTierResources() {
     return firstTierResourcesPile.getDisplaying();
   }
 
-  public List<ArrayList<Factory>> getDisplayingFactories() throws DisplayPileException {
+  public List<ArrayList<Factory>> getDisplayingFactories() {
     return factoriesPile.getDisplaying();
   }
 
@@ -41,8 +40,8 @@ public class GameBoard {
         firstTierResourcesPileDisplaying.contains(card) || factoriesPileDisplaying.contains(card));
     if (isValidRequest) {
       cards.forEach(card -> {
-        if (card instanceof FirstTierResource) {
-          firstTierResourcesPile.takeCard((FirstTierResource) card);
+        if (card instanceof BasicResource) {
+          firstTierResourcesPile.takeCard((BasicResource) card);
         } else if (card instanceof Factory) {
           factoriesPile.takeCard((Factory) card);
         }
@@ -54,8 +53,8 @@ public class GameBoard {
 
   public void putCards(List<Card> cards) {
     cards.forEach(card -> {
-      if (card instanceof FirstTierResource) {
-        firstTierResourcesPile.insertCard((FirstTierResource) card);
+      if (card instanceof BasicResource) {
+        firstTierResourcesPile.insertCard((BasicResource) card);
       } else if (card instanceof Factory){
         factoriesPile.insertCard((Factory) card);
       }

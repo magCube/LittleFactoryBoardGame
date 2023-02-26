@@ -17,7 +17,7 @@ public class DisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
-  void takeCardTest(DisplayingPile<FirstTierResource> pile) {
+  void takeCardTest(DisplayingPile<BasicResource> pile) {
     var oldDisplaying = List.copyOf(pile.getDisplaying());
     assertEquals(5, oldDisplaying.size());
     assertTrue(oldDisplaying.stream().noneMatch(ArrayList::isEmpty));
@@ -34,15 +34,15 @@ public class DisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
-  void insertCardTest(DisplayingPile<FirstTierResource> pile) {
+  void insertCardTest(DisplayingPile<BasicResource> pile) {
     var originalDeckSize = pile.deckSize();
-    var cardToInsert = FirstTierResource.firstTierBuilder()
+    var cardToInsert = BasicResource.BasicResourceBuilder()
         .value(1)
         .typeId(1)
         .name("test")
         .cost(new Card[1])
         .build();
-    var cardToInsert2 = FirstTierResource.firstTierBuilder()
+    var cardToInsert2 = BasicResource.BasicResourceBuilder()
         .value((int) (Math.random() * 10))
         .typeId((int) (Math.random() * 100))
         .name("test random")
@@ -54,10 +54,10 @@ public class DisplayingPileTest {
 
   @Test
   void refillCardStopWhenDeckUsesUp() throws DisplayPileException {
-    var firstTierResources = new ArrayList<FirstTierResource>();
+    var firstTierResources = new ArrayList<BasicResource>();
     for (var i = 0; i < 10; i++) {
       firstTierResources.add(
-          FirstTierResource.firstTierBuilder().value(1).cost(new Card[1]).name(String.valueOf(i))
+          BasicResource.BasicResourceBuilder().value(1).cost(new Card[1]).name(String.valueOf(i))
               .typeId(1)
               .build()
       );

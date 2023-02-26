@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import org.magcube.card.Card;
 import org.magcube.card.Factory;
-import org.magcube.card.FirstTierResource;
+import org.magcube.card.BasicResource;
 
 public class Main {
 
-  public static final List<FirstTierResource> firstTierResources = new ArrayList<>();
+  public static final List<BasicResource> BASIC_RESOURCES = new ArrayList<>();
   public static final List<Factory> factories = new ArrayList<>();
 
   static {
     for (var i = 0; i < 20; i++) {
-      firstTierResources.add(
-          FirstTierResource.firstTierBuilder().value(1).cost(new Card[1]).name("wood").typeId(i)
+      BASIC_RESOURCES.add(
+          BasicResource.BasicResourceBuilder().value(1).cost(new Card[1]).name("wood").typeId(i)
               .build()
       );
       factories.add(

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.magcube.card.Card;
 import org.magcube.card.Factory;
-import org.magcube.card.FirstTierResource;
+import org.magcube.card.BasicResource;
 import org.magcube.exception.DisplayPileException;
 
 public class GameBoardTest {
@@ -35,7 +35,7 @@ public class GameBoardTest {
   void takeCardsFailTest() throws DisplayPileException {
     var gameBoard = new GameBoard();
     var firstCard = Card.builder().build();
-    var secondCard = FirstTierResource.firstTierBuilder().build();
+    var secondCard = BasicResource.BasicResourceBuilder().build();
     var factoryCard = Factory.factoryBuilder().build();
     Assertions.assertThrows(DisplayPileException.class,
         () -> gameBoard.takeCards(List.of(firstCard, secondCard, factoryCard)));
@@ -45,7 +45,7 @@ public class GameBoardTest {
   void giveCardsTest() throws DisplayPileException {
     var gameBoard = new GameBoard();
     var oldFirstTierResourcesDeckSize = gameBoard.getFirstTierResourcesPile().deckSize();
-    var card = FirstTierResource.firstTierBuilder()
+    var card = BasicResource.BasicResourceBuilder()
         .name("test1")
         .build();
     Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));

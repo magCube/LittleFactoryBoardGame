@@ -71,7 +71,18 @@ public class Player {
   }
 
   public boolean ownCard(Card card) {
-    return cards.contains(card) || factories.contains(card);
+    return isOwnCard(card) || isOwnFactory(card) || isOwnCoin(card);
   }
 
+  private boolean isOwnCard(Card card) {
+    return cards.contains(card);
+  }
+
+  private boolean isOwnFactory(Card card) {
+    return factories.contains(card);
+  }
+
+  private boolean isOwnCoin(Card card) {
+    return coin != null && coin.equals(card);
+  }
 }

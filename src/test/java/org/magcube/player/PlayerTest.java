@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.magcube.card.Card;
 import org.magcube.card.Factory;
-import org.magcube.card.FirstTierResource;
+import org.magcube.card.BasicResource;
 
 public class PlayerTest {
 
@@ -23,12 +23,12 @@ public class PlayerTest {
   void userGiveAndTakeCardAndPointTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = FirstTierResource.firstTierBuilder()
+    var card1 = BasicResource.BasicResourceBuilder()
         .value(1)
         .cost(new Card[1])
         .typeId(1)
         .build();
-    var card3 = FirstTierResource.firstTierBuilder()
+    var card3 = BasicResource.BasicResourceBuilder()
         .value(2)
         .cost(new Card[1])
         .typeId(2)
@@ -58,7 +58,7 @@ public class PlayerTest {
   void userOwnCardTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = FirstTierResource.firstTierBuilder()
+    var card1 = BasicResource.BasicResourceBuilder()
         .value(1)
         .cost(new Card[1])
         .typeId(1)
