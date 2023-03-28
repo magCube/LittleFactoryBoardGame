@@ -8,6 +8,7 @@ import org.magcube.exception.DisplayPileException;
 
 public class DisplayingPile<T extends Card> {
 
+  //TODO: discard pile
   protected final ArrayList<T> deck;
   private final ArrayList<ArrayList<T>> displaying;
 
