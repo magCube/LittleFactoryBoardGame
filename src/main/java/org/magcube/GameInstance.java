@@ -49,7 +49,7 @@ public class GameInstance {
     Collections.shuffle(players);
     players = Collections.unmodifiableList(players);
     distributeCoin();
-    prepareFirstTierResources();
+    prepareBasicResources();
     prepareFactories();
     currentPlayer = players.get(0);
     availableFactories = currentPlayer.getBuildings();
@@ -66,10 +66,10 @@ public class GameInstance {
 //        1. if trade FirstTier resources, call tradeFirstTierResource(payment, target);
 //        2. if trade factory, call tradeFactory(payment, target);
 //        isTraded = true
-//        case manufactoring:
+//        case manufacturing:
 //        check the Factory's produces Card, produce accordingly
 //        this.produceCard(card)
-//        availabeFactories.remove(factory)
+//        availableFactories.remove(factory)
 //
 //        case endTurn:
 //        check if the current user have enough points to win, if
@@ -106,7 +106,7 @@ public class GameInstance {
     }
   }
 
-  private void prepareFirstTierResources() {
+  private void prepareBasicResources() {
     //TODO: initialize pile of first tier resources
   }
 

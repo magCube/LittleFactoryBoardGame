@@ -4,8 +4,8 @@ import lombok.Builder;
 
 public class Building extends Card {
 
-  @Builder(builderMethodName = "factoryBuilder")
-  public Building(int value, String name, Card[] cost, int typeId) {
-    super(value, name, cost, typeId);
+  @Builder
+  public Building(int value, String name, Card[] cost, Card[] capital, int typeId) {
+    super(value, name, cost, capital, typeId);
   }
 }

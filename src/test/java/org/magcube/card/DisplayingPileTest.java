@@ -36,13 +36,13 @@ public class DisplayingPileTest {
   @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
   void insertCardTest(DisplayingPile<BasicResource> pile) {
     var originalDeckSize = pile.deckSize();
-    var cardToInsert = BasicResource.BasicResourceBuilder()
+    var cardToInsert = BasicResource.builder()
         .value(1)
         .typeId(1)
         .name("test")
         .cost(new Card[1])
         .build();
-    var cardToInsert2 = BasicResource.BasicResourceBuilder()
+    var cardToInsert2 = BasicResource.builder()
         .value((int) (Math.random() * 10))
         .typeId((int) (Math.random() * 100))
         .name("test random")
@@ -57,7 +57,7 @@ public class DisplayingPileTest {
     var firstTierResources = new ArrayList<BasicResource>();
     for (var i = 0; i < 10; i++) {
       firstTierResources.add(
-          BasicResource.BasicResourceBuilder().value(1).cost(new Card[1]).name(String.valueOf(i))
+          BasicResource.builder().value(1).cost(new Card[1]).name(String.valueOf(i))
               .typeId(1)
               .build()
       );

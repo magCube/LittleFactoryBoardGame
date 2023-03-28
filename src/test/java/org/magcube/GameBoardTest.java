@@ -34,9 +34,9 @@ public class GameBoardTest {
   @Test
   void takeCardsFailTest() throws DisplayPileException {
     var gameBoard = new GameBoard();
-    var firstCard = Card.builder().build();
-    var secondCard = BasicResource.BasicResourceBuilder().build();
-    var factoryCard = Building.factoryBuilder().build();
+    var firstCard = BasicResource.builder().build();
+    var secondCard = BasicResource.builder().build();
+    var factoryCard = Building.builder().build();
     Assertions.assertThrows(DisplayPileException.class,
         () -> gameBoard.takeCards(List.of(firstCard, secondCard, factoryCard)));
   }
@@ -45,7 +45,7 @@ public class GameBoardTest {
   void giveCardsTest() throws DisplayPileException {
     var gameBoard = new GameBoard();
     var oldFirstTierResourcesDeckSize = gameBoard.getBasicResourcesPile().deckSize();
-    var card = BasicResource.BasicResourceBuilder()
+    var card = BasicResource.builder()
         .name("test1")
         .build();
     Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));
@@ -57,7 +57,7 @@ public class GameBoardTest {
   void giveCardsTest2() throws DisplayPileException {
     var gameBoard = new GameBoard();
     var oldFactoryDeckSize = gameBoard.getFactoriesPile().deckSize();
-    var card = Building.factoryBuilder().build();
+    var card = Building.builder().build();
     Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));
     Assertions.assertEquals(oldFactoryDeckSize + 1,
         gameBoard.getFactoriesPile().deckSize());

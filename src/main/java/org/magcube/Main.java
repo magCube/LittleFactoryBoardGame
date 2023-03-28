@@ -14,11 +14,11 @@ public class Main {
   static {
     for (var i = 0; i < 20; i++) {
       BASIC_RESOURCES.add(
-          BasicResource.BasicResourceBuilder().value(1).cost(new Card[1]).name("wood").typeId(i)
+          BasicResource.builder().value(1).cost(new Card[1]).name("wood").typeId(i)
               .build()
       );
       factories.add(
-          Building.factoryBuilder().value(4).cost(new Card[1]).name("factory " + i).typeId(100 + i)
+          Building.builder().value(4).cost(new Card[1]).name("factory " + i).typeId(100 + i)
               .build()
       );
     }

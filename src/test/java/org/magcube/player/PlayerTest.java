@@ -23,20 +23,20 @@ public class PlayerTest {
   void userGiveAndTakeCardAndPointTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = BasicResource.BasicResourceBuilder()
+    var card1 = BasicResource.builder()
         .value(1)
         .cost(new Card[1])
         .typeId(1)
         .build();
-    var card3 = BasicResource.BasicResourceBuilder()
+    var card3 = BasicResource.builder()
         .value(2)
         .cost(new Card[1])
         .typeId(2)
         .build();
-    var card2 = Building.factoryBuilder()
+    var card2 = Building.builder()
         .typeId(100)
         .build();
-    var card4 = Building.factoryBuilder()
+    var card4 = Building.builder()
         .typeId(101)
         .build();
     user.takeCards(List.of(card1, card2, card3, card4));
@@ -58,7 +58,7 @@ public class PlayerTest {
   void userOwnCardTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = BasicResource.BasicResourceBuilder()
+    var card1 = BasicResource.builder()
         .value(1)
         .cost(new Card[1])
         .typeId(1)
@@ -72,7 +72,7 @@ public class PlayerTest {
   void userOwnFactoryCardTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = Building.factoryBuilder().build();
+    var card1 = Building.builder().build();
     assertFalse(user.ownCard(card1));
     user.takeCards(List.of(card1));
     Assertions.assertTrue(user.ownCard(card1));

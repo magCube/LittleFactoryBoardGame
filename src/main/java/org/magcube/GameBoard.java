@@ -12,9 +12,9 @@ import org.magcube.exception.DisplayPileException;
 public class GameBoard {
 
   @Getter
-  private final DisplayingPile<BasicResource> basicResourcesPile;
+  private final DisplayingPile<BasicResource> basicResourcesPile; //row A
   @Getter
-  private final DisplayingPile<Building> factoriesPile;
+  private final DisplayingPile<Building> factoriesPile; // row D
 
   public GameBoard() throws DisplayPileException {
     this.basicResourcesPile = new DisplayingPile<>(Main.BASIC_RESOURCES);
@@ -36,8 +36,11 @@ public class GameBoard {
     var factoriesPileDisplaying = factoriesPile.getDisplaying().stream()
         .flatMap(List::stream)
         .toList();
-    var isValidRequest = cards.stream().allMatch((card) ->
-        firstTierResourcesPileDisplaying.contains(card) || factoriesPileDisplaying.contains(card));
+    @SuppressWarnings("SuspiciousMethodCalls")
+    var isValidRequest = cards.stream()
+        .allMatch((card) ->
+            firstTierResourcesPileDisplaying.contains(card) || factoriesPileDisplaying.contains(
+                card));
     if (isValidRequest) {
       cards.forEach(card -> {
         if (card instanceof BasicResource) {

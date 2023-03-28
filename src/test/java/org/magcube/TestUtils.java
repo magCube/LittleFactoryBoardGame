@@ -30,7 +30,7 @@ public class TestUtils {
     var firstTierResources = new ArrayList<BasicResource>();
     for (var i = 0; i < 10; i++) {
       firstTierResources.add(
-          BasicResource.BasicResourceBuilder().value(1).cost(new Card[1]).name(String.valueOf(i))
+          BasicResource.builder().value(1).cost(new Card[1]).name(String.valueOf(i))
               .typeId(i % 5)
               .build()
       );

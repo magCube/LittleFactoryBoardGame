@@ -12,12 +12,9 @@ import lombok.Builder;
  */
 public class BasicResource extends Card {
 
-  @Builder(builderMethodName = "BasicResourceBuilder")
-  public BasicResource(int value, String name, Card[] cost, int typeId) {
-    super(value, name, cost, typeId);
+  @Builder
+  public BasicResource(int value, String name, Card[] cost, Card[] capital, int typeId) {
+    super(value, name, cost, capital, typeId);
   }
 
-  public enum BasicResourceType {
-    WOOD, STONE, COTTON, WHEAT, MUG
-  }
 }
