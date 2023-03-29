@@ -9,13 +9,16 @@ import org.magcube.exception.DisplayPileException;
 public class DisplayingPile<T extends Card> {
 
   //TODO: discard pile
-  protected final ArrayList<T> deck;
+  private final ArrayList<T> deck;
   private final ArrayList<ArrayList<T>> displaying;
+  private final ArrayList<T> discardPile;
+  private final int displayingSize = 5; // default to 5, put it as a field so that flexible to change in future
 
   public DisplayingPile(List<T> deck) throws DisplayPileException {
     verifyDeck(deck);
     this.displaying = new ArrayList<>(new ArrayList<>());
     this.deck = new ArrayList<>(deck);
+    this.discardPile = new ArrayList<>();
     refillCards();
   }
 
@@ -33,6 +36,10 @@ public class DisplayingPile<T extends Card> {
     return deck.size();
   }
 
+  public int discardPileSize() {
+    return discardPile.size();
+  }
+
   public void takeCard(T card) {
     var containingListOpt = displaying.stream().filter(list -> list.contains(card))
         .findAny();
@@ -43,33 +50,53 @@ public class DisplayingPile<T extends Card> {
     }
   }
 
-  public void insertCard(List<T> deck) {
-    this.deck.addAll(deck);
+  public void discardCard(List<T> deck) {
+    this.discardPile.addAll(deck);
   }
 
-  public void insertCard(T card) {
-    this.deck.add(card);
+  public void discardCard(T card) {
+    this.discardPile.add(card);
   }
 
   public void refillCards() throws DisplayPileException {
-    Collections.shuffle(deck);
-    while (displaying.size() < 5 && !deck.isEmpty()) {
+    fillDeckWithDiscardPileIfDeckUsedUp();
+    while (displaying.size() < displayingSize && !deck.isEmpty()) {
       var card = deck.remove(0);
       if (displaying.stream().anyMatch(ary -> ary.stream()
           .anyMatch(displaying -> card.getTypeId()
               == displaying.getTypeId()))) { //same kind of card already in display
-        var arrayList = displaying.stream().filter(ary -> ary.stream()
-            .anyMatch(displaying -> card.getTypeId() == (displaying.getTypeId()))).findFirst();
-        if (arrayList.isEmpty()) {
-          throw new DisplayPileException(
-              "Found match type in display pile but cannot find the corresponding list in displaying piles!");
-        }
-        arrayList.get().add(card);
+        addCardToSameTypeOfList(card);
       } else {//no same kind displaying, can add as a new column directly
-        var newArrayList = new ArrayList<T>();
-        newArrayList.add(card);
-        displaying.add(newArrayList);
+        addANewColumnToDisplayingLists(card);
+      }
+      if (displaying.size() < displayingSize) {
+        fillDeckWithDiscardPileIfDeckUsedUp();
       }
     }
   }
+
+  private void addANewColumnToDisplayingLists(T card) {
+    var newArrayList = new ArrayList<T>();
+    newArrayList.add(card);
+    displaying.add(newArrayList);
+  }
+
+  private void addCardToSameTypeOfList(T card) throws DisplayPileException {
+    var arrayList = displaying.stream().filter(ary -> ary.stream()
+        .anyMatch(displaying -> card.getTypeId() == (displaying.getTypeId()))).findFirst();
+    if (arrayList.isEmpty()) {
+      throw new DisplayPileException(
+          "Found match type in display pile but cannot find the corresponding list in displaying piles!");
+    }
+    arrayList.get().add(card);
+  }
+
+  private void fillDeckWithDiscardPileIfDeckUsedUp() {
+    if (deck.isEmpty() && displaying.size() < displayingSize) {
+      deck.addAll(discardPile);
+      Collections.shuffle(deck);
+      discardPile.clear();
+    }
+  }
+
 }

@@ -10,9 +10,10 @@ import org.magcube.card.BasicResource;
 import org.magcube.exception.DisplayPileException;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@SuppressWarnings("unused")
 public class TestUtils {
 
-  public static Stream<DisplayingPile<BasicResource>> provideFirstTierResourcesPiles()
+  public static Stream<DisplayingPile<? extends Card>> provideFirstTierResourcesPiles()
       throws DisplayPileException {
     return Stream.of(
         getFirstTierResourcesPile(),

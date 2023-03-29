@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.magcube.card.BasicResource;
 import org.magcube.card.Building;
-import org.magcube.card.Card;
 import org.magcube.exception.DisplayPileException;
 
 public class GameBoardTest {
@@ -44,31 +43,29 @@ public class GameBoardTest {
   @Test
   void giveCardsTest() throws DisplayPileException {
     var gameBoard = new GameBoard();
-    var oldFirstTierResourcesDeckSize = gameBoard.getBasicResourcesPile().deckSize();
     var card = BasicResource.builder()
         .name("test1")
         .build();
     Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));
-    Assertions.assertEquals(oldFirstTierResourcesDeckSize + 1,
-        gameBoard.getBasicResourcesPile().deckSize());
+    Assertions.assertEquals( 1,
+        gameBoard.getBasicResourcesPile().discardPileSize());
   }
 
   @Test
   void giveCardsTest2() throws DisplayPileException {
     var gameBoard = new GameBoard();
-    var oldFactoryDeckSize = gameBoard.getFactoriesPile().deckSize();
     var card = Building.builder().build();
     Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));
-    Assertions.assertEquals(oldFactoryDeckSize + 1,
-        gameBoard.getFactoriesPile().deckSize());
+    Assertions.assertEquals(1,
+        gameBoard.getFactoriesPile().discardPileSize());
   }
 
   @Test
   void refillGameBoardTest() throws DisplayPileException {
     var gameBoard = new GameBoard();
-    gameBoard.getDisplayingBasicResources().get(0).get(0);
-    gameBoard.getDisplayingBasicResources().get(1).get(0);
-    gameBoard.getDisplayingFactories().get(0).get(0);
+    Assertions.assertNotNull(gameBoard.getDisplayingBasicResources().get(0).get(0));
+    Assertions.assertNotNull(gameBoard.getDisplayingBasicResources().get(1).get(0));
+    Assertions.assertNotNull(gameBoard.getDisplayingFactories().get(0).get(0));
     gameBoard.refillCards();
     Assertions.assertEquals(5, gameBoard.getDisplayingFactories().size());
     Assertions.assertTrue(gameBoard.getDisplayingFactories().stream()

@@ -17,7 +17,14 @@ public class DisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
-  void takeCardTest(DisplayingPile<BasicResource> pile) {
+  void initializeDisplayingPileTest(DisplayingPile<Card> pile) {
+    assertEquals(5, pile.getDisplaying().size());
+    assertEquals(0, pile.discardPileSize());
+  }
+
+  @ParameterizedTest
+  @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
+  void takeCardTest(DisplayingPile<Card> pile) {
     var oldDisplaying = List.copyOf(pile.getDisplaying());
     assertEquals(5, oldDisplaying.size());
     assertTrue(oldDisplaying.stream().noneMatch(ArrayList::isEmpty));
@@ -34,7 +41,7 @@ public class DisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("org.magcube.TestUtils#provideFirstTierResourcesPiles")
-  void insertCardTest(DisplayingPile<BasicResource> pile) {
+  void insertCardTest(DisplayingPile<Card> pile) {
     var originalDeckSize = pile.deckSize();
     var cardToInsert = BasicResource.builder()
         .value(1)
@@ -48,12 +55,38 @@ public class DisplayingPileTest {
         .name("test random")
         .cost(new Card[1])
         .build();
-    pile.insertCard(List.of(cardToInsert, cardToInsert2));
-    assertEquals(originalDeckSize + 2, pile.deckSize());
+    pile.discardCard(List.of(cardToInsert, cardToInsert2));
+    assertEquals(originalDeckSize, pile.deckSize());
+    assertEquals(2, pile.discardPileSize());
   }
 
   @Test
   void refillCardStopWhenDeckUsesUp() throws DisplayPileException {
+    var firstTierResources = buildMockDeckWithOnlyOneTypeOfCard();
+    var pile = new DisplayingPile<>(firstTierResources);
+    assertEquals(0, pile.deckSize());
+    assertEquals(1, pile.getDisplaying().size());
+  }
+
+  @Test
+  void refillCardFromDiscardPileWhenDeckUsedUp() throws DisplayPileException {
+    var firstTierResources = buildMockDeckWithOnlyOneTypeOfCard();
+    var pile = new DisplayingPile<>(firstTierResources);
+    assertEquals(0, pile.deckSize());
+    var card4Discard = BasicResource.builder()
+        .value(1)
+        .cost(new Card[1])
+        .name("unique card for testing")
+        .typeId(91276)
+        .build();
+    pile.discardCard(card4Discard);
+    assertEquals(1, pile.discardPileSize());
+    pile.refillCards();
+    assertEquals(0, pile.discardPileSize());
+    assertEquals(2, pile.getDisplaying().size());
+  }
+
+  private ArrayList<BasicResource> buildMockDeckWithOnlyOneTypeOfCard() {
     var firstTierResources = new ArrayList<BasicResource>();
     for (var i = 0; i < 10; i++) {
       firstTierResources.add(
@@ -62,8 +95,6 @@ public class DisplayingPileTest {
               .build()
       );
     }
-    var pile = new DisplayingPile<>(firstTierResources);
-    assertEquals(0, pile.deckSize());
-    assertEquals(1, pile.getDisplaying().size());
+    return firstTierResources;
   }
 }

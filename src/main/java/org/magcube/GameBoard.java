@@ -57,9 +57,9 @@ public class GameBoard {
   public void putCards(List<Card> cards) {
     cards.forEach(card -> {
       if (card instanceof BasicResource) {
-        basicResourcesPile.insertCard((BasicResource) card);
+        basicResourcesPile.discardCard((BasicResource) card);
       } else if (card instanceof Building){
-        factoriesPile.insertCard((Building) card);
+        factoriesPile.discardCard((Building) card);
       }
     });
   }
