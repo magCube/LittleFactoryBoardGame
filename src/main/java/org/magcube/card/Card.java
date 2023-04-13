@@ -1,24 +1,29 @@
 package org.magcube.card;
 
-import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 public abstract class Card {
 
-  protected final int value; // the coin value of this card
-  protected final String name;
-  protected final Card[] cost;
-
-  protected final Card[] capital;
+  protected final CardType cardType;
   protected final int typeId;
+  protected final String name;
+  protected final int value;
 
-  public Card(int value, String name, Card[] cost, Card[] capital, int typeId) {
-    this.value = value;
-    this.name = name;
-    this.cost = cost;
-    this.capital = capital;
+  public Card(CardType cardType, int typeId, String name, int value) {
+    this.cardType = cardType;
     this.typeId = typeId;
+    this.name = name;
+    this.value = value;
   }
 
+  public boolean sameCard(Card card) {
+    if (this == card) {
+      return true;
+    }
+    if (card == null) {
+      return false;
+    }
+    return cardType != null && cardType == card.cardType && typeId == card.typeId;
+  }
 }

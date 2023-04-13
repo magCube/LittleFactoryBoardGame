@@ -5,8 +5,8 @@ import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.magcube.card.Card;
+import org.magcube.card.ResourceCard;
 import org.magcube.card.displayingpile.DisplayingPile;
-import org.magcube.card.BasicResource;
 import org.magcube.exception.DisplayPileException;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,17 +21,17 @@ public class TestUtils {
     );
   }
 
-  public static DisplayingPile<BasicResource> getFirstTierResourcesPile()
+  public static DisplayingPile<ResourceCard> getFirstTierResourcesPile()
       throws DisplayPileException {
     return new DisplayingPile<>(Main.BASIC_RESOURCES);
   }
 
-  public static DisplayingPile<BasicResource> getTestingFirstTierResourcesPile()
+  public static DisplayingPile<ResourceCard> getTestingFirstTierResourcesPile()
       throws DisplayPileException {
-    var firstTierResources = new ArrayList<BasicResource>();
+    var firstTierResources = new ArrayList<ResourceCard>();
     for (var i = 0; i < 10; i++) {
       firstTierResources.add(
-          BasicResource.builder().value(1).cost(new Card[1]).name(String.valueOf(i))
+          ResourceCard.builder().value(1).name(String.valueOf(i))
               .typeId(i % 5)
               .build()
       );

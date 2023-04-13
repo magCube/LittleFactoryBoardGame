@@ -49,7 +49,7 @@ public class GameInstance {
     Collections.shuffle(players);
     players = Collections.unmodifiableList(players);
     distributeCoin();
-    prepareBasicResources();
+    prepareResourceCards();
     prepareFactories();
     currentPlayer = players.get(0);
     availableFactories = currentPlayer.getBuildings();
@@ -95,7 +95,8 @@ public class GameInstance {
       isTraded = true;
       System.out.println(currentPlayer.getName() + " traded " + targets + " using " + payment);
     } else {
-      System.out.println(currentPlayer.getName() + " traded " + targets + " using " + payment + "is not applicable");
+      System.out.println(currentPlayer.getName() + " traded " + targets + " using " + payment
+          + "is not applicable");
     }
   }
 
@@ -106,7 +107,7 @@ public class GameInstance {
     }
   }
 
-  private void prepareBasicResources() {
+  private void prepareResourceCards() {
     //TODO: initialize pile of first tier resources
   }
 

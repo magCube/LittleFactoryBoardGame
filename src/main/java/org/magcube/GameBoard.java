@@ -3,29 +3,29 @@ package org.magcube;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
+import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
-import org.magcube.card.Building;
-import org.magcube.card.BasicResource;
+import org.magcube.card.ResourceCard;
 import org.magcube.card.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
 
 public class GameBoard {
 
   @Getter
-  private final DisplayingPile<BasicResource> basicResourcesPile; //row A
+  private final DisplayingPile<ResourceCard> basicResourcesPile; //row A
   @Getter
-  private final DisplayingPile<Building> factoriesPile; // row D
+  private final DisplayingPile<BuildingCard> factoriesPile; // row D
 
   public GameBoard() throws DisplayPileException {
     this.basicResourcesPile = new DisplayingPile<>(Main.BASIC_RESOURCES);
     this.factoriesPile = new DisplayingPile<>(Main.factories);
   }
 
-  public List<ArrayList<BasicResource>> getDisplayingBasicResources() {
+  public List<ArrayList<ResourceCard>> getDisplayingResourceCards() {
     return basicResourcesPile.getDisplaying();
   }
 
-  public List<ArrayList<Building>> getDisplayingFactories() {
+  public List<ArrayList<BuildingCard>> getDisplayingFactories() {
     return factoriesPile.getDisplaying();
   }
 
@@ -43,10 +43,10 @@ public class GameBoard {
                 card));
     if (isValidRequest) {
       cards.forEach(card -> {
-        if (card instanceof BasicResource) {
-          basicResourcesPile.takeCard((BasicResource) card);
-        } else if (card instanceof Building) {
-          factoriesPile.takeCard((Building) card);
+        if (card instanceof ResourceCard) {
+          basicResourcesPile.takeCard((ResourceCard) card);
+        } else if (card instanceof BuildingCard) {
+          factoriesPile.takeCard((BuildingCard) card);
         }
       });
     } else {
@@ -56,10 +56,10 @@ public class GameBoard {
 
   public void putCards(List<Card> cards) {
     cards.forEach(card -> {
-      if (card instanceof BasicResource) {
-        basicResourcesPile.discardCard((BasicResource) card);
-      } else if (card instanceof Building){
-        factoriesPile.discardCard((Building) card);
+      if (card instanceof ResourceCard) {
+        basicResourcesPile.discardCard((ResourceCard) card);
+      } else if (card instanceof BuildingCard) {
+        factoriesPile.discardCard((BuildingCard) card);
       }
     });
   }

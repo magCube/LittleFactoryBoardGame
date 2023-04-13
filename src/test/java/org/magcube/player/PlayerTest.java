@@ -6,9 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.magcube.card.Card;
-import org.magcube.card.Building;
-import org.magcube.card.BasicResource;
+import org.magcube.card.BuildingCard;
+import org.magcube.card.ResourceCard;
 
 public class PlayerTest {
 
@@ -23,20 +22,20 @@ public class PlayerTest {
   void userGiveAndTakeCardAndPointTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = BasicResource.builder()
+    var card1 = ResourceCard.builder()
         .value(1)
-        .cost(new Card[1])
+//        .cost(new Card[1])
         .typeId(1)
         .build();
-    var card3 = BasicResource.builder()
+    var card3 = ResourceCard.builder()
         .value(2)
-        .cost(new Card[1])
+//        .cost(new Card[1])
         .typeId(2)
         .build();
-    var card2 = Building.builder()
+    var card2 = BuildingCard.builder()
         .typeId(100)
         .build();
-    var card4 = Building.builder()
+    var card4 = BuildingCard.builder()
         .typeId(101)
         .build();
     user.takeCards(List.of(card1, card2, card3, card4));
@@ -58,9 +57,9 @@ public class PlayerTest {
   void userOwnCardTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = BasicResource.builder()
+    var card1 = ResourceCard.builder()
         .value(1)
-        .cost(new Card[1])
+//        .cost(new Card[1])
         .typeId(1)
         .build();
     assertFalse(user.ownCard(card1));
@@ -72,7 +71,7 @@ public class PlayerTest {
   void userOwnFactoryCardTest() {
     var user = new Player();
     assertEquals(0, user.getPoints());
-    var card1 = Building.builder().build();
+    var card1 = BuildingCard.builder().build();
     assertFalse(user.ownCard(card1));
     user.takeCards(List.of(card1));
     Assertions.assertTrue(user.ownCard(card1));
