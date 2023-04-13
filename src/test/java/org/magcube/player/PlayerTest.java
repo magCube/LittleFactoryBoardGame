@@ -118,4 +118,42 @@ public class PlayerTest {
     assertFalse(user.ownCard(card2));
   }
 
+  @Test
+  void isOwnAllResourcesTest() {
+    var card1Builder = ResourceCard.builder()
+        .cardType(CardType.BASIC_RESOURCE)
+        .typeId(1)
+        .value(1);
+    var card2Builder = ResourceCard.builder()
+        .cardType(CardType.BASIC_RESOURCE)
+        .typeId(2)
+        .value(1);
+    var card3Builder = ResourceCard.builder()
+        .cardType(CardType.BASIC_RESOURCE)
+        .typeId(3)
+        .value(1);
+
+    var ownCard1a = card1Builder.build();
+    var ownCard1b = card1Builder.build();
+    var ownCard2 = card2Builder.build();
+    var user = new Player("1", "player1");
+    user.takeResourceCards(List.of(ownCard1a, ownCard1b, ownCard2));
+
+    var testCard1a = card1Builder.build();
+    var testCard1b = card1Builder.build();
+    var testCard2a = card2Builder.build();
+    var testCard2b = card2Builder.build();
+    var testCard3 = card3Builder.build();
+
+    assertTrue(user.isOwnAllResources(List.of(testCard1a)));
+    assertTrue(user.isOwnAllResources(List.of(testCard1b)));
+    assertTrue(user.isOwnAllResources(List.of(testCard1a, testCard1b)));
+    assertTrue(user.isOwnAllResources(List.of(testCard1a, testCard2a)));
+    assertTrue(user.isOwnAllResources(List.of(testCard1a, testCard1b, testCard2a)));
+    assertTrue(user.isOwnAllResources(List.of(testCard2b, testCard1a, testCard1b)));
+
+    assertFalse(user.isOwnAllResources(List.of(testCard3)));
+    assertFalse(user.isOwnAllResources(List.of(testCard2a, testCard2b)));
+    assertFalse(user.isOwnAllResources(List.of(testCard1a, testCard1b, testCard2a, testCard2b)));
+  }
 }

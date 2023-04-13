@@ -61,14 +61,29 @@ public class Player {
   }
 
   public boolean ownCard(Card card) {
-    return isOwnCard(card) || isOwnFactory(card);
+    return isOwnResource(card) || isOwnBuilding(card);
   }
 
-  private boolean isOwnCard(Card card) {
+  public boolean isOwnResource(Card card) {
     return resources.stream().anyMatch(x -> x.sameCard(card));
   }
 
-  private boolean isOwnFactory(Card card) {
+  public boolean isOwnBuilding(Card card) {
     return buildings.stream().anyMatch(x -> x.sameCard(card));
+  }
+
+  public boolean isOwnAllResources(List<ResourceCard> cards) {
+    var resourcesClone = new ArrayList<>(this.resources);
+    for (var card : cards) {
+      var cardInClone = resourcesClone.stream().filter(x -> x.sameCard(card)).findFirst();
+
+      if (cardInClone.isEmpty()) {
+        return false;
+      } else {
+        resourcesClone.remove(cardInClone.get());
+      }
+    }
+
+    return true;
   }
 }

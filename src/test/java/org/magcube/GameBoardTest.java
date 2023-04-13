@@ -4,6 +4,7 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.magcube.card.BuildingCard;
+import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 
@@ -44,6 +45,7 @@ public class GameBoardTest {
   void giveCardsTest() throws DisplayPileException {
     var gameBoard = new GameBoard();
     var card = ResourceCard.builder()
+        .cardType(CardType.BASIC_RESOURCE)
         .name("test1")
         .build();
     Assertions.assertDoesNotThrow(() -> gameBoard.putCards(List.of(card)));
