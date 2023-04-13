@@ -3,6 +3,7 @@ package org.magcube;
 import java.util.ArrayList;
 import java.util.List;
 import org.magcube.card.BuildingCard;
+import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 
 public class Main {
@@ -13,7 +14,7 @@ public class Main {
   static {
     for (var i = 0; i < 20; i++) {
       BASIC_RESOURCES.add(
-          ResourceCard.builder().value(1).name("wood").typeId(i)
+          ResourceCard.builder().value(1).name("wood").typeId(i).cardType(CardType.BASIC_RESOURCE)
               .build()
       );
       factories.add(

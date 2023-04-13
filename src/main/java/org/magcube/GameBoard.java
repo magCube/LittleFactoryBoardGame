@@ -57,9 +57,17 @@ public class GameBoard {
   public void putCards(List<Card> cards) {
     cards.forEach(card -> {
       if (card instanceof ResourceCard) {
-        basicResourcesPile.discardCard((ResourceCard) card);
+        try {
+          basicResourcesPile.discardCard((ResourceCard) card);
+        } catch (DisplayPileException e) {
+          throw new RuntimeException(e);
+        }
       } else if (card instanceof BuildingCard) {
-        factoriesPile.discardCard((BuildingCard) card);
+        try {
+          factoriesPile.discardCard((BuildingCard) card);
+        } catch (DisplayPileException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
   }
