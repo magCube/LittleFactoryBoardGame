@@ -3,54 +3,53 @@ package org.magcube.player;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
+import org.magcube.card.ResourceCard;
 
+@Getter
 public class Player {
 
-  private final ArrayList<BuildingCard> buildings;
-  private final ArrayList<Card> cards;
-  private String name;
+  private final ArrayList<ResourceCard> resources = new ArrayList<>();
+  private final ArrayList<BuildingCard> buildings = new ArrayList<>();
+  private final String id;
+  private final String name;
+  @Setter
   private int coin;
   private int points;
 
-  public Player() {
-    this.cards = new ArrayList<>();
-    this.buildings = new ArrayList<>();
+  @Builder
+  public Player(String id, String name) {
+    this.id = id;
+    this.name = name;
   }
 
-  public List<Card> getCards() {
-    return Collections.unmodifiableList(this.cards);
+  public List<Card> getResources() {
+    return Collections.unmodifiableList(this.resources);
   }
 
   public List<Card> getBuildings() {
     return Collections.unmodifiableList(this.buildings);
   }
 
-  public void takeCards(List<Card> cards) {
-    cards.forEach(card -> {
-      if (card instanceof BuildingCard) {
-        this.buildings.add((BuildingCard) card);
-      } else {
-        this.cards.add(card);
-      }
-    });
-  }
-
-  public void giveCards(List<Card> cards) {
-    this.cards.removeAll(cards);
-  }
-
-  public int getCoin() {
-    return this.coin;
-  }
-
-  public void giveCoin(int coin) {
-    this.coin = coin;
-  }
-
   public int getPoints() {
+    // todo: the buildings is not always one point
     return points + this.buildings.size();
+  }
+
+  public void takeResourceCards(List<ResourceCard> cards) {
+    this.resources.addAll(cards);
+  }
+
+  public void takeBuildingCards(List<BuildingCard> cards) {
+    this.buildings.addAll(cards);
+  }
+
+  public void discardCards(List<ResourceCard> cards) {
+    this.resources.removeAll(cards);
   }
 
   public void addPoints(int points) {
@@ -61,27 +60,15 @@ public class Player {
     this.points += points;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public boolean ownCard(Card card) {
     return isOwnCard(card) || isOwnFactory(card);
   }
 
   private boolean isOwnCard(Card card) {
-    return cards.contains(card);
+    return resources.stream().anyMatch(x -> x.sameCard(card));
   }
 
   private boolean isOwnFactory(Card card) {
-    return buildings.contains(card);
-  }
-
-  private boolean isOwnCoin(int value) {
-    return value == coin;
+    return buildings.stream().anyMatch(x -> x.sameCard(card));
   }
 }

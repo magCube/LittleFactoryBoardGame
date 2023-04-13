@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 import org.magcube.card.Card;
+import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.player.Player;
@@ -34,8 +35,7 @@ public class GameInstance {
   public void setPlayers(int numberOfUsers) {
     var _users = new ArrayList<Player>();
     for (var i = 1; i <= numberOfUsers; i++) {
-      var tempUser = new Player();
-      tempUser.setName("User" + i);
+      var tempUser = new Player(String.valueOf(i), "User" + i);
       _users.add(tempUser);
     }
     this.players = _users;
@@ -43,7 +43,7 @@ public class GameInstance {
 
   public void startGame() throws GameStartupException {
     if (players == null || players.isEmpty() || !players.stream()
-        .allMatch(player -> player.getCards().isEmpty() && player.getPoints() == 0)) {
+        .allMatch(player -> player.getResources().isEmpty() && player.getPoints() == 0)) {
       throw new GameStartupException();
     }
     Collections.shuffle(players);
@@ -79,7 +79,7 @@ public class GameInstance {
 //        display winner
   }
 
-  public void tradeCard(Card payment, List<Card> targets) throws DisplayPileException {
+  public void tradeCard(ResourceCard payment, List<Card> targets) throws DisplayPileException {
     if (isTraded) {
       System.out.println("User already traded!");
       return;
@@ -90,7 +90,7 @@ public class GameInstance {
     }
     if (payment.getValue() >= targets.stream().map(Card::getValue)
         .reduce(0, Integer::sum)) { //valid trade
-      currentPlayer.giveCards(List.of(payment));
+      currentPlayer.discardCards(List.of(payment));
       gameBoard.takeCards(targets);
       isTraded = true;
       System.out.println(currentPlayer.getName() + " traded " + targets + " using " + payment);
@@ -103,7 +103,7 @@ public class GameInstance {
   private void distributeCoin() {
     var coins = 3;
     for (var user : players) {
-      user.giveCoin(coins++);
+      user.setCoin(coins++);
     }
   }
 

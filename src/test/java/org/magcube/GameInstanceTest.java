@@ -42,7 +42,8 @@ public class GameInstanceTest {
     gameInstance.setPlayers(6);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
-    assertThrows(UnsupportedOperationException.class, () -> resultList.add(new Player()));
+    assertThrows(UnsupportedOperationException.class,
+        () -> resultList.add(new Player("1", "player1")));
   }
 
   @Test
