@@ -1,0 +1,65 @@
+[
+  {
+    "cardType": 2,
+    "typeId": 1,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 2,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 3,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 4,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 5,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 6,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 7,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 8,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  },
+  {
+    "cardType": 2,
+    "typeId": 9,
+    "twoPlayers": 1,
+    "threePlayers": 1,
+    "fourPlayers": 1
+  }
+]
