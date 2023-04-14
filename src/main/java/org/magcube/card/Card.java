@@ -1,14 +1,19 @@
 package org.magcube.card;
 
 import lombok.Getter;
+import lombok.ToString;
 
+@ToString
 @Getter
-public abstract class Card {
+public class Card {
 
-  protected final CardType cardType;
-  protected final int typeId;
-  protected final String name;
-  protected final int value;
+  protected CardType cardType;
+  protected int typeId;
+  protected String name;
+  protected int value;
+
+  public Card() {
+  }
 
   public Card(CardType cardType, int typeId, String name, int value) {
     this.cardType = cardType;
