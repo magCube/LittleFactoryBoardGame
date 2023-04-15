@@ -3,6 +3,7 @@ package org.magcube;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,30 +20,30 @@ public class GameInstanceTest {
   @Test
   void setPlayersTest() throws DisplayPileException, NumOfPlayersException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(5);
-    var users = gameInstance.getPlayers();
-    assertEquals(5, users.size());
+    gameInstance.setPlayers(4);
+    assertEquals(4, gameInstance.getPlayers().size());
+    assertNotNull(gameInstance.getGameBoard());
   }
 
   @Test
   void startGameNormally() throws DisplayPileException, NumOfPlayersException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(6);
+    gameInstance.setPlayers(4);
     assertDoesNotThrow(gameInstance::startGame);
   }
 
   @Test
-  void startGameWithoutInitializeUsersShouldThrowException()
+  void startGameWithoutInitializePlayersShouldThrowException()
       throws DisplayPileException, NumOfPlayersException {
     var gameInstance = new GameInstance();
     assertThrows(GameStartupException.class, gameInstance::startGame);
   }
 
   @Test
-  void usersAreUnmodifiableAfterStartGame()
+  void playersAreUnmodifiableAfterStartGame()
       throws GameStartupException, DisplayPileException, NumOfPlayersException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(6);
+    gameInstance.setPlayers(4);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
     assertThrows(UnsupportedOperationException.class,
@@ -50,15 +51,15 @@ public class GameInstanceTest {
   }
 
   @Test
-  void usersWereDistributedWithCorrectAmountOfCoinsAfterStartGame()
+  void playersWereDistributedWithCorrectAmountOfCoinsAfterStartGame()
       throws GameStartupException, DisplayPileException, NumOfPlayersException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(6);
+    gameInstance.setPlayers(4);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
     var expectedCoins = 3;
-    for (var user : resultList) {
-      assertEquals(expectedCoins++, user.getCoin());
+    for (var player : resultList) {
+      assertEquals(expectedCoins++, player.getCoin());
     }
   }
 
@@ -66,30 +67,31 @@ public class GameInstanceTest {
   void haveCorrectCardsDisplayingAfterStartGame()
       throws GameStartupException, DisplayPileException, NumOfPlayersException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(6);
+    gameInstance.setPlayers(4);
     gameInstance.startGame();
     var gameBoard = gameInstance.getGameBoard();
     assertFalse(gameBoard.getDisplayingBasicResource().isEmpty());
+    assertFalse(gameBoard.getDisplayingLevel1Resource().isEmpty());
+    assertFalse(gameBoard.getDisplayingLevel2Resource().isEmpty());
     assertFalse(gameBoard.getDisplayingBuildings().isEmpty());
   }
 
   @Test
-  void tradeFirstTierResourceTest()
+  void tradeBasicTierResourceByCoinsTest()
       throws DisplayPileException, GameStartupException, NumOfPlayersException {
     var gameInstance = new GameInstance();
     gameInstance.setPlayers(3);
     gameInstance.startGame();
-    var user = gameInstance.getPlayers().get(0);
-    var coins = user.getCoin();
+    var player = gameInstance.getPlayers().get(0);
     var gameBoard = gameInstance.getGameBoard();
-    var displayingFirstTiers = gameBoard.getDisplayingBasicResource();
-    List<Card> targets = List.of(displayingFirstTiers.get(0).get(0),
-        displayingFirstTiers.get(1).get(0),
-        displayingFirstTiers.get(2).get(0));
-    // todo
-//    gameInstance.tradeCard(coins, targets);
-//    assertTrue(gameInstance.isTraded());
-    assertTrue(true);
+    var displayingBasicResource = gameBoard.getDisplayingBasicResource();
+    List<Card> targets = List.of(displayingBasicResource.get(0).get(0),
+        displayingBasicResource.get(1).get(0),
+        displayingBasicResource.get(2).get(0));
+
+    gameInstance.tradeCardByCoins(targets);
+    assertEquals(0, player.getCoin());
+    assertTrue(gameInstance.isTraded());
   }
 
   @Test
@@ -97,10 +99,10 @@ public class GameInstanceTest {
     var gameInstance = new GameInstance();
     gameInstance.setPlayers(2);
     gameInstance.startGame();
-    var user1 = gameInstance.getPlayers().get(0);
-    var user2 = gameInstance.getPlayers().get(1);
-    assertEquals(user1, gameInstance.getCurrentPlayer());
+    var player1 = gameInstance.getPlayers().get(0);
+    var player2 = gameInstance.getPlayers().get(1);
+    assertEquals(player1, gameInstance.getCurrentPlayer());
     gameInstance.endTurn();
-    assertEquals(user2, gameInstance.getCurrentPlayer());
+    assertEquals(player2, gameInstance.getCurrentPlayer());
   }
 }

@@ -4,56 +4,55 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
+import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
+import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.NumOfPlayersException;
 import org.magcube.player.Player;
 
+@Getter
 public class GameInstance {
 
-  @Getter
-  private final GameBoard gameBoard;
-
+  private GameBoard gameBoard;
   private List<Player> players;
-  @Getter
-  private Player currentPlayer; //only accessible by this object itself, need to be thread safe
-  @Getter
-  private List<Card> availableFactories;//need to be thread safe
-  @Getter
+  private Player currentPlayer; // only accessible by this object itself, need to be thread safe
   private boolean isTraded;
 
   public GameInstance() throws DisplayPileException, NumOfPlayersException {
     this.players = new ArrayList<>();
-    this.gameBoard = new GameBoard(4);
   }
 
-  public List<Player> getPlayers() {
-    return players;
-  }
-
-  public void setPlayers(int numberOfUsers) {
-    var _users = new ArrayList<Player>();
-    for (var i = 1; i <= numberOfUsers; i++) {
-      var tempUser = new Player(String.valueOf(i), "User" + i);
-      _users.add(tempUser);
+  // todo: the following is temp implementation
+  public void setPlayers(int numOfPlayers) throws NumOfPlayersException, DisplayPileException {
+    if (numOfPlayers < 2 || numOfPlayers > 4) {
+      throw new NumOfPlayersException(numOfPlayers);
     }
-    this.players = _users;
+
+    var _players = new ArrayList<Player>();
+    for (var i = 1; i <= numOfPlayers; i++) {
+      var tempUser = new Player(String.valueOf(i), "User" + i);
+      _players.add(tempUser);
+    }
+    this.players = _players;
+    gameBoard = new GameBoard(numOfPlayers);
   }
 
   public void startGame() throws GameStartupException {
-    if (players == null || players.isEmpty() || !players.stream()
-        .allMatch(player -> player.getResources().isEmpty() && player.getPoints() == 0)) {
+    if (gameBoard == null || players == null || players.isEmpty() ||
+        !players.stream().allMatch(player ->
+            player.getResources().isEmpty() &&
+                player.getBuildings().isEmpty() &&
+                player.getPoints() == 0)
+    ) {
       throw new GameStartupException();
     }
     Collections.shuffle(players);
     players = Collections.unmodifiableList(players);
     distributeCoin();
-    prepareResourceCards();
-    prepareFactories();
     currentPlayer = players.get(0);
-    availableFactories = currentPlayer.getBuildings();
     isTraded = false;
 //        REPEAT for Each user (in order)
 //        currentuser = reference of the user in action
@@ -80,22 +79,65 @@ public class GameInstance {
 //        display winner
   }
 
-  public void tradeCard(ResourceCard payment, List<Card> targets) throws DisplayPileException {
+  public void tradeCardByCoins(List<Card> targets) throws DisplayPileException {
+    tradeCardAfterPaymentValidation(currentPlayer.getCoin(), targets);
+    currentPlayer.setCoin(0);
+  }
+
+  public void tradeCardByCards(List<ResourceCard> payment, List<Card> targets)
+      throws DisplayPileException {
+    // the trading must be 1:n or n:1
+    if (payment.size() != 1 || targets.size() != 1) {
+      // todo: throw exception
+      System.out.println("Trading must be 1:n or n:1! Will not trade!");
+    }
+
+    if (!currentPlayer.isOwnAllResources(payment)) {
+      // todo: throw exception
+      System.out.println("Player do not own the payment cards! Will not trade!");
+      return;
+    }
+
+    var sumOfValue = targets.stream().map(Card::getValue).reduce(0, Integer::sum);
+    tradeCardAfterPaymentValidation(sumOfValue, targets);
+    currentPlayer.discardCards(payment);
+  }
+
+  public void activateFactory(BuildingCard card, List<ResourceCard> effectCost,
+      List<ResourceCard> effectCapital) {
+    // todo: implement
+  }
+
+  private void tradeCardAfterPaymentValidation(int payment, List<Card> targets)
+      throws DisplayPileException {
     if (isTraded) {
-      System.out.println("User already traded!");
+      // todo: throw exception
+      System.out.println("Player already traded!");
       return;
     }
-    if (!currentPlayer.ownCard(payment)) {
-      System.out.println("User do not own the payment cards! Will not trade!");
-      return;
-    }
-    if (payment.getValue() >= targets.stream().map(Card::getValue)
-        .reduce(0, Integer::sum)) { //valid trade
-      currentPlayer.discardCards(List.of(payment));
+
+    if (payment >= targets.stream().map(Card::getValue).reduce(0, Integer::sum)) {
+
       gameBoard.takeCards(targets);
+
+      var targetResourceCards = targets.stream()
+          .filter(card -> card.getCardType() == CardType.BASIC_RESOURCE ||
+              card.getCardType() == CardType.LEVEL_1_RESOURCE ||
+              card.getCardType() == CardType.LEVEL_2_RESOURCE)
+          .map(card -> (ResourceCard) card)
+          .toList();
+      var targetBuildingCards = targets.stream()
+          .filter(card -> card.getCardType() == CardType.BUILDING)
+          .map(card -> (BuildingCard) card)
+          .toList();
+
+      currentPlayer.takeResourceCards(targetResourceCards);
+      currentPlayer.takeBuildingCards(targetBuildingCards);
+
       isTraded = true;
       System.out.println(currentPlayer.getName() + " traded " + targets + " using " + payment);
     } else {
+      // todo: throw exception
       System.out.println(currentPlayer.getName() + " traded " + targets + " using " + payment
           + "is not applicable");
     }
@@ -103,22 +145,14 @@ public class GameInstance {
 
   private void distributeCoin() {
     var coins = 3;
-    for (var user : players) {
-      user.setCoin(coins++);
+    for (var player : players) {
+      player.setCoin(coins++);
     }
   }
 
-  private void prepareResourceCards() {
-    //TODO: initialize pile of first tier resources
-  }
-
-  private void prepareFactories() {
-    //TODO: initialize pile of factories
-  }
-
-  public void endTurn() {
+  public void endTurn() throws DisplayPileException {
     currentPlayer = players.get((players.indexOf(currentPlayer) + 1) % players.size());
-    availableFactories = currentPlayer.getBuildings();
+    gameBoard.refillCards();
     isTraded = false;
   }
 }
