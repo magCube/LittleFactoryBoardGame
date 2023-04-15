@@ -2,6 +2,7 @@ package org.magcube.card;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.magcube.exception.CardQuantityException;
+import org.magcube.exception.NumOfPlayersException;
 
 class CardQuantityTest {
 
@@ -39,9 +43,16 @@ class CardQuantityTest {
     ));
   }
 
+  @ParameterizedTest
+  @MethodSource("cardQuantityDataProvider")
+  void allCardTypeIsSameTest(List<CardQuantity> cardQuantities) {
+    assertTrue(cardQuantities.stream()
+        .allMatch(x -> x.getCardType() == cardQuantities.get(0).getCardType()));
+  }
+
   // no duplicate data identifier (same cardType and typeId)
   @ParameterizedTest
-  @MethodSource
+  @MethodSource("cardQuantityDataProvider")
   void noDuplicateDataIdentifierTest(List<CardQuantity> data) {
     long uniqueCount = data.stream()
         .map(x -> x.getCardType().toString() + "-" + x.getTypeId())
@@ -62,7 +73,38 @@ class CardQuantityTest {
     ));
   }
 
-  static private Stream<Arguments> noDuplicateDataIdentifierTest() {
+  @ParameterizedTest
+  @ValueSource(ints = {2, 3, 4})
+  void getQuantityTest(int numOfPlayers) throws CardQuantityException, NumOfPlayersException {
+    assertTrue(CardQuantity.getQuantity(CardType.BASIC_RESOURCE, 1, numOfPlayers) > 0);
+    assertTrue(CardQuantity.getQuantity(CardType.LEVEL_1_RESOURCE, 1, numOfPlayers) > 0);
+    assertTrue(CardQuantity.getQuantity(CardType.LEVEL_2_RESOURCE, 1, numOfPlayers) > 0);
+    assertTrue(CardQuantity.getQuantity(CardType.BUILDING, 1, numOfPlayers) > 0);
+  }
+
+  @Test
+  void getQuantityExceptionTest() {
+    assertThrows(CardQuantityException.class,
+        () -> CardQuantity.getQuantity(CardType.BASIC_RESOURCE, 99999, 4));
+  }
+
+  @Test
+  void getQuantityForPlayerCountTest() throws CardQuantityException, NumOfPlayersException {
+    var cardQuantity = new CardQuantity(CardType.BASIC_RESOURCE, 1, 5, 7, 9);
+    assertEquals(5, cardQuantity.getQuantityForNumOfPlayers(2));
+    assertEquals(7, cardQuantity.getQuantityForNumOfPlayers(3));
+    assertEquals(9, cardQuantity.getQuantityForNumOfPlayers(4));
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {-5, -1, 0, 1, 5})
+  void getQuantityForPlayerCountExceptionTest(int numOfPlayers) {
+    var cardQuantity = new CardQuantity(CardType.BASIC_RESOURCE, 1, 5, 7, 9);
+    assertThrows(NumOfPlayersException.class,
+        () -> cardQuantity.getQuantityForNumOfPlayers(numOfPlayers));
+  }
+
+  private static Stream<Arguments> cardQuantityDataProvider() {
     return Stream.of(
         Arguments.of(CardQuantity.basicResource),
         Arguments.of(CardQuantity.level1Resource),
@@ -71,7 +113,7 @@ class CardQuantityTest {
     );
   }
 
-  static private Stream<Arguments> quantityDataCoverAllCardDataTest() {
+  private static Stream<Arguments> quantityDataCoverAllCardDataTest() {
     return Stream.of(
         Arguments.of(CardQuantity.basicResource, CardData.basicResource),
         Arguments.of(CardQuantity.level1Resource, CardData.level1Resource),

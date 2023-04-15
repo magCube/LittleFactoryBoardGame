@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.ToString;
+import org.magcube.exception.CardQuantityException;
+import org.magcube.exception.NumOfPlayersException;
 
 @ToString
 @Getter
@@ -42,6 +45,27 @@ public class CardQuantity {
     });
   }
 
+  public static int getQuantity(CardType cardType, int typeId, int numOfPlayers)
+      throws CardQuantityException, NumOfPlayersException {
+    List<CardQuantity> cardQuantities = switch (cardType) {
+      case BASIC_RESOURCE -> basicResource;
+      case LEVEL_1_RESOURCE -> level1Resource;
+      case LEVEL_2_RESOURCE -> level2Resource;
+      case BUILDING -> building;
+      default -> null;
+    };
+
+    Optional<CardQuantity> cardQuantity = cardQuantities.stream()
+        .filter(x -> x.getCardType() == cardType && x.getTypeId() == typeId)
+        .findFirst();
+
+    if (cardQuantity.isEmpty()) {
+      String message = String.format("Card not found: cardType=%s, typeId=%d", cardType, typeId);
+      throw new CardQuantityException(message);
+    }
+
+    return cardQuantity.get().getQuantityForNumOfPlayers(numOfPlayers);
+  }
 
   public CardQuantity() {
   }
@@ -53,5 +77,15 @@ public class CardQuantity {
     this.twoPlayers = twoPlayers;
     this.threePlayers = threePlayers;
     this.fourPlayers = fourPlayers;
+  }
+
+  public int getQuantityForNumOfPlayers(int numOfPlayers)
+      throws NumOfPlayersException {
+    return switch (numOfPlayers) {
+      case 2 -> twoPlayers;
+      case 3 -> threePlayers;
+      case 4 -> fourPlayers;
+      default -> throw new NumOfPlayersException(numOfPlayers);
+    };
   }
 }
