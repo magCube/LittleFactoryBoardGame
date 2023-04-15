@@ -5,48 +5,76 @@ import java.util.List;
 import lombok.Getter;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
+import org.magcube.card.CardDeck;
 import org.magcube.card.ResourceCard;
 import org.magcube.card.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
+import org.magcube.exception.NumOfPlayersException;
 
+@Getter
 public class GameBoard {
 
-  @Getter
-  private final DisplayingPile<ResourceCard> basicResourcesPile; //row A
-  @Getter
-  private final DisplayingPile<BuildingCard> factoriesPile; // row D
+  private final DisplayingPile<ResourceCard> basicResourcesPile;
+  private final DisplayingPile<ResourceCard> level1ResourcesPile;
+  private final DisplayingPile<ResourceCard> level2ResourcesPile;
+  private final DisplayingPile<BuildingCard> buildingPile;
 
-  public GameBoard() throws DisplayPileException {
-    this.basicResourcesPile = new DisplayingPile<>(Main.BASIC_RESOURCES);
-    this.factoriesPile = new DisplayingPile<>(Main.factories);
+  public GameBoard(int numOfPlayers) throws DisplayPileException, NumOfPlayersException {
+    var deck = CardDeck.get(numOfPlayers);
+    basicResourcesPile = new DisplayingPile<>(deck.basicResource);
+    level1ResourcesPile = new DisplayingPile<>(deck.level1Resource);
+    level2ResourcesPile = new DisplayingPile<>(deck.level2Resource);
+    buildingPile = new DisplayingPile<>(deck.building);
   }
 
-  public List<ArrayList<ResourceCard>> getDisplayingResourceCards() {
+  public List<ArrayList<ResourceCard>> getDisplayingBasicResource() {
     return basicResourcesPile.getDisplaying();
   }
 
-  public List<ArrayList<BuildingCard>> getDisplayingFactories() {
-    return factoriesPile.getDisplaying();
+  public List<ArrayList<ResourceCard>> getDisplayingLevel1Resource() {
+    return level1ResourcesPile.getDisplaying();
+  }
+
+  public List<ArrayList<ResourceCard>> getDisplayingLevel2Resource() {
+    return level2ResourcesPile.getDisplaying();
+  }
+
+  public List<ArrayList<BuildingCard>> getDisplayingBuildings() {
+    return buildingPile.getDisplaying();
   }
 
   public void takeCards(List<Card> cards) throws DisplayPileException {
-    var firstTierResourcesPileDisplaying = basicResourcesPile.getDisplaying().stream()
+    var basicResourcesPileDisplaying = basicResourcesPile.getDisplaying().stream()
         .flatMap(List::stream)
         .toList();
-    var factoriesPileDisplaying = factoriesPile.getDisplaying().stream()
+    var level1ResourcesPileDisplaying = level1ResourcesPile.getDisplaying().stream()
         .flatMap(List::stream)
         .toList();
+    var level2ResourcesPileDisplaying = level2ResourcesPile.getDisplaying().stream()
+        .flatMap(List::stream)
+        .toList();
+    var buildingPileDisplaying = buildingPile.getDisplaying().stream()
+        .flatMap(List::stream)
+        .toList();
+
+    // todo:
+    // 1. the checking of whether a card is available can be a method in DisplayingPile class
+    // 2. should not compare the reference of card, but the cardType and typeId of card
+    // 3. the following checking will have bug when cards contains duplicate card
     @SuppressWarnings("SuspiciousMethodCalls")
     var isValidRequest = cards.stream()
         .allMatch((card) ->
-            firstTierResourcesPileDisplaying.contains(card) || factoriesPileDisplaying.contains(
-                card));
+            basicResourcesPileDisplaying.contains(card) ||
+                level1ResourcesPileDisplaying.contains(card) ||
+                level2ResourcesPileDisplaying.contains(card) ||
+                buildingPileDisplaying.contains(card));
     if (isValidRequest) {
       cards.forEach(card -> {
-        if (card instanceof ResourceCard) {
-          basicResourcesPile.takeCard((ResourceCard) card);
-        } else if (card instanceof BuildingCard) {
-          factoriesPile.takeCard((BuildingCard) card);
+        switch (card.getCardType()) {
+          case BASIC_RESOURCE -> basicResourcesPile.takeCard((ResourceCard) card);
+          case LEVEL_1_RESOURCE -> level1ResourcesPile.takeCard((ResourceCard) card);
+          case LEVEL_2_RESOURCE -> level2ResourcesPile.takeCard((ResourceCard) card);
+          case BUILDING -> buildingPile.takeCard((BuildingCard) card);
         }
       });
     } else {
@@ -54,26 +82,26 @@ public class GameBoard {
     }
   }
 
-  public void putCards(List<Card> cards) {
+  public void discardCards(List<Card> cards) {
     cards.forEach(card -> {
-      if (card instanceof ResourceCard) {
-        try {
-          basicResourcesPile.discardCard((ResourceCard) card);
-        } catch (DisplayPileException e) {
-          throw new RuntimeException(e);
+      try {
+        switch (card.getCardType()) {
+          case BASIC_RESOURCE -> basicResourcesPile.discardCard((ResourceCard) card);
+          case LEVEL_1_RESOURCE -> level1ResourcesPile.discardCard((ResourceCard) card);
+          case LEVEL_2_RESOURCE -> level2ResourcesPile.discardCard((ResourceCard) card);
+          case BUILDING -> buildingPile.discardCard((BuildingCard) card);
         }
-      } else if (card instanceof BuildingCard) {
-        try {
-          factoriesPile.discardCard((BuildingCard) card);
-        } catch (DisplayPileException e) {
-          throw new RuntimeException(e);
-        }
+      } catch (DisplayPileException e) {
+        // this one should never happen
+        throw new RuntimeException(e);
       }
     });
   }
 
   public void refillCards() throws DisplayPileException {
     basicResourcesPile.refillCards();
-    factoriesPile.refillCards();
+    level1ResourcesPile.refillCards();
+    level2ResourcesPile.refillCards();
+    buildingPile.refillCards();
   }
 }

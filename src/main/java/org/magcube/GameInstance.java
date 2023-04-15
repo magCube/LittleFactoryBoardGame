@@ -8,6 +8,7 @@ import org.magcube.card.Card;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
+import org.magcube.exception.NumOfPlayersException;
 import org.magcube.player.Player;
 
 public class GameInstance {
@@ -23,9 +24,9 @@ public class GameInstance {
   @Getter
   private boolean isTraded;
 
-  public GameInstance() throws DisplayPileException {
+  public GameInstance() throws DisplayPileException, NumOfPlayersException {
     this.players = new ArrayList<>();
-    this.gameBoard = new GameBoard();
+    this.gameBoard = new GameBoard(4);
   }
 
   public List<Player> getPlayers() {

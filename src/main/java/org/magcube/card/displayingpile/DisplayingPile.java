@@ -101,7 +101,7 @@ public class DisplayingPile<T extends Card> {
 
   private void verifyDeck(List<T> deck) throws DisplayPileException {
     if (deck.size() < 8) {
-      throw new DisplayPileException("deck have too few cards! At least 8!");
+      throw new DisplayPileException("deck have too few cards! At least 9!");
     }
     var cardType = deck.get(0).getCardType();
     if (deck.stream().anyMatch(card -> card.getCardType() != cardType)) {
