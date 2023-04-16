@@ -1,4 +1,4 @@
-package org.magcube.card.displayingpile;
+package org.magcube.displayingpile;
 
 import java.util.ArrayList;
 import java.util.Collections;

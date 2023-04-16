@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.magcube.card.Card;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
-import org.magcube.card.displayingpile.DisplayingPile;
+import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -11,7 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.magcube.card.displayingpile.DisplayingPile;
+import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
 
 public class DisplayingPileTest {
