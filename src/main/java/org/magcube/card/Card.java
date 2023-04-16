@@ -7,6 +7,7 @@ import lombok.ToString;
 @Getter
 public class Card {
 
+  //TODO: refactor it to CardIdentity and add isIdentical()
   protected CardType cardType;
   protected int typeId;
   protected String name;

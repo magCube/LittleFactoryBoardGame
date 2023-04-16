@@ -9,6 +9,9 @@ import org.magcube.card.CardType;
 import org.magcube.exception.DisplayPileException;
 
 @Getter
+//TODO: refactor this to be an interface
+
+//TODO: need to return unmodifiableList for safety
 public class DisplayingPile<T extends Card> {
 
   private final CardType cardType;

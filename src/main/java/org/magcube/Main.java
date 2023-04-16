@@ -6,6 +6,7 @@ import org.magcube.card.BuildingCard;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 
+//TODO: migrate as sprintboot
 public class Main {
 
   public static final List<ResourceCard> BASIC_RESOURCES = new ArrayList<>();

@@ -60,18 +60,20 @@ public class GameInstance {
 //        isTraded = false
 //        wait for actions = actions
 //        SWITCH(actions)
-//        case trade:
+//        case TRADE:
 //        check isTraded == false
 //        according to the target Card type , call the correct trade function
 //        1. if trade FirstTier resources, call tradeFirstTierResource(payment, target);
 //        2. if trade factory, call tradeFactory(payment, target);
 //        isTraded = true
-//        case manufacturing:
+//        case PRODUCE:
 //        check the Factory's produces Card, produce accordingly
 //        this.produceCard(card)
 //        availableFactories.remove(factory)
 //
-//        case endTurn:
+//        case BUILDING_EFFECT:
+//          doBuildEffect()
+//        case END:
 //        check if the current user have enough points to win, if
 //        yes: break
 //                no: continue
