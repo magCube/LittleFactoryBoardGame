@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.ResourceCard;
@@ -17,7 +16,6 @@ public class Player {
   private final ArrayList<BuildingCard> buildings = new ArrayList<>();
   private final String id;
   private final String name;
-  @Setter
   private int coin;
   private int points;
 
@@ -36,8 +34,8 @@ public class Player {
   }
 
   public int getPoints() {
-    // todo: the buildings is not always one point
-    return points + this.buildings.size();
+    var buildingPoints = this.buildings.stream().mapToInt(BuildingCard::getPoints).sum();
+    return points + buildingPoints;
   }
 
   public void takeResourceCards(List<ResourceCard> cards) {
@@ -50,6 +48,14 @@ public class Player {
 
   public void discardCards(List<ResourceCard> cards) {
     this.resources.removeAll(cards);
+  }
+
+  public void receiveCoin(int coin) {
+    this.coin = coin;
+  }
+
+  public void spendCoin() {
+    coin = 0;
   }
 
   public void addPoints(int points) {

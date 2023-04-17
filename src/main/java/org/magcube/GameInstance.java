@@ -79,7 +79,7 @@ public class GameInstance {
 
   public void tradeCardByCoins(List<Card> targets) throws DisplayPileException {
     tradeCardAfterPaymentValidation(currentPlayer.getCoin(), targets);
-    currentPlayer.setCoin(0);
+    currentPlayer.spendCoin();
   }
 
   public void tradeCardByCards(List<ResourceCard> payment, List<Card> targets)
@@ -144,7 +144,7 @@ public class GameInstance {
   private void distributeCoin() {
     var coins = 3;
     for (var player : players) {
-      player.setCoin(coins++);
+      player.receiveCoin(coins++);
     }
   }
 

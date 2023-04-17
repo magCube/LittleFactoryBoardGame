@@ -30,6 +30,7 @@ public class PlayerTest {
         .build();
     var card2 = BuildingCard.builder()
         .cardIdentity(new CardIdentity(CardType.BUILDING, 100))
+        .points(1)
         .build();
     var card3 = ResourceCard.builder()
         .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2))
@@ -37,6 +38,7 @@ public class PlayerTest {
         .build();
     var card4 = BuildingCard.builder()
         .cardIdentity(new CardIdentity(CardType.BUILDING, 101))
+        .points(1)
         .build();
 
     var resources = List.of(card1, card3);
