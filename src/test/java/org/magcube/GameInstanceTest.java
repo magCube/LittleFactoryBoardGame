@@ -13,6 +13,7 @@ import org.magcube.card.Card;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.NumOfPlayersException;
+import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 
 public class GameInstanceTest {

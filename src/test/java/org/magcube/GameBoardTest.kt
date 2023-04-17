@@ -3,31 +3,40 @@ package org.magcube
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
-import org.magcube.card.BuildingCard
-import org.magcube.card.Card
-import org.magcube.card.CardType
-import org.magcube.card.ResourceCard
+import org.magcube.card.*
 import org.magcube.exception.DisplayPileException
 import org.magcube.exception.NumOfPlayersException
+import org.magcube.player.NumOfPlayers
+import java.util.stream.Stream
 
 class GameBoardTest {
     @ParameterizedTest
-    @ValueSource(ints = [2, 3, 4])
-    fun constructorTest(numOfPlayers: Int) {
+    @MethodSource
+    fun constructorTest(numOfPlayers: NumOfPlayers) {
         assertDoesNotThrow<GameBoard> { GameBoard(numOfPlayers) }
+    }
+
+    private fun constructorTest(): Stream<Arguments>? {
+        return Stream.of(
+            Arguments.of(NumOfPlayers.TWO),
+            Arguments.of(NumOfPlayers.THREE),
+            Arguments.of(NumOfPlayers.FOUR),
+        )
     }
 
     @ParameterizedTest
     @ValueSource(ints = [-5, -1, 0, 1, 5])
-    fun constructorShouldThrowTest(numOfPlayers: Int) {
+    fun constructorShouldThrowTest(numOfPlayers: NumOfPlayers) {
         assertThrows(NumOfPlayersException::class.java) { GameBoard(numOfPlayers) }
     }
 
     @Test
     @kotlin.Throws(DisplayPileException::class, NumOfPlayersException::class)
     fun takeCardsTest() {
-        val gameBoard = GameBoard(4)
+        val gameBoard = GameBoard(NumOfPlayers.FOUR)
         // todo: this test should change to take clone cards
         val firstCard = gameBoard.displayingBasicResource[0][0]
         assertDoesNotThrow { gameBoard.takeCards(listOf<Card>(firstCard)) }
@@ -37,7 +46,7 @@ class GameBoardTest {
     @Test
     @kotlin.Throws(DisplayPileException::class, NumOfPlayersException::class)
     fun takeCardsTest2() {
-        val gameBoard = GameBoard(4)
+        val gameBoard = GameBoard(NumOfPlayers.FOUR)
         val firstCard = gameBoard.displayingBasicResource[0][0]
         val secondCard = gameBoard.displayingBasicResource[1][0]
         val buildingCard = gameBoard.displayingBuildings[0][0]
@@ -50,7 +59,7 @@ class GameBoardTest {
     @Test
     @kotlin.Throws(DisplayPileException::class, NumOfPlayersException::class)
     fun takeCardsFailTest() {
-        val gameBoard = GameBoard(4)
+        val gameBoard = GameBoard(NumOfPlayers.FOUR)
         val firstCard = ResourceCard.builder().build()
         val secondCard = ResourceCard.builder().build()
         val buildingCard = BuildingCard.builder().build()
@@ -62,9 +71,9 @@ class GameBoardTest {
     @Test
     @kotlin.Throws(DisplayPileException::class, NumOfPlayersException::class)
     fun discardCardsTest() {
-        val gameBoard = GameBoard(4)
+        val gameBoard = GameBoard(NumOfPlayers.FOUR)
         val card = ResourceCard.builder()
-                .cardType(CardType.BASIC_RESOURCE)
+            .cardIdentity(CardIdentity(CardType.BASIC_RESOURCE, 1))
                 .name("test1")
                 .build()
         assertDoesNotThrow { gameBoard.discardCards(listOf<Card>(card)) }
@@ -75,9 +84,9 @@ class GameBoardTest {
     @Test
     @kotlin.Throws(DisplayPileException::class, NumOfPlayersException::class)
     fun giveCardsTest2() {
-        val gameBoard = GameBoard(4)
+        val gameBoard = GameBoard(NumOfPlayers.FOUR)
         val card = BuildingCard.builder()
-                .cardType(CardType.BUILDING)
+                .cardIdentity(CardIdentity(CardType.BUILDING, 1))
                 .name("test1")
                 .build()
         assertDoesNotThrow { gameBoard.discardCards(listOf<Card>(card)) }
@@ -88,7 +97,7 @@ class GameBoardTest {
     @Test
     @kotlin.Throws(DisplayPileException::class, NumOfPlayersException::class)
     fun refillGameBoardTest() {
-        val gameBoard = GameBoard(4)
+        val gameBoard = GameBoard(NumOfPlayers.FOUR)
         assertNotNull(gameBoard.displayingBasicResource[0][0])
         assertNotNull(gameBoard.displayingBasicResource[1][0])
         assertNotNull(gameBoard.displayingBuildings[0][0])
