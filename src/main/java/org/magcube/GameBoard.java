@@ -9,6 +9,7 @@ import org.magcube.card.CardDeck;
 import org.magcube.card.ResourceCard;
 import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
+import org.magcube.exception.NumOfPlayersException;
 import org.magcube.player.NumOfPlayers;
 
 @Getter

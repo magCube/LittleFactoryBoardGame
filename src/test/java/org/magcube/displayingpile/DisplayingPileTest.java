@@ -16,6 +16,8 @@ import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
+import org.magcube.displayingpile.DisplayingPile;
+import org.magcube.exception.DisplayPileException;
 
 public class DisplayingPileTest {
 
@@ -76,7 +78,7 @@ public class DisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("org.magcube.TestUtils#provideBasicResourcesPiles")
-  void discardCardShouldThrowTest(DisplayingPile<Card> pile) throws DisplayPileException {
+  void discardCardShouldThrowTest(DisplayingPile<Card> pile) {
     var originalDeckSize = pile.deckSize();
     var card1 = ResourceCard.builder()
         .cardIdentity(new CardIdentity(CardType.LEVEL_1_RESOURCE, 1))
