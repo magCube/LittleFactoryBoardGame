@@ -9,7 +9,7 @@ import org.magcube.card.CardDeck;
 import org.magcube.card.ResourceCard;
 import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
-import org.magcube.player.NumOfPlayers;
+import org.magcube.exception.NumOfPlayersException;
 
 @Getter
 public class GameBoard {

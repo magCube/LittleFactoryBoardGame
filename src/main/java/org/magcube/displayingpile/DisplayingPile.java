@@ -1,12 +1,12 @@
-package org.magcube.littlefactory.displayingpile;
+package org.magcube.displayingpile;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
-import org.magcube.littlefactory.card.Card;
-import org.magcube.littlefactory.card.CardType;
-import org.magcube.littlefactory.exception.DisplayPileException;
+import org.magcube.card.Card;
+import org.magcube.card.CardType;
+import org.magcube.exception.DisplayPileException;
 
 @Getter
 //TODO: refactor this to be an interface

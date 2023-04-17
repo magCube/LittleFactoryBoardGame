@@ -1,4 +1,4 @@
-package org.magcube.littlefactory.card;
+package org.magcube.card;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

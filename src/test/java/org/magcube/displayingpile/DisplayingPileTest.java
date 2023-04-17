@@ -16,6 +16,9 @@ import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
+import org.magcube.displayingpile.DisplayingPile;
+import org.magcube.exception.DisplayPileException;
+
 public class DisplayingPileTest {
 
   @ParameterizedTest

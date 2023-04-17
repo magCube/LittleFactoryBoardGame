@@ -1,4 +1,4 @@
-package org.magcube.littlefactory.card;
+package org.magcube.card;
 
 import lombok.Getter;
 import lombok.ToString;

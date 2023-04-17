@@ -9,6 +9,8 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.ToString;
 import org.magcube.exception.CardQuantityException;
+import org.magcube.exception.NumOfPlayersException;
+import org.magcube.exception.CardQuantityException;
 import org.magcube.player.NumOfPlayers;
 
 @ToString

@@ -1,4 +1,4 @@
-package org.magcube.littlefactory.card;
+package org.magcube.card;
 
 import lombok.Builder;
 import lombok.Getter;

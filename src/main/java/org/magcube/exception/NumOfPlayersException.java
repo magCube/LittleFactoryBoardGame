@@ -1,4 +1,4 @@
-package org.magcube.littlefactory.exception;
+package org.magcube.exception;
 
 public class NumOfPlayersException extends Exception {
 

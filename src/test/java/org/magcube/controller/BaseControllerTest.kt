@@ -1,4 +1,4 @@
-package org.magcube.littlefactory.controller
+package org.magcube.controller
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

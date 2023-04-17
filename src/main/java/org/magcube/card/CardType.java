@@ -1,4 +1,4 @@
-package org.magcube.littlefactory.card;
+package org.magcube.card;
 
 public enum CardType {
   BASIC_RESOURCE(0),
