@@ -24,6 +24,26 @@ import org.magcube.player.NumOfPlayers;
 
 class BasicResourceDisplayingPileTest {
 
+  private static Stream<BasicResourceDisplayingPile> pileProvider() throws DisplayPileException {
+    return Stream.of(
+        new BasicResourceDisplayingPile(CardDeck.get(NumOfPlayers.TWO).basicResource),
+        new BasicResourceDisplayingPile(CardDeck.get(NumOfPlayers.THREE).basicResource),
+        new BasicResourceDisplayingPile(CardDeck.get(NumOfPlayers.FOUR).basicResource)
+    );
+  }
+
+  private static Stream<CardIdentity> invalidCardIdentitiesProvider() {
+    return Stream.of(
+        new CardIdentity(CardType.LEVEL_1_RESOURCE, 1),
+        new CardIdentity(CardType.LEVEL_2_RESOURCE, 1),
+        new CardIdentity(CardType.BUILDING, 1),
+        new CardIdentity(CardType.BASIC_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999),
+        new CardIdentity(CardType.BUILDING, 99999)
+    );
+  }
+
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorTest(NumOfPlayers numOfPlayers) {
@@ -50,6 +70,17 @@ class BasicResourceDisplayingPileTest {
     assertEquals(CardData.basicResource.size(), displaying.size());
     assertEquals(CardData.basicResource.size(), pile.getMaxDisplayingSize());
     assertTrue(displaying.stream().noneMatch(List::isEmpty));
+    displaying.forEach(innerList -> {
+      var first = innerList.get(0).getCardIdentity();
+      assertTrue(innerList.stream().allMatch(c -> c.getCardIdentity().equals(first)));
+    });
+  }
+
+  @ParameterizedTest
+  @MethodSource("pileProvider")
+  void getMaxDisplayingSizeTest(BasicResourceDisplayingPile pile) {
+    assertTrue(pile.getMaxDisplayingSize() > 0);
+    assertEquals(pile.getMaxDisplayingSize(), CardData.basicResource.size());
   }
 
   @ParameterizedTest
@@ -57,6 +88,8 @@ class BasicResourceDisplayingPileTest {
   void takeCardsSingleCardTest(IDisplayingPile<ResourceCard> pile) throws DisplayPileException {
     List<List<ResourceCard>> displaying = pile.getDisplaying();
     List<Integer> sizes = new ArrayList<>(displaying.stream().map(List::size).toList());
+
+    assertEquals(pile.getMaxDisplayingSize(), displaying.size());
 
     for (int i = 0; i < displaying.size(); i++) {
       var card = displaying.get(i).get(0);
@@ -231,25 +264,5 @@ class BasicResourceDisplayingPileTest {
     return displaying.stream()
         .map(x -> x.stream().filter(y -> y.isIdentical(cardIdentity)).count())
         .reduce(0L, Long::sum);
-  }
-
-  private static Stream<BasicResourceDisplayingPile> pileProvider() throws DisplayPileException {
-    return Stream.of(
-        new BasicResourceDisplayingPile(CardDeck.get(NumOfPlayers.TWO).basicResource),
-        new BasicResourceDisplayingPile(CardDeck.get(NumOfPlayers.THREE).basicResource),
-        new BasicResourceDisplayingPile(CardDeck.get(NumOfPlayers.FOUR).basicResource)
-    );
-  }
-
-  private static Stream<CardIdentity> invalidCardIdentitiesProvider() {
-    return Stream.of(
-        new CardIdentity(CardType.LEVEL_1_RESOURCE, 1),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 1),
-        new CardIdentity(CardType.BUILDING, 1),
-        new CardIdentity(CardType.BASIC_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999),
-        new CardIdentity(CardType.BUILDING, 99999)
-    );
   }
 }
