@@ -1,4 +1,4 @@
-package org.magcube.card;
+package org.magcube.littlefactory.card;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
