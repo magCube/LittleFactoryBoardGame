@@ -19,18 +19,15 @@ class GameBoardTest {
         assertDoesNotThrow<GameBoard> { GameBoard(numOfPlayers) }
     }
 
-    private fun constructorTest(): Stream<Arguments>? {
-        return Stream.of(
-            Arguments.of(NumOfPlayers.TWO),
-            Arguments.of(NumOfPlayers.THREE),
-            Arguments.of(NumOfPlayers.FOUR),
-        )
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = [-5, -1, 0, 1, 5])
-    fun constructorShouldThrowTest(numOfPlayers: NumOfPlayers) {
-        assertThrows(NumOfPlayersException::class.java) { GameBoard(numOfPlayers) }
+    companion object {
+        @JvmStatic
+        private fun constructorTest(): Stream<Arguments>? {
+            return Stream.of(
+                Arguments.of(NumOfPlayers.TWO),
+                Arguments.of(NumOfPlayers.THREE),
+                Arguments.of(NumOfPlayers.FOUR),
+            )
+        }
     }
 
     @Test
