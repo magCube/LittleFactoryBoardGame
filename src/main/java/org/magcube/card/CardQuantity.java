@@ -20,8 +20,7 @@ public class CardQuantity {
   public static final List<CardQuantity> level2Resource;
   public static final List<CardQuantity> building;
 
-  private CardType cardType;
-  private int typeId;
+  private CardIdentity cardIdentity;
   private int twoPlayers;
   private int threePlayers;
   private int fourPlayers;
@@ -70,15 +69,22 @@ public class CardQuantity {
   public CardQuantity() {
   }
 
-  public CardQuantity(CardType cardType, int typeId, int twoPlayers, int threePlayers,
+  public CardQuantity(CardIdentity cardIdentity, int twoPlayers, int threePlayers,
       int fourPlayers) {
-    this.cardType = cardType;
-    this.typeId = typeId;
+    this.cardIdentity = cardIdentity;
     this.twoPlayers = twoPlayers;
     this.threePlayers = threePlayers;
     this.fourPlayers = fourPlayers;
   }
 
+  public CardType getCardType() {
+    return cardIdentity.getCardType();
+  }
+
+  public int getTypeId() {
+    return cardIdentity.getTypeId();
+  }
+  
   public int getQuantityForNumOfPlayers(int numOfPlayers)
       throws NumOfPlayersException {
     return switch (numOfPlayers) {

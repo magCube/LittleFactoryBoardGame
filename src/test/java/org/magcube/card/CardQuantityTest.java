@@ -67,8 +67,8 @@ class CardQuantityTest {
   void quantityDataCoverAllCardDataTest(List<CardQuantity> data, List<? extends Card> cardData) {
     assertTrue(cardData.stream().allMatch(card ->
         data.stream().anyMatch(cardQuantity ->
-            cardQuantity.getCardType() == card.getCardType() &&
-                cardQuantity.getTypeId() == card.getTypeId()
+            cardQuantity.getCardType() == card.cardType() &&
+                cardQuantity.getTypeId() == card.typeId()
         )
     ));
   }
@@ -89,8 +89,8 @@ class CardQuantityTest {
   }
 
   @Test
-  void getQuantityForPlayerCountTest() throws CardQuantityException, NumOfPlayersException {
-    var cardQuantity = new CardQuantity(CardType.BASIC_RESOURCE, 1, 5, 7, 9);
+  void getQuantityForPlayerCountTest() throws NumOfPlayersException {
+    var cardQuantity = new CardQuantity(new CardIdentity(CardType.BASIC_RESOURCE, 1), 5, 7, 9);
     assertEquals(5, cardQuantity.getQuantityForNumOfPlayers(2));
     assertEquals(7, cardQuantity.getQuantityForNumOfPlayers(3));
     assertEquals(9, cardQuantity.getQuantityForNumOfPlayers(4));
@@ -99,7 +99,7 @@ class CardQuantityTest {
   @ParameterizedTest
   @ValueSource(ints = {-5, -1, 0, 1, 5})
   void getQuantityForPlayerCountExceptionTest(int numOfPlayers) {
-    var cardQuantity = new CardQuantity(CardType.BASIC_RESOURCE, 1, 5, 7, 9);
+    var cardQuantity = new CardQuantity(new CardIdentity(CardType.BASIC_RESOURCE, 1), 5, 7, 9);
     assertThrows(NumOfPlayersException.class,
         () -> cardQuantity.getQuantityForNumOfPlayers(numOfPlayers));
   }

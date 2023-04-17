@@ -8,17 +8,16 @@ import lombok.ToString;
 @Getter
 public class ResourceCard extends Card {
 
-  private Card[][] cost;
-  private Card[] capital;
+  private CardIdentity[][] cost;
+  private CardIdentity[] capital;
 
   public ResourceCard() {
     super();
   }
 
   @Builder
-  public ResourceCard(CardType cardType, int typeId, String name, int value, Card[][] cost,
-      Card[] capital) {
-    super(cardType, typeId, name, value);
+  public ResourceCard(CardIdentity cardIdentity, String name, int value, CardIdentity[][] cost, CardIdentity[] capital) {
+    super(cardIdentity, name, value);
     this.cost = cost;
     this.capital = capital;
   }

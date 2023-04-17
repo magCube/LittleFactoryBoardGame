@@ -1,39 +1,49 @@
 [
   {
-    "cardType": 0,
-    "typeId": 1,
+    "cardIdentity": {
+      "cardType": 0,
+      "typeId": 1
+    },
     "name": "clay",
     "value": 1,
     "cost": [],
     "capital": []
   },
   {
-    "cardType": 0,
-    "typeId": 2,
+    "cardIdentity": {
+      "cardType": 0,
+      "typeId": 2
+    },
     "name": "cotton",
     "value": 1,
     "cost": [],
     "capital": []
   },
   {
-    "cardType": 0,
-    "typeId": 3,
+    "cardIdentity": {
+      "cardType": 0,
+      "typeId": 3
+    },
     "name": "stone",
     "value": 1,
     "cost": [],
     "capital": []
   },
   {
-    "cardType": 0,
-    "typeId": 4,
+    "cardIdentity": {
+      "cardType": 0,
+      "typeId": 4
+    },
     "name": "wheat",
     "value": 1,
     "cost": [],
     "capital": []
   },
   {
-    "cardType": 0,
-    "typeId": 5,
+    "cardIdentity": {
+      "cardType": 0,
+      "typeId": 5
+    },
     "name": "wood",
     "value": 1,
     "cost": [],

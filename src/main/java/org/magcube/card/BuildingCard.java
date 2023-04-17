@@ -8,11 +8,11 @@ import lombok.ToString;
 @Getter
 public class BuildingCard extends Card {
 
-  private Card[][] cost;
+  private CardIdentity[][] cost;
   private int points;
-  private Card[][] effectCost;
-  private Card[] effectCapital;
-  private Card effectProduct;
+  private CardIdentity[][] effectCost;
+  private CardIdentity[] effectCapital;
+  private CardIdentity effectProduct;
   private int effectPoints;
   private Boolean isStartingBuilding;
   private Boolean isExtension;
@@ -23,10 +23,10 @@ public class BuildingCard extends Card {
   }
 
   @Builder
-  public BuildingCard(CardType cardType, int typeId, String name, int value, Card[][] cost,
-      int points, Card[][] effectCost, Card[] effectCapital, Card effectProduct, int effectPoints,
-      Boolean isStartingBuilding, Boolean isExtension) {
-    super(cardType, typeId, name, value);
+  public BuildingCard(CardIdentity cardIdentity, String name, int value, CardIdentity[][] cost, int points, CardIdentity[][] effectCost,
+      CardIdentity[] effectCapital, CardIdentity effectProduct, int effectPoints, Boolean isStartingBuilding, Boolean isExtension,
+      String specialEffect) {
+    super(cardIdentity, name, value);
     this.cost = cost;
     this.points = points;
     this.effectCost = effectCost;
@@ -35,5 +35,6 @@ public class BuildingCard extends Card {
     this.effectPoints = effectPoints;
     this.isStartingBuilding = isStartingBuilding;
     this.isExtension = isExtension;
+    this.specialEffect = specialEffect;
   }
 }

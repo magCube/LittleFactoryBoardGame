@@ -123,13 +123,13 @@ public class GameInstance {
       gameBoard.takeCards(targets);
 
       var targetResourceCards = targets.stream()
-          .filter(card -> card.getCardType() == CardType.BASIC_RESOURCE ||
-              card.getCardType() == CardType.LEVEL_1_RESOURCE ||
-              card.getCardType() == CardType.LEVEL_2_RESOURCE)
+          .filter(card -> card.cardType() == CardType.BASIC_RESOURCE ||
+              card.cardType() == CardType.LEVEL_1_RESOURCE ||
+              card.cardType() == CardType.LEVEL_2_RESOURCE)
           .map(card -> (ResourceCard) card)
           .toList();
       var targetBuildingCards = targets.stream()
-          .filter(card -> card.getCardType() == CardType.BUILDING)
+          .filter(card -> card.cardType() == CardType.BUILDING)
           .map(card -> (BuildingCard) card)
           .toList();
 

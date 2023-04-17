@@ -27,8 +27,7 @@ public class DisplayingPileTest {
   void initializeDisplayingPileShouldThrowTest() {
     var basicResources = buildMockDeckWithOnlyOneTypeOfCard();
     basicResources.add(ResourceCard.builder()
-        .cardType(CardType.LEVEL_1_RESOURCE)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.LEVEL_1_RESOURCE, 1))
         .value(1)
         .name("test")
         .build());
@@ -57,14 +56,12 @@ public class DisplayingPileTest {
   void discardCardTest(DisplayingPile<Card> pile) throws DisplayPileException {
     var originalDeckSize = pile.deckSize();
     var card1 = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
         .value(1)
         .name("test")
         .build();
     var card2 = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId((int) (Math.random() * 100))
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, (int) (Math.random() * 100)))
         .value((int) (Math.random() * 10))
         .name("test random")
         .build();
@@ -79,8 +76,7 @@ public class DisplayingPileTest {
   void discardCardShouldThrowTest(DisplayingPile<Card> pile) throws DisplayPileException {
     var originalDeckSize = pile.deckSize();
     var card1 = ResourceCard.builder()
-        .cardType(CardType.LEVEL_1_RESOURCE)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.LEVEL_1_RESOURCE, 1))
         .value(1)
         .name("test")
         .build();
@@ -101,8 +97,7 @@ public class DisplayingPileTest {
     var pile = new DisplayingPile<>(basicResources);
     assertEquals(0, pile.deckSize());
     var card4Discard = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(91276)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 91276))
         .name("unique card for testing")
         .value(1)
         .build();
@@ -117,8 +112,7 @@ public class DisplayingPileTest {
     var basicResources = new ArrayList<ResourceCard>();
     for (var i = 0; i < 10; i++) {
       basicResources.add(ResourceCard.builder()
-          .cardType(CardType.BASIC_RESOURCE)
-          .typeId(1)
+          .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
           .name(String.valueOf(i))
           .value(1)
           .build()

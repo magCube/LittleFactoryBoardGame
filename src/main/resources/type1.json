@@ -1,7 +1,9 @@
 [
   {
-    "cardType": 1,
-    "typeId": 1,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 1
+    },
     "name": "brick",
     "value": 3,
     "cost": [
@@ -15,8 +17,10 @@
     "capital": []
   },
   {
-    "cardType": 1,
-    "typeId": 2,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 2
+    },
     "name": "cattle",
     "value": 5,
     "cost": [
@@ -34,8 +38,10 @@
     "capital": []
   },
   {
-    "cardType": 1,
-    "typeId": 3,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 3
+    },
     "name": "charcoal",
     "value": 3,
     "cost": [
@@ -49,8 +55,10 @@
     "capital": []
   },
   {
-    "cardType": 1,
-    "typeId": 4,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 4
+    },
     "name": "cut stone",
     "value": 3,
     "cost": [
@@ -64,8 +72,10 @@
     "capital": []
   },
   {
-    "cardType": 1,
-    "typeId": 5,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 5
+    },
     "name": "fish",
     "value": 5,
     "cost": [
@@ -84,8 +94,10 @@
     ]
   },
   {
-    "cardType": 1,
-    "typeId": 6,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 6
+    },
     "name": "flour",
     "value": 3,
     "cost": [
@@ -99,8 +111,10 @@
     "capital": []
   },
   {
-    "cardType": 1,
-    "typeId": 7,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 7
+    },
     "name": "sheep",
     "value": 5,
     "cost": [
@@ -118,8 +132,10 @@
     "capital": []
   },
   {
-    "cardType": 1,
-    "typeId": 8,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 8
+    },
     "name": "thread",
     "value": 3,
     "cost": [
@@ -138,8 +154,10 @@
     ]
   },
   {
-    "cardType": 1,
-    "typeId": 9,
+    "cardIdentity": {
+      "cardType": 1,
+      "typeId": 9
+    },
     "name": "timber",
     "value": 5,
     "cost": [

@@ -23,7 +23,7 @@ public class DisplayingPile<T extends Card> {
 
   public DisplayingPile(List<T> deck) throws DisplayPileException {
     verifyDeck(deck);
-    cardType = deck.get(0).getCardType();
+    cardType = deck.get(0).cardType();
     displaying = new ArrayList<>(new ArrayList<>());
     this.deck = new ArrayList<>(deck);
     discardPile = new ArrayList<>();
@@ -68,7 +68,7 @@ public class DisplayingPile<T extends Card> {
     fillDeckWithDiscardPileIfDeckUsedUp();
     while (displaying.size() < maxDisplayingSize && !deck.isEmpty()) {
       var card = deck.remove(0);
-      if (displaying.stream().anyMatch(ary -> ary.stream().anyMatch(card::sameCard))) {
+      if (displaying.stream().anyMatch(ary -> ary.stream().anyMatch(card::isIdentical))) {
         // same kind of card already in display
         addCardToSameTypeOfList(card);
       } else {
@@ -85,7 +85,7 @@ public class DisplayingPile<T extends Card> {
   }
 
   private void addCardToSameTypeOfList(T card) throws DisplayPileException {
-    var arrayList = displaying.stream().filter(ary -> ary.stream().anyMatch(card::sameCard))
+    var arrayList = displaying.stream().filter(ary -> ary.stream().anyMatch(card::isIdentical))
         .findFirst();
     if (arrayList.isEmpty()) {
       throw new DisplayPileException(
@@ -106,17 +106,17 @@ public class DisplayingPile<T extends Card> {
     if (deck.size() < 8) {
       throw new DisplayPileException("deck have too few cards! At least 9!");
     }
-    var cardType = deck.get(0).getCardType();
-    if (deck.stream().anyMatch(card -> card.getCardType() != cardType)) {
+    var cardType = deck.get(0).cardType();
+    if (deck.stream().anyMatch(card -> card.cardType() != cardType)) {
       throw new DisplayPileException("All cards in deck should be the same type!");
     }
   }
 
   private boolean consistentCardType(T card) {
-    return card.getCardType() == cardType;
+    return card.cardType() == cardType;
   }
 
   private boolean consistentCardType(List<T> cards) {
-    return cards.stream().allMatch(card -> card.getCardType() == cardType);
+    return cards.stream().allMatch(card -> card.cardType() == cardType);
   }
 }

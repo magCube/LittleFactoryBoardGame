@@ -65,17 +65,17 @@ public class Player {
   }
 
   public boolean isOwnResource(Card card) {
-    return resources.stream().anyMatch(x -> x.sameCard(card));
+    return resources.stream().anyMatch(x -> x.isIdentical(card));
   }
 
   public boolean isOwnBuilding(Card card) {
-    return buildings.stream().anyMatch(x -> x.sameCard(card));
+    return buildings.stream().anyMatch(x -> x.isIdentical(card));
   }
 
   public boolean isOwnAllResources(List<ResourceCard> cards) {
     var resourcesClone = new ArrayList<>(this.resources);
     for (var card : cards) {
-      var cardInClone = resourcesClone.stream().filter(x -> x.sameCard(card)).findFirst();
+      var cardInClone = resourcesClone.stream().filter(x -> x.isIdentical(card)).findFirst();
 
       if (cardInClone.isEmpty()) {
         return false;

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.magcube.card.BuildingCard;
+import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 
@@ -24,22 +25,18 @@ public class PlayerTest {
     var user = new Player("1", "test12312412312");
     assertEquals(0, user.getPoints());
     var card1 = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
         .value(1)
         .build();
     var card2 = BuildingCard.builder()
-        .cardType(CardType.BUILDING)
-        .typeId(100)
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 100))
         .build();
     var card3 = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(2)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2))
         .value(2)
         .build();
     var card4 = BuildingCard.builder()
-        .cardType(CardType.BUILDING)
-        .typeId(101)
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 101))
         .build();
 
     var resources = List.of(card1, card3);
@@ -69,18 +66,15 @@ public class PlayerTest {
     var user = new Player("1", "player1");
     assertEquals(0, user.getPoints());
     var card1 = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
         .value(1)
         .build();
     var anotherCard1 = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
         .value(1)
         .build();
     var card2 = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(2)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2))
         .value(1)
         .build();
 
@@ -96,18 +90,15 @@ public class PlayerTest {
     var user = new Player("1", "player1");
     assertEquals(0, user.getPoints());
     var card1 = BuildingCard.builder()
-        .cardType(CardType.BUILDING)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 1))
         .value(6)
         .build();
     var anotherCard1 = BuildingCard.builder()
-        .cardType(CardType.BUILDING)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 1))
         .value(6)
         .build();
     var card2 = BuildingCard.builder()
-        .cardType(CardType.BUILDING)
-        .typeId(2)
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 2))
         .value(6)
         .build();
 
@@ -121,16 +112,13 @@ public class PlayerTest {
   @Test
   void isOwnAllResourcesTest() {
     var card1Builder = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(1)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
         .value(1);
     var card2Builder = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(2)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2))
         .value(1);
     var card3Builder = ResourceCard.builder()
-        .cardType(CardType.BASIC_RESOURCE)
-        .typeId(3)
+        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 3))
         .value(1);
 
     var ownCard1a = card1Builder.build();

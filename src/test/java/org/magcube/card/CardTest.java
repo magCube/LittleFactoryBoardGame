@@ -8,24 +8,64 @@ import org.junit.jupiter.api.Test;
 public class CardTest {
 
   @Test
-  void sameCardTest() {
-    var card1 = new ResourceCard(CardType.BASIC_RESOURCE, 1, "", 1, null, null);
-    var card2 = new ResourceCard(CardType.BASIC_RESOURCE, 1, "", 1, null, null);
-    var card3 = new ResourceCard(CardType.BASIC_RESOURCE, 2, "", 1, null, null);
-    var card4 = new ResourceCard(CardType.LEVEL_1_RESOURCE, 1, "", 1, null, null);
-    var card5 = new ResourceCard(CardType.LEVEL_1_RESOURCE, 1, "", 1, null, null);
+  void resourceCardIsIdenticalTest() {
+    CardIdentity identity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
+    CardIdentity identity2 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
+    CardIdentity identity3 = new CardIdentity(CardType.BASIC_RESOURCE, 2);
+    CardIdentity identity4 = new CardIdentity(CardType.LEVEL_1_RESOURCE, 1);
 
-    assertTrue(card1.sameCard(card1));
-    assertTrue(card1.sameCard(card2));
-    assertTrue(card2.sameCard(card1));
-    assertTrue(card4.sameCard(card5));
-    assertTrue(card5.sameCard(card4));
+    ResourceCard card1 = ResourceCard.builder()
+        .cardIdentity(identity1)
+        .name("Card 1")
+        .value(3)
+        .build();
+    ResourceCard card2 = ResourceCard.builder()
+        .cardIdentity(identity2)
+        .name("Card 2")
+        .value(3)
+        .build();
+    ResourceCard card3 = ResourceCard.builder()
+        .cardIdentity(identity3)
+        .name("Card 2")
+        .value(5)
+        .build();
+    ResourceCard card4 = ResourceCard.builder()
+        .cardIdentity(identity4)
+        .name("Card 4")
+        .value(5)
+        .build();
 
-    assertFalse(card1.sameCard(card3));
-    assertFalse(card3.sameCard(card1));
-    assertFalse(card1.sameCard(card5));
-    assertFalse(card5.sameCard(card1));
-    assertFalse(card1.sameCard(card4));
-    assertFalse(card4.sameCard(card1));
+    assertTrue(card1.isIdentical(card1)); // same object
+    assertTrue(card1.isIdentical(card2)); // same identity
+    assertFalse(card1.isIdentical(card3)); // different identity
+    assertFalse(card1.isIdentical(card4)); // different identity
+  }
+
+
+  @Test
+  void buildingCardIsIdenticalTest() {
+    CardIdentity identity1 = new CardIdentity(CardType.BUILDING, 1);
+    CardIdentity identity2 = new CardIdentity(CardType.BUILDING, 1);
+    CardIdentity identity3 = new CardIdentity(CardType.BUILDING, 2);
+
+    BuildingCard card1 = BuildingCard.builder()
+        .cardIdentity(identity1)
+        .name("Card 1")
+        .value(3)
+        .build();
+    BuildingCard card2 = BuildingCard.builder()
+        .cardIdentity(identity2)
+        .name("Card 2")
+        .value(3)
+        .build();
+    BuildingCard card3 = BuildingCard.builder()
+        .cardIdentity(identity3)
+        .name("Card 2")
+        .value(5)
+        .build();
+
+    assertTrue(card1.isIdentical(card1)); // same object
+    assertTrue(card1.isIdentical(card2)); // same identity
+    assertFalse(card1.isIdentical(card3)); // different identity
   }
 }

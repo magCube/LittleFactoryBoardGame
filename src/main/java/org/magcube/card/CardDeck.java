@@ -51,7 +51,7 @@ public class CardDeck {
       Class<T> clazz) throws CardQuantityException, JsonProcessingException, NumOfPlayersException {
     List<T> cards = new ArrayList<>();
     for (T card : uniqueCards) {
-      int quantity = CardQuantity.getQuantity(card.getCardType(), card.getTypeId(), numOfPlayers);
+      int quantity = CardQuantity.getQuantity(card.cardType(), card.typeId(), numOfPlayers);
       cards.addAll(deepCloneCard(card, quantity, clazz));
     }
     return cards;

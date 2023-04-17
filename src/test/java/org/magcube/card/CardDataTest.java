@@ -23,7 +23,7 @@ public class CardDataTest {
   @ParameterizedTest
   @MethodSource
   <T extends Card> void cardTypeCheckingTest(Class<T> clazz, List<T> data, CardType cardType) {
-    assertTrue(data.stream().allMatch(x -> clazz.isInstance(x) && x.getCardType() == cardType));
+    assertTrue(data.stream().allMatch(x -> clazz.isInstance(x) && x.cardType() == cardType));
   }
 
   static private Stream<Arguments> cardTypeCheckingTest() {

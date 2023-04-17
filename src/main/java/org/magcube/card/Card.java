@@ -5,31 +5,32 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class Card {
+public abstract class Card {
 
-  //TODO: refactor it to CardIdentity and add isIdentical()
-  protected CardType cardType;
-  protected int typeId;
+  protected CardIdentity cardIdentity;
   protected String name;
   protected int value;
 
   public Card() {
   }
 
-  public Card(CardType cardType, int typeId, String name, int value) {
-    this.cardType = cardType;
-    this.typeId = typeId;
+  public Card(CardIdentity cardIdentity, String name, int value) {
+    this.cardIdentity = cardIdentity;
     this.name = name;
     this.value = value;
   }
 
-  public boolean sameCard(Card card) {
-    if (this == card) {
-      return true;
-    }
-    if (card == null) {
-      return false;
-    }
-    return cardType != null && cardType == card.cardType && typeId == card.typeId;
+  // don't use getCardType as name as Jackson will parse it is a field
+  public CardType cardType() {
+    return cardIdentity.getCardType();
+  }
+
+  // don't use getTypeId as name as Jackson will parse it is a field
+  public int typeId() {
+    return cardIdentity.getTypeId();
+  }
+
+  public boolean isIdentical(Card card) {
+    return cardIdentity.equals(card.cardIdentity);
   }
 }

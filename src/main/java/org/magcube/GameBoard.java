@@ -70,7 +70,7 @@ public class GameBoard {
                 buildingPileDisplaying.contains(card));
     if (isValidRequest) {
       cards.forEach(card -> {
-        switch (card.getCardType()) {
+        switch (card.cardType()) {
           case BASIC_RESOURCE -> basicResourcesPile.takeCard((ResourceCard) card);
           case LEVEL_1_RESOURCE -> level1ResourcesPile.takeCard((ResourceCard) card);
           case LEVEL_2_RESOURCE -> level2ResourcesPile.takeCard((ResourceCard) card);
@@ -85,7 +85,7 @@ public class GameBoard {
   public void discardCards(List<Card> cards) {
     cards.forEach(card -> {
       try {
-        switch (card.getCardType()) {
+        switch (card.cardType()) {
           case BASIC_RESOURCE -> basicResourcesPile.discardCard((ResourceCard) card);
           case LEVEL_1_RESOURCE -> level1ResourcesPile.discardCard((ResourceCard) card);
           case LEVEL_2_RESOURCE -> level2ResourcesPile.discardCard((ResourceCard) card);
