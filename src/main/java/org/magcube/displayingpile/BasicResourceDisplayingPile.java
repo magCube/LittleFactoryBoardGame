@@ -18,7 +18,7 @@ public class BasicResourceDisplayingPile implements IDisplayingPile<ResourceCard
   private final int maxDisplayingSize;
 
   public BasicResourceDisplayingPile(List<ResourceCard> deck) throws DisplayPileException {
-    if (!consistentCardType(deck)) {
+    if (!isConsistentCardType(deck)) {
       throw new DisplayPileException("Deck cardType is not consistent");
     }
     for (var card : deck) {
@@ -63,7 +63,7 @@ public class BasicResourceDisplayingPile implements IDisplayingPile<ResourceCard
   }
 
   public List<ResourceCard> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
-    if (!consistentCardTypeInCardIdentity(cardIdentities)) {
+    if (!isConsistentCardTypeInCardIdentity(cardIdentities)) {
       throw new DisplayPileException("Not all cards are in displaying pile");
     }
 
@@ -102,7 +102,7 @@ public class BasicResourceDisplayingPile implements IDisplayingPile<ResourceCard
 
   @Override
   public void discardCards(List<ResourceCard> cards) throws DisplayPileException {
-    if (!consistentCardType(cards)) {
+    if (!isConsistentCardType(cards)) {
       throw new DisplayPileException("Cards to discard are not consistent");
     }
 

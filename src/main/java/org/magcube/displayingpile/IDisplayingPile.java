@@ -28,19 +28,19 @@ public interface IDisplayingPile<T extends Card> {
 
   void refillCards() throws DisplayPileException;
 
-  default boolean consistentCardTypeInCardIdentity(CardIdentity cardIdentity) {
+  default boolean isConsistentCardTypeInCardIdentity(CardIdentity cardIdentity) {
     return cardIdentity.getCardType() == getCardType();
   }
 
-  default boolean consistentCardTypeInCardIdentity(List<CardIdentity> cardIdentities) {
-    return cardIdentities.stream().allMatch(this::consistentCardTypeInCardIdentity);
+  default boolean isConsistentCardTypeInCardIdentity(List<CardIdentity> cardIdentities) {
+    return cardIdentities.stream().allMatch(this::isConsistentCardTypeInCardIdentity);
   }
 
-  default boolean consistentCardType(T card) {
+  default boolean isConsistentCardType(T card) {
     return card.cardType() == getCardType();
   }
 
-  default boolean consistentCardType(List<T> cards) {
-    return cards.stream().allMatch(this::consistentCardType);
+  default boolean isConsistentCardType(List<T> cards) {
+    return cards.stream().allMatch(this::isConsistentCardType);
   }
 }
