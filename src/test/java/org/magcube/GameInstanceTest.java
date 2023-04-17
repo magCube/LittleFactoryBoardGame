@@ -12,38 +12,37 @@ import org.junit.jupiter.api.Test;
 import org.magcube.card.Card;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
-import org.magcube.exception.NumOfPlayersException;
+import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 
 public class GameInstanceTest {
 
   @Test
-  void setPlayersTest() throws DisplayPileException, NumOfPlayersException {
+  void setPlayersTest() throws DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(4);
+    gameInstance.setPlayers(NumOfPlayers.FOUR);
     assertEquals(4, gameInstance.getPlayers().size());
     assertNotNull(gameInstance.getGameBoard());
   }
 
   @Test
-  void startGameNormally() throws DisplayPileException, NumOfPlayersException {
+  void startGameNormally() throws DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(4);
+    gameInstance.setPlayers(NumOfPlayers.FOUR);
     assertDoesNotThrow(gameInstance::startGame);
   }
 
   @Test
-  void startGameWithoutInitializePlayersShouldThrowException()
-      throws DisplayPileException, NumOfPlayersException {
+  void startGameWithoutInitializePlayersShouldThrowException() {
     var gameInstance = new GameInstance();
     assertThrows(GameStartupException.class, gameInstance::startGame);
   }
 
   @Test
   void playersAreUnmodifiableAfterStartGame()
-      throws GameStartupException, DisplayPileException, NumOfPlayersException {
+      throws GameStartupException, DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(4);
+    gameInstance.setPlayers(NumOfPlayers.FOUR);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
     assertThrows(UnsupportedOperationException.class,
@@ -52,9 +51,9 @@ public class GameInstanceTest {
 
   @Test
   void playersWereDistributedWithCorrectAmountOfCoinsAfterStartGame()
-      throws GameStartupException, DisplayPileException, NumOfPlayersException {
+      throws GameStartupException, DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(4);
+    gameInstance.setPlayers(NumOfPlayers.FOUR);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
     var expectedCoins = 3;
@@ -65,9 +64,9 @@ public class GameInstanceTest {
 
   @Test
   void haveCorrectCardsDisplayingAfterStartGame()
-      throws GameStartupException, DisplayPileException, NumOfPlayersException {
+      throws GameStartupException, DisplayPileException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(4);
+    gameInstance.setPlayers(NumOfPlayers.FOUR);
     gameInstance.startGame();
     var gameBoard = gameInstance.getGameBoard();
     assertFalse(gameBoard.getDisplayingBasicResource().isEmpty());
@@ -78,9 +77,9 @@ public class GameInstanceTest {
 
   @Test
   void tradeBasicTierResourceByCoinsTest()
-      throws DisplayPileException, GameStartupException, NumOfPlayersException {
+      throws DisplayPileException, GameStartupException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(3);
+    gameInstance.setPlayers(NumOfPlayers.THREE);
     gameInstance.startGame();
     var player = gameInstance.getPlayers().get(0);
     var gameBoard = gameInstance.getGameBoard();
@@ -95,9 +94,9 @@ public class GameInstanceTest {
   }
 
   @Test
-  void endTurnTest() throws DisplayPileException, GameStartupException, NumOfPlayersException {
+  void endTurnTest() throws DisplayPileException, GameStartupException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(2);
+    gameInstance.setPlayers(NumOfPlayers.TWO);
     gameInstance.startGame();
     var player1 = gameInstance.getPlayers().get(0);
     var player2 = gameInstance.getPlayers().get(1);

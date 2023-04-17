@@ -11,20 +11,20 @@ import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
-import org.magcube.exception.NumOfPlayersException;
+import org.magcube.player.NumOfPlayers;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @SuppressWarnings("unused")
 public class TestUtils {
 
   public static Stream<DisplayingPile<? extends Card>> provideBasicResourcesPiles()
-      throws DisplayPileException, NumOfPlayersException {
+      throws DisplayPileException {
     return Stream.of(getBasicResourcesPile(), getTestingBasicResourcesPile());
   }
 
   public static DisplayingPile<ResourceCard> getBasicResourcesPile()
-      throws DisplayPileException, NumOfPlayersException {
-    return new DisplayingPile<>(CardDeck.get(4).basicResource);
+      throws DisplayPileException {
+    return new DisplayingPile<>(CardDeck.get(NumOfPlayers.FOUR).basicResource);
   }
 
   public static DisplayingPile<ResourceCard> getTestingBasicResourcesPile()

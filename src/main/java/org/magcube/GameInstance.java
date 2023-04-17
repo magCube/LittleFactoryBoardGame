@@ -10,7 +10,7 @@ import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
-import org.magcube.exception.NumOfPlayersException;
+import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 
 @Getter
@@ -21,18 +21,14 @@ public class GameInstance {
   private Player currentPlayer; // only accessible by this object itself, need to be thread safe
   private boolean isTraded;
 
-  public GameInstance() throws DisplayPileException, NumOfPlayersException {
+  public GameInstance() {
     this.players = new ArrayList<>();
   }
 
   // todo: the following is temp implementation
-  public void setPlayers(int numOfPlayers) throws NumOfPlayersException, DisplayPileException {
-    if (numOfPlayers < 2 || numOfPlayers > 4) {
-      throw new NumOfPlayersException(numOfPlayers);
-    }
-
+  public void setPlayers(NumOfPlayers numOfPlayers) throws DisplayPileException {
     var _players = new ArrayList<Player>();
-    for (var i = 1; i <= numOfPlayers; i++) {
+    for (var i = 1; i <= numOfPlayers.getValue(); i++) {
       var tempUser = new Player(String.valueOf(i), "User" + i);
       _players.add(tempUser);
     }

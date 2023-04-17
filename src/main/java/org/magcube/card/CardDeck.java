@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.magcube.exception.CardQuantityException;
-import org.magcube.exception.NumOfPlayersException;
+import org.magcube.player.NumOfPlayers;
 
 public class CardDeck {
 
-  private static final HashMap<Integer, CardDeck> data = new HashMap<>();
+  private static final HashMap<NumOfPlayers, CardDeck> data = new HashMap<>();
 
   public final List<ResourceCard> basicResource;
   public final List<ResourceCard> level1Resource;
@@ -19,21 +19,16 @@ public class CardDeck {
 
   static {
     try {
-      data.put(2, new CardDeck(2));
-      data.put(3, new CardDeck(3));
-      data.put(4, new CardDeck(4));
+      data.put(NumOfPlayers.TWO, new CardDeck(NumOfPlayers.TWO));
+      data.put(NumOfPlayers.THREE, new CardDeck(NumOfPlayers.THREE));
+      data.put(NumOfPlayers.FOUR, new CardDeck(NumOfPlayers.FOUR));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static CardDeck get(int numOfPlayers) throws NumOfPlayersException {
-    var deck = data.get(numOfPlayers);
-    if (deck == null) {
-      throw new NumOfPlayersException(numOfPlayers);
-    } else {
-      return deck;
-    }
+  public static CardDeck get(NumOfPlayers numOfPlayers) {
+    return data.get(numOfPlayers);
   }
 
   private static <T extends Card> List<T> deepCloneCard(T card, int quantity, Class<T> clazz)
@@ -47,8 +42,8 @@ public class CardDeck {
     return cards;
   }
 
-  private static <T extends Card> List<T> getCards(List<T> uniqueCards, int numOfPlayers,
-      Class<T> clazz) throws CardQuantityException, JsonProcessingException, NumOfPlayersException {
+  private static <T extends Card> List<T> getCards(List<T> uniqueCards, NumOfPlayers numOfPlayers, Class<T> clazz)
+      throws CardQuantityException, JsonProcessingException {
     List<T> cards = new ArrayList<>();
     for (T card : uniqueCards) {
       int quantity = CardQuantity.getQuantity(card.cardType(), card.typeId(), numOfPlayers);
@@ -57,8 +52,8 @@ public class CardDeck {
     return cards;
   }
 
-  private CardDeck(int numOfPlayers)
-      throws JsonProcessingException, CardQuantityException, NumOfPlayersException {
+  private CardDeck(NumOfPlayers numOfPlayers)
+      throws JsonProcessingException, CardQuantityException {
     this.basicResource = getCards(CardData.basicResource, numOfPlayers, ResourceCard.class);
     this.level1Resource = getCards(CardData.level1Resource, numOfPlayers, ResourceCard.class);
     this.level2Resource = getCards(CardData.level2Resource, numOfPlayers, ResourceCard.class);

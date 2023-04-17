@@ -9,7 +9,7 @@ import org.magcube.card.CardDeck;
 import org.magcube.card.ResourceCard;
 import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
-import org.magcube.exception.NumOfPlayersException;
+import org.magcube.player.NumOfPlayers;
 
 @Getter
 public class GameBoard {
@@ -19,7 +19,7 @@ public class GameBoard {
   private final DisplayingPile<ResourceCard> level2ResourcesPile;
   private final DisplayingPile<BuildingCard> buildingPile;
 
-  public GameBoard(int numOfPlayers) throws DisplayPileException, NumOfPlayersException {
+  public GameBoard(NumOfPlayers numOfPlayers) throws DisplayPileException {
     var deck = CardDeck.get(numOfPlayers);
     basicResourcesPile = new DisplayingPile<>(deck.basicResource);
     level1ResourcesPile = new DisplayingPile<>(deck.level1Resource);

@@ -9,7 +9,7 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.ToString;
 import org.magcube.exception.CardQuantityException;
-import org.magcube.exception.NumOfPlayersException;
+import org.magcube.player.NumOfPlayers;
 
 @ToString
 @Getter
@@ -44,18 +44,16 @@ public class CardQuantity {
     });
   }
 
-  public static int getQuantity(CardType cardType, int typeId, int numOfPlayers)
-      throws CardQuantityException, NumOfPlayersException {
+  public static int getQuantity(CardType cardType, int typeId, NumOfPlayers numOfPlayers) throws CardQuantityException {
     List<CardQuantity> cardQuantities = switch (cardType) {
       case BASIC_RESOURCE -> basicResource;
       case LEVEL_1_RESOURCE -> level1Resource;
       case LEVEL_2_RESOURCE -> level2Resource;
       case BUILDING -> building;
-      default -> null;
     };
 
     Optional<CardQuantity> cardQuantity = cardQuantities.stream()
-        .filter(x -> x.getCardType() == cardType && x.getTypeId() == typeId)
+        .filter(x -> x.cardType() == cardType && x.typeId() == typeId)
         .findFirst();
 
     if (cardQuantity.isEmpty()) {
@@ -77,21 +75,21 @@ public class CardQuantity {
     this.fourPlayers = fourPlayers;
   }
 
-  public CardType getCardType() {
+  // don't use getCardType as name as Jackson will parse it is a field
+  public CardType cardType() {
     return cardIdentity.getCardType();
   }
 
-  public int getTypeId() {
+  // don't use getTypeId as name as Jackson will parse it is a field
+  public int typeId() {
     return cardIdentity.getTypeId();
   }
-  
-  public int getQuantityForNumOfPlayers(int numOfPlayers)
-      throws NumOfPlayersException {
+
+  public int getQuantityForNumOfPlayers(NumOfPlayers numOfPlayers) {
     return switch (numOfPlayers) {
-      case 2 -> twoPlayers;
-      case 3 -> threePlayers;
-      case 4 -> fourPlayers;
-      default -> throw new NumOfPlayersException(numOfPlayers);
+      case TWO -> twoPlayers;
+      case THREE -> threePlayers;
+      case FOUR -> fourPlayers;
     };
   }
 }
