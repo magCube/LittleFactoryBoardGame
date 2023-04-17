@@ -30,6 +30,10 @@ public abstract class Card {
     return cardIdentity.getTypeId();
   }
 
+  public boolean isIdentical(CardIdentity cardIdentity) {
+    return this.cardIdentity.equals(cardIdentity);
+  }
+
   public boolean isIdentical(Card card) {
     return cardIdentity.equals(card.cardIdentity);
   }
