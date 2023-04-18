@@ -17,6 +17,7 @@ public class BuildingPile extends UniqueCardPile<BuildingCard> {
     deck.addAll(discardPile);
     Collections.shuffle(deck);
     discardPile.clear();
+    refillCards();
   }
 
   @Override
@@ -25,7 +26,14 @@ public class BuildingPile extends UniqueCardPile<BuildingCard> {
   }
 
   @Override
-  public void refillCards() throws DisplayPileException {
-    throw new DisplayPileException("BuildingPile does not support refillCards");
+  public void refillCards() {
+    var nullIndexes = nullIndexesInAvailableCards();
+    for (int index : nullIndexes) {
+      if (deck.isEmpty()) {
+        break;
+      }
+      var newCard = deck.remove(0);
+      availableCards.set(index, newCard);
+    }
   }
 }
