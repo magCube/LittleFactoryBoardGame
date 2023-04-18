@@ -11,7 +11,7 @@ import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 
-public class BasicResourceDisplayingPile implements IDisplayingPile<ResourceCard> {
+public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard> {
 
   private final CardType cardType = CardType.BASIC_RESOURCE;
   private final Map<Integer, List<ResourceCard>> availableCards = new HashMap<>();

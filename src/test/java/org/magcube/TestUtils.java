@@ -9,6 +9,7 @@ import org.magcube.card.CardDeck;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.displayingpile.BasicResourceDisplayingPile;
 import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.player.NumOfPlayers;
@@ -24,14 +25,14 @@ public class TestUtils {
 
   public static DisplayingPile<ResourceCard> getBasicResourcesPile()
       throws DisplayPileException {
-    return new DisplayingPile<>(CardDeck.get(NumOfPlayers.FOUR).basicResource);
+    return new BasicResourceDisplayingPile(CardDeck.get(NumOfPlayers.FOUR).basicResource);
   }
 
   public static DisplayingPile<ResourceCard> getTestingBasicResourcesPile()
       throws DisplayPileException {
-    var firstTierResources = new ArrayList<ResourceCard>();
+    var basicResourceDeck = new ArrayList<ResourceCard>();
     for (var i = 0; i < 10; i++) {
-      firstTierResources.add(
+      basicResourceDeck.add(
           ResourceCard.builder()
               .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, i % 5))
               .value(1)
@@ -39,6 +40,6 @@ public class TestUtils {
               .build()
       );
     }
-    return new DisplayingPile<>(firstTierResources);
+    return new BasicResourceDisplayingPile(basicResourceDeck);
   }
 }

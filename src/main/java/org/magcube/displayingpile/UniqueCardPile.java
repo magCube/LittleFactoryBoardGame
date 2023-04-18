@@ -11,7 +11,7 @@ import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.exception.DisplayPileException;
 
-public abstract class UniqueCardPile<T extends Card> implements IDisplayingPile<T> {
+public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T> {
 
   protected final CardType cardType;
   protected final List<T> availableCards;

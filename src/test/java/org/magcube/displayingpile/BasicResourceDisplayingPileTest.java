@@ -59,13 +59,13 @@ class BasicResourceDisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void getCardTypeTest(IDisplayingPile<Card> pile) {
+  void getCardTypeTest(DisplayingPile<Card> pile) {
     assertEquals(CardType.BASIC_RESOURCE, pile.getCardType());
   }
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void getDisplayingTest(IDisplayingPile<ResourceCard> pile) {
+  void getDisplayingTest(DisplayingPile<ResourceCard> pile) {
     List<List<ResourceCard>> displaying = pile.getDisplaying();
     assertEquals(CardData.basicResource.size(), displaying.size());
     assertEquals(CardData.basicResource.size(), pile.getMaxDisplayingSize());
@@ -85,7 +85,7 @@ class BasicResourceDisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsSingleCardTest(IDisplayingPile<ResourceCard> pile) throws DisplayPileException {
+  void takeCardsSingleCardTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
     List<List<ResourceCard>> displaying = pile.getDisplaying();
     List<Integer> sizes = new ArrayList<>(displaying.stream().map(List::size).toList());
 
@@ -109,7 +109,7 @@ class BasicResourceDisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsSingleCardEmptyCaseTest(IDisplayingPile<ResourceCard> pile) {
+  void takeCardsSingleCardEmptyCaseTest(DisplayingPile<ResourceCard> pile) {
     var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var initNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
 
@@ -155,7 +155,7 @@ class BasicResourceDisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsMultipleCardsShouldThrowTest(IDisplayingPile<ResourceCard> pile) {
+  void takeCardsMultipleCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) {
     var cardIdentity1 = new CardIdentity(CardType.LEVEL_1_RESOURCE, 1);
     var cardIdentity2 = new CardIdentity(CardType.BASIC_RESOURCE, 2);
     var cardIdentity3 = new CardIdentity(CardType.BASIC_RESOURCE, 99999);
@@ -176,7 +176,7 @@ class BasicResourceDisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsMultipleCardsEmptyCaseTest(IDisplayingPile<ResourceCard> pile) {
+  void takeCardsMultipleCardsEmptyCaseTest(DisplayingPile<ResourceCard> pile) {
     var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var initNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
 
@@ -197,7 +197,7 @@ class BasicResourceDisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void discardCardsSingleCardTest(IDisplayingPile<ResourceCard> pile) throws DisplayPileException {
+  void discardCardsSingleCardTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
     var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
 
     var initNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
@@ -244,7 +244,7 @@ class BasicResourceDisplayingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void discardCardsShouldThrowTest(IDisplayingPile<Card> pile) throws DisplayPileException {
+  void discardCardsShouldThrowTest(DisplayingPile<Card> pile) throws DisplayPileException {
     var card1 = new ResourceCard(new CardIdentity(CardType.LEVEL_1_RESOURCE, 1), "test", 1, null, null);
     var card2 = new ResourceCard(new CardIdentity(CardType.BASIC_RESOURCE, 99999), "test", 1, null, null);
     var card3 = pile.takeCards(List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1))).get(0);

@@ -50,13 +50,13 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void getCardTypeTest(IDisplayingPile<Card> pile) {
+  void getCardTypeTest(DisplayingPile<Card> pile) {
     assertEquals(CardType.BUILDING, pile.getCardType());
   }
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void getDisplayingTest(IDisplayingPile<BuildingCard> pile) {
+  void getDisplayingTest(DisplayingPile<BuildingCard> pile) {
     List<List<BuildingCard>> displaying = pile.getDisplaying();
     assertEquals(5, displaying.size());
     assertEquals(5, pile.getMaxDisplayingSize());
@@ -65,7 +65,7 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void getMaxDisplayingSizeTest(IDisplayingPile<BuildingCard> pile) {
+  void getMaxDisplayingSizeTest(DisplayingPile<BuildingCard> pile) {
     assertTrue(pile.getMaxDisplayingSize() > 0);
   }
 
@@ -78,14 +78,14 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void getDiscardSizeTest(IDisplayingPile<BuildingCard> pile) {
+  void getDiscardSizeTest(DisplayingPile<BuildingCard> pile) {
     assertEquals(0, pile.getDiscardPile().size());
     assertEquals(0, pile.discardPileSize());
   }
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsSingleCardTest(IDisplayingPile<BuildingCard> pile) throws DisplayPileException {
+  void takeCardsSingleCardTest(DisplayingPile<BuildingCard> pile) throws DisplayPileException {
     List<List<BuildingCard>> displaying = pile.getDisplaying();
     List<Integer> sizes = new ArrayList<>(displaying.stream().map(List::size).toList());
 
@@ -110,7 +110,7 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsSingleCardEmptyCaseTest(IDisplayingPile<BuildingCard> pile) {
+  void takeCardsSingleCardEmptyCaseTest(DisplayingPile<BuildingCard> pile) {
     var cardIdentity1 = pile.getDisplaying().get(0).get(0).getCardIdentity();
 
     assertDoesNotThrow(() -> pile.takeCards(List.of(cardIdentity1)));
@@ -123,7 +123,7 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsMultipleCardsTest(IDisplayingPile<BuildingCard> pile) throws DisplayPileException {
+  void takeCardsMultipleCardsTest(DisplayingPile<BuildingCard> pile) throws DisplayPileException {
     List<List<BuildingCard>> displaying = pile.getDisplaying();
 
     var cardIdentity1 = displaying.get(0).get(0).getCardIdentity();
@@ -149,7 +149,7 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsMultipleCardsShouldThrowTest(IDisplayingPile<BuildingCard> pile) {
+  void takeCardsMultipleCardsShouldThrowTest(DisplayingPile<BuildingCard> pile) {
     var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var cardIdentity2 = pile.getDisplaying().get(0).get(0).getCardIdentity();
     var cardIdentity3 = new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999);
@@ -172,7 +172,7 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsMultipleCardsEmptyCaseTest(IDisplayingPile<BuildingCard> pile) {
+  void takeCardsMultipleCardsEmptyCaseTest(DisplayingPile<BuildingCard> pile) {
     var cardIdentity1 = pile.getDisplaying().get(0).get(0).getCardIdentity();
     var initNumOfCardWithCardIdentity1 = pile.getDisplaying().get(0).size();
 
@@ -195,7 +195,7 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void discardCardsShouldThrowTest(IDisplayingPile<BuildingCard> pile) throws DisplayPileException {
+  void discardCardsShouldThrowTest(DisplayingPile<BuildingCard> pile) throws DisplayPileException {
     var card1 = pile.getDisplaying().get(0).get(0);
     var card2 = pile.getDisplaying().get(1).get(0);
 
@@ -235,7 +235,7 @@ public class BuildingPileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void refillCardsTest(IDisplayingPile<BuildingCard> pile) throws DisplayPileException {
+  void refillCardsTest(DisplayingPile<BuildingCard> pile) throws DisplayPileException {
     var card1 = pile.getDisplaying().get(0).get(0);
     var card2 = pile.getDisplaying().get(1).get(0);
     var cardIdentity1 = card1.getCardIdentity();

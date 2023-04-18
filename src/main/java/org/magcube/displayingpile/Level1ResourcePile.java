@@ -13,7 +13,7 @@ import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 
-public class Level1ResourcePile implements IDisplayingPile<ResourceCard> {
+public class Level1ResourcePile implements DisplayingPile<ResourceCard> {
 
   private final CardType cardType = CardType.LEVEL_1_RESOURCE;
   private final List<List<ResourceCard>> displaying;
