@@ -28,7 +28,7 @@ public abstract class UniqueCardPile<T extends Card> implements IDisplayingPile<
     if (haveDuplicatedCards(deck)) {
       throw new DisplayPileException("Deck has duplicated cards");
     }
-    availableCards = new ArrayList<>(maxDisplayingSize);
+    availableCards = new ArrayList<>(Collections.nCopies(maxDisplayingSize, null));
     this.deck = new ArrayList<>();
     discardPile = new ArrayList<>(deck);
     initPile();
@@ -43,7 +43,7 @@ public abstract class UniqueCardPile<T extends Card> implements IDisplayingPile<
 
   @Override
   public List<List<T>> getDisplaying() {
-    return availableCards.stream().map(Collections::singletonList).collect(Collectors.toList());
+    return availableCards.stream().map(x -> x == null ? Collections.<T>emptyList() : List.of(x)).collect(Collectors.toList());
   }
 
   @Override
