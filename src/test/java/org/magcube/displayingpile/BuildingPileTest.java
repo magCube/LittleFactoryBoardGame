@@ -152,8 +152,8 @@ public class BuildingPileTest {
   void takeCardsMultipleCardsShouldThrowTest(DisplayingPile<BuildingCard> pile) {
     var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var cardIdentity2 = pile.getDisplaying().get(0).get(0).getCardIdentity();
-    var cardIdentity3 = new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999);
-    var cardIdentity4 = new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999);
+    var cardIdentity3 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999);
+    var cardIdentity4 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999);
 
     var initNumOfCards = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
 
@@ -263,11 +263,11 @@ public class BuildingPileTest {
   private static Stream<CardIdentity> invalidCardIdentitiesProvider() {
     return Stream.of(
         new CardIdentity(CardType.BASIC_RESOURCE, 1),
-        new CardIdentity(CardType.LEVEL_1_RESOURCE, 1),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 1),
+        new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1),
         new CardIdentity(CardType.BASIC_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999),
         new CardIdentity(CardType.BUILDING, 99999)
     );
   }

@@ -34,12 +34,12 @@ class BasicResourceDisplayingPileTest {
 
   private static Stream<CardIdentity> invalidCardIdentitiesProvider() {
     return Stream.of(
-        new CardIdentity(CardType.LEVEL_1_RESOURCE, 1),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 1),
+        new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1),
         new CardIdentity(CardType.BUILDING, 1),
         new CardIdentity(CardType.BASIC_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999),
         new CardIdentity(CardType.BUILDING, 99999)
     );
   }
@@ -156,10 +156,10 @@ class BasicResourceDisplayingPileTest {
   @ParameterizedTest
   @MethodSource("pileProvider")
   void takeCardsMultipleCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) {
-    var cardIdentity1 = new CardIdentity(CardType.LEVEL_1_RESOURCE, 1);
+    var cardIdentity1 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
     var cardIdentity2 = new CardIdentity(CardType.BASIC_RESOURCE, 2);
     var cardIdentity3 = new CardIdentity(CardType.BASIC_RESOURCE, 99999);
-    var cardIdentity4 = new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999);
+    var cardIdentity4 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999);
 
     var initNumOfCards = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
 
@@ -245,7 +245,7 @@ class BasicResourceDisplayingPileTest {
   @ParameterizedTest
   @MethodSource("pileProvider")
   void discardCardsShouldThrowTest(DisplayingPile<Card> pile) throws DisplayPileException {
-    var card1 = new ResourceCard(new CardIdentity(CardType.LEVEL_1_RESOURCE, 1), "test", 1, null, null);
+    var card1 = new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1), "test", 1, null, null);
     var card2 = new ResourceCard(new CardIdentity(CardType.BASIC_RESOURCE, 99999), "test", 1, null, null);
     var card3 = pile.takeCards(List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1))).get(0);
 

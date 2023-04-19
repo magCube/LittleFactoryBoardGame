@@ -120,8 +120,8 @@ public class GameInstance {
 
       var targetResourceCards = targets.stream()
           .filter(card -> card.cardType() == CardType.BASIC_RESOURCE ||
-              card.cardType() == CardType.LEVEL_1_RESOURCE ||
-              card.cardType() == CardType.LEVEL_2_RESOURCE)
+              card.cardType() == CardType.LEVEL_ONE_RESOURCE ||
+              card.cardType() == CardType.LEVEL_TWO_RESOURCE)
           .map(card -> (ResourceCard) card)
           .toList();
       var targetBuildingCards = targets.stream()

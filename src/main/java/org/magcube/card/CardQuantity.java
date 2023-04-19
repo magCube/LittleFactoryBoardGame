@@ -9,8 +9,6 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.ToString;
 import org.magcube.exception.CardQuantityException;
-import org.magcube.exception.NumOfPlayersException;
-import org.magcube.exception.CardQuantityException;
 import org.magcube.player.NumOfPlayers;
 
 @ToString
@@ -49,8 +47,8 @@ public class CardQuantity {
   public static int getQuantity(CardType cardType, int typeId, NumOfPlayers numOfPlayers) throws CardQuantityException {
     List<CardQuantity> cardQuantities = switch (cardType) {
       case BASIC_RESOURCE -> basicResource;
-      case LEVEL_1_RESOURCE -> level1Resource;
-      case LEVEL_2_RESOURCE -> level2Resource;
+      case LEVEL_ONE_RESOURCE -> level1Resource;
+      case LEVEL_TWO_RESOURCE -> level2Resource;
       case BUILDING -> building;
     };
 

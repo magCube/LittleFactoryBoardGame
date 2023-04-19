@@ -12,7 +12,7 @@ public class CardTest {
     CardIdentity identity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     CardIdentity identity2 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     CardIdentity identity3 = new CardIdentity(CardType.BASIC_RESOURCE, 2);
-    CardIdentity identity4 = new CardIdentity(CardType.LEVEL_1_RESOURCE, 1);
+    CardIdentity identity4 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
 
     ResourceCard card1 = ResourceCard.builder()
         .cardIdentity(identity1)

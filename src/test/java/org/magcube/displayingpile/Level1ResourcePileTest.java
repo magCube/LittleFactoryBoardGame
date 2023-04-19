@@ -23,22 +23,22 @@ import org.magcube.player.NumOfPlayers;
 
 class Level1ResourcePileTest {
 
-  private static Stream<Level1ResourcePile> pileProvider() throws DisplayPileException {
+  private static Stream<LevelOneResourcePile> pileProvider() throws DisplayPileException {
     return Stream.of(
-        new Level1ResourcePile(CardDeck.get(NumOfPlayers.TWO).level1Resource),
-        new Level1ResourcePile(CardDeck.get(NumOfPlayers.THREE).level1Resource),
-        new Level1ResourcePile(CardDeck.get(NumOfPlayers.FOUR).level1Resource)
+        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.TWO).level1Resource),
+        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.THREE).level1Resource),
+        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.FOUR).level1Resource)
     );
   }
 
   private static Stream<CardIdentity> invalidCardIdentitiesProvider() {
     return Stream.of(
         new CardIdentity(CardType.BASIC_RESOURCE, 1),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 1),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1),
         new CardIdentity(CardType.BUILDING, 1),
         new CardIdentity(CardType.BASIC_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999),
         new CardIdentity(CardType.BUILDING, 99999)
     );
   }
@@ -46,20 +46,20 @@ class Level1ResourcePileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorTest(NumOfPlayers numOfPlayers) {
-    assertDoesNotThrow(() -> new Level1ResourcePile(CardDeck.get(numOfPlayers).level1Resource));
+    assertDoesNotThrow(() -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).level1Resource));
   }
 
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorShouldThrowTest(NumOfPlayers numOfPlayers) {
-    assertThrows(DisplayPileException.class, () -> new Level1ResourcePile(CardDeck.get(numOfPlayers).basicResource));
-    assertThrows(DisplayPileException.class, () -> new Level1ResourcePile(CardDeck.get(numOfPlayers).level2Resource));
+    assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).basicResource));
+    assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).level2Resource));
   }
 
   @ParameterizedTest
   @MethodSource("pileProvider")
   void getCardTypeTest(DisplayingPile<Card> pile) {
-    assertEquals(CardType.LEVEL_1_RESOURCE, pile.getCardType());
+    assertEquals(CardType.LEVEL_ONE_RESOURCE, pile.getCardType());
   }
 
   @ParameterizedTest
@@ -84,7 +84,7 @@ class Level1ResourcePileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void getDeckTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
-    var pile = new Level1ResourcePile(CardDeck.get(numOfPlayers).level1Resource);
+    var pile = new LevelOneResourcePile(CardDeck.get(numOfPlayers).level1Resource);
     assertTrue(pile.getDeck().size() <= CardDeck.get(numOfPlayers).level1Resource.size() - pile.getMaxDisplayingSize());
   }
 
@@ -116,7 +116,7 @@ class Level1ResourcePileTest {
   @ParameterizedTest
   @MethodSource("invalidCardIdentitiesProvider")
   void takeCardsSingleCardShouldThrowTest(CardIdentity cardIdentity) throws DisplayPileException {
-    var pile = new Level1ResourcePile(CardDeck.get(NumOfPlayers.FOUR).level1Resource);
+    var pile = new LevelOneResourcePile(CardDeck.get(NumOfPlayers.FOUR).level1Resource);
     assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity)));
   }
 
@@ -167,8 +167,8 @@ class Level1ResourcePileTest {
   void takeCardsMultipleCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) {
     var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var cardIdentity2 = pile.getDisplaying().get(0).get(0).getCardIdentity();
-    var cardIdentity3 = new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999);
-    var cardIdentity4 = new CardIdentity(CardType.LEVEL_2_RESOURCE, 99999);
+    var cardIdentity3 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999);
+    var cardIdentity4 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999);
 
     var initNumOfCards = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
 
@@ -252,7 +252,7 @@ class Level1ResourcePileTest {
   @MethodSource("pileProvider")
   void discardCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
     var card1 = new ResourceCard(new CardIdentity(CardType.BASIC_RESOURCE, 1), "test", 1, null, null);
-    var card2 = new ResourceCard(new CardIdentity(CardType.LEVEL_2_RESOURCE, 1), "test", 1, null, null);
+    var card2 = new ResourceCard(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1), "test", 1, null, null);
     var card3 = pile.takeCards(List.of(pile.getDisplaying().get(0).get(0).getCardIdentity())).get(0);
 
     assertThrows(DisplayPileException.class, () -> pile.discardCards(List.of(card1)));
@@ -269,7 +269,7 @@ class Level1ResourcePileTest {
   @Test
   void refillCardStopWhenDeckUsesUp() throws DisplayPileException {
     var mockDeck = buildMockDeckWithOnlyOneTypeOfCard();
-    var pile = new Level1ResourcePile(mockDeck);
+    var pile = new LevelOneResourcePile(mockDeck);
     assertEquals(0, pile.deckSize());
     assertEquals(5, pile.getDisplaying().size());
     assertEquals(mockDeck.size(), pile.getDisplaying().get(0).size());
@@ -286,14 +286,14 @@ class Level1ResourcePileTest {
   @Test
   void refillCardFromDiscardPileWhenDeckUsedUp() throws DisplayPileException {
     var mockDeck = buildMockDeckWithOnlyOneTypeOfCard();
-    var pile = new Level1ResourcePile(mockDeck);
+    var pile = new LevelOneResourcePile(mockDeck);
     assertEquals(0, pile.deckSize());
     assertEquals(5, pile.getDisplaying().size());
     assertEquals(mockDeck.size(), pile.getDisplaying().get(0).size());
     assertEquals(1, pile.getDisplaying().stream().filter(innerList -> innerList.size() > 0).count());
 
     var card4Discard = ResourceCard.builder()
-        .cardIdentity(new CardIdentity(CardType.LEVEL_1_RESOURCE, 99999))
+        .cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999))
         .name("unique card for testing")
         .value(1)
         .build();
@@ -315,7 +315,7 @@ class Level1ResourcePileTest {
     var level1Resource = new ArrayList<ResourceCard>();
     for (var i = 0; i < 3; i++) {
       level1Resource.add(ResourceCard.builder()
-          .cardIdentity(new CardIdentity(CardType.LEVEL_1_RESOURCE, 1))
+          .cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1))
           .name(String.valueOf(i))
           .value(1)
           .build()

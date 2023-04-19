@@ -9,8 +9,8 @@ import org.magcube.card.ResourceCard;
 import org.magcube.displayingpile.BasicResourceDisplayingPile;
 import org.magcube.displayingpile.BuildingPile;
 import org.magcube.displayingpile.DisplayingPile;
-import org.magcube.displayingpile.Level1ResourcePile;
-import org.magcube.displayingpile.Level2ResourcePile;
+import org.magcube.displayingpile.LevelOneResourcePile;
+import org.magcube.displayingpile.LevelTwoResourcePile;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.player.NumOfPlayers;
 
@@ -25,8 +25,8 @@ public class GameBoard {
   public GameBoard(NumOfPlayers numOfPlayers) throws DisplayPileException {
     var deck = CardDeck.get(numOfPlayers);
     basicResourcesPile = new BasicResourceDisplayingPile(deck.basicResource);
-    level1ResourcesPile = new Level1ResourcePile(deck.level1Resource);
-    level2ResourcesPile = new Level2ResourcePile(deck.level2Resource);
+    level1ResourcesPile = new LevelOneResourcePile(deck.level1Resource);
+    level2ResourcesPile = new LevelTwoResourcePile(deck.level2Resource);
     buildingPile = new BuildingPile(deck.building);
   }
 
