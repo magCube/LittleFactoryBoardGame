@@ -53,8 +53,8 @@ class BasicResourceDisplayingPileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorShouldThrowTest(NumOfPlayers numOfPlayers) {
-    assertThrows(DisplayPileException.class, () -> new BasicResourceDisplayingPile(CardDeck.get(numOfPlayers).level1Resource));
-    assertThrows(DisplayPileException.class, () -> new BasicResourceDisplayingPile(CardDeck.get(numOfPlayers).level2Resource));
+    assertThrows(DisplayPileException.class, () -> new BasicResourceDisplayingPile(CardDeck.get(numOfPlayers).levelOneResource));
+    assertThrows(DisplayPileException.class, () -> new BasicResourceDisplayingPile(CardDeck.get(numOfPlayers).levelTwoResource));
   }
 
   @ParameterizedTest

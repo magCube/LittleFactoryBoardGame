@@ -13,10 +13,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.magcube.exception.NumOfPlayersException;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.magcube.player.NumOfPlayers;
 
 class CardDeckTest {
@@ -26,10 +22,10 @@ class CardDeckTest {
   void deckSizeShouldMatchTest(NumOfPlayers numOfPlayers, Method m) {
     assertEquals(sumHelper(CardQuantity.basicResource, m),
         CardDeck.get(numOfPlayers).basicResource.size());
-    assertEquals(sumHelper(CardQuantity.level1Resource, m),
-        CardDeck.get(numOfPlayers).level1Resource.size());
-    assertEquals(sumHelper(CardQuantity.level2Resource, m),
-        CardDeck.get(numOfPlayers).level2Resource.size());
+    assertEquals(sumHelper(CardQuantity.levelOneResource, m),
+        CardDeck.get(numOfPlayers).levelOneResource.size());
+    assertEquals(sumHelper(CardQuantity.levelTwoResource, m),
+        CardDeck.get(numOfPlayers).levelTwoResource.size());
     assertEquals(sumHelper(CardQuantity.building, m), CardDeck.get(numOfPlayers).building.size());
   }
 
@@ -44,14 +40,14 @@ class CardDeckTest {
   void isCloneTest() {
     List<ResourceCard> resourceCards = new ArrayList<>();
     resourceCards.addAll(CardDeck.get(NumOfPlayers.TWO).basicResource);
-    resourceCards.addAll(CardDeck.get(NumOfPlayers.TWO).level1Resource);
-    resourceCards.addAll(CardDeck.get(NumOfPlayers.TWO).level2Resource);
+    resourceCards.addAll(CardDeck.get(NumOfPlayers.TWO).levelOneResource);
+    resourceCards.addAll(CardDeck.get(NumOfPlayers.TWO).levelTwoResource);
     resourceCards.addAll(CardDeck.get(NumOfPlayers.THREE).basicResource);
-    resourceCards.addAll(CardDeck.get(NumOfPlayers.THREE).level1Resource);
-    resourceCards.addAll(CardDeck.get(NumOfPlayers.THREE).level2Resource);
+    resourceCards.addAll(CardDeck.get(NumOfPlayers.THREE).levelOneResource);
+    resourceCards.addAll(CardDeck.get(NumOfPlayers.THREE).levelTwoResource);
     resourceCards.addAll(CardDeck.get(NumOfPlayers.FOUR).basicResource);
-    resourceCards.addAll(CardDeck.get(NumOfPlayers.FOUR).level1Resource);
-    resourceCards.addAll(CardDeck.get(NumOfPlayers.FOUR).level2Resource);
+    resourceCards.addAll(CardDeck.get(NumOfPlayers.FOUR).levelOneResource);
+    resourceCards.addAll(CardDeck.get(NumOfPlayers.FOUR).levelTwoResource);
 
     assertTrue(resourceCards.size() > 0);
     assertTrue(allDistinctElements(resourceCards));

@@ -25,9 +25,9 @@ class Level1ResourcePileTest {
 
   private static Stream<LevelOneResourcePile> pileProvider() throws DisplayPileException {
     return Stream.of(
-        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.TWO).level1Resource),
-        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.THREE).level1Resource),
-        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.FOUR).level1Resource)
+        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.TWO).levelOneResource),
+        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.THREE).levelOneResource),
+        new LevelOneResourcePile(CardDeck.get(NumOfPlayers.FOUR).levelOneResource)
     );
   }
 
@@ -46,14 +46,14 @@ class Level1ResourcePileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorTest(NumOfPlayers numOfPlayers) {
-    assertDoesNotThrow(() -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).level1Resource));
+    assertDoesNotThrow(() -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).levelOneResource));
   }
 
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorShouldThrowTest(NumOfPlayers numOfPlayers) {
     assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).basicResource));
-    assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).level2Resource));
+    assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).levelTwoResource));
   }
 
   @ParameterizedTest
@@ -84,8 +84,8 @@ class Level1ResourcePileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void getDeckTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
-    var pile = new LevelOneResourcePile(CardDeck.get(numOfPlayers).level1Resource);
-    assertTrue(pile.getDeck().size() <= CardDeck.get(numOfPlayers).level1Resource.size() - pile.getMaxDisplayingSize());
+    var pile = new LevelOneResourcePile(CardDeck.get(numOfPlayers).levelOneResource);
+    assertTrue(pile.getDeck().size() <= CardDeck.get(numOfPlayers).levelOneResource.size() - pile.getMaxDisplayingSize());
   }
 
   @ParameterizedTest
@@ -116,7 +116,7 @@ class Level1ResourcePileTest {
   @ParameterizedTest
   @MethodSource("invalidCardIdentitiesProvider")
   void takeCardsSingleCardShouldThrowTest(CardIdentity cardIdentity) throws DisplayPileException {
-    var pile = new LevelOneResourcePile(CardDeck.get(NumOfPlayers.FOUR).level1Resource);
+    var pile = new LevelOneResourcePile(CardDeck.get(NumOfPlayers.FOUR).levelOneResource);
     assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity)));
   }
 
@@ -312,16 +312,16 @@ class Level1ResourcePileTest {
   }
 
   private ArrayList<ResourceCard> buildMockDeckWithOnlyOneTypeOfCard() {
-    var level1Resource = new ArrayList<ResourceCard>();
+    var levelOneResource = new ArrayList<ResourceCard>();
     for (var i = 0; i < 3; i++) {
-      level1Resource.add(ResourceCard.builder()
+      levelOneResource.add(ResourceCard.builder()
           .cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1))
           .name(String.valueOf(i))
           .value(1)
           .build()
       );
     }
-    return level1Resource;
+    return levelOneResource;
   }
 
   @ParameterizedTest

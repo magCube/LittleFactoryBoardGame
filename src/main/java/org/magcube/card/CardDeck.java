@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.magcube.exception.CardQuantityException;
-import org.magcube.exception.NumOfPlayersException;
-import org.magcube.exception.CardQuantityException;
 import org.magcube.player.NumOfPlayers;
 
 public class CardDeck {
@@ -15,8 +13,8 @@ public class CardDeck {
   private static final HashMap<NumOfPlayers, CardDeck> data = new HashMap<>();
 
   public final List<ResourceCard> basicResource;
-  public final List<ResourceCard> level1Resource;
-  public final List<ResourceCard> level2Resource;
+  public final List<ResourceCard> levelOneResource;
+  public final List<ResourceCard> levelTwoResource;
   public final List<BuildingCard> building;
 
   static {
@@ -57,8 +55,8 @@ public class CardDeck {
   private CardDeck(NumOfPlayers numOfPlayers)
       throws JsonProcessingException, CardQuantityException {
     this.basicResource = getCards(CardData.basicResource, numOfPlayers, ResourceCard.class);
-    this.level1Resource = getCards(CardData.level1Resource, numOfPlayers, ResourceCard.class);
-    this.level2Resource = getCards(CardData.level2Resource, numOfPlayers, ResourceCard.class);
+    this.levelOneResource = getCards(CardData.levelOneResource, numOfPlayers, ResourceCard.class);
+    this.levelTwoResource = getCards(CardData.levelTwoResource, numOfPlayers, ResourceCard.class);
     this.building = getCards(CardData.building, numOfPlayers, BuildingCard.class);
   }
 }

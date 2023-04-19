@@ -25,14 +25,14 @@ public class Level2ResourcePileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorTest(NumOfPlayers numOfPlayers) {
-    assertDoesNotThrow(() -> new LevelTwoResourcePile(CardDeck.get(numOfPlayers).level2Resource));
+    assertDoesNotThrow(() -> new LevelTwoResourcePile(CardDeck.get(numOfPlayers).levelTwoResource));
   }
 
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorShouldThrowTest(NumOfPlayers numOfPlayers) {
     assertThrows(DisplayPileException.class, () -> new LevelTwoResourcePile(CardDeck.get(numOfPlayers).basicResource));
-    assertThrows(DisplayPileException.class, () -> new LevelTwoResourcePile(CardDeck.get(numOfPlayers).level1Resource));
+    assertThrows(DisplayPileException.class, () -> new LevelTwoResourcePile(CardDeck.get(numOfPlayers).levelOneResource));
   }
 
   @ParameterizedTest
@@ -71,8 +71,8 @@ public class Level2ResourcePileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void getDeckTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
-    var pile = new LevelTwoResourcePile(CardDeck.get(numOfPlayers).level2Resource);
-    assertEquals(pile.getDeck().size(), CardDeck.get(numOfPlayers).level2Resource.size() - pile.getMaxDisplayingSize());
+    var pile = new LevelTwoResourcePile(CardDeck.get(numOfPlayers).levelTwoResource);
+    assertEquals(pile.getDeck().size(), CardDeck.get(numOfPlayers).levelTwoResource.size() - pile.getMaxDisplayingSize());
   }
 
   @ParameterizedTest
@@ -103,7 +103,7 @@ public class Level2ResourcePileTest {
   @ParameterizedTest
   @MethodSource("invalidCardIdentitiesProvider")
   void takeCardsSingleCardShouldThrowTest(CardIdentity cardIdentity) throws DisplayPileException {
-    var pile = new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.FOUR).level2Resource);
+    var pile = new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.FOUR).levelTwoResource);
     assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity)));
   }
 
@@ -349,9 +349,9 @@ public class Level2ResourcePileTest {
 
   private static Stream<LevelTwoResourcePile> pileProvider() throws DisplayPileException {
     return Stream.of(
-        new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.TWO).level2Resource),
-        new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.THREE).level2Resource),
-        new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.FOUR).level2Resource)
+        new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.TWO).levelTwoResource),
+        new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.THREE).levelTwoResource),
+        new LevelTwoResourcePile(CardDeck.get(NumOfPlayers.FOUR).levelTwoResource)
     );
   }
 

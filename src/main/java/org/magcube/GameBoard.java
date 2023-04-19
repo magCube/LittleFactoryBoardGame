@@ -18,15 +18,15 @@ import org.magcube.player.NumOfPlayers;
 public class GameBoard {
 
   private final DisplayingPile<ResourceCard> basicResourcesPile;
-  private final DisplayingPile<ResourceCard> level1ResourcesPile;
-  private final DisplayingPile<ResourceCard> level2ResourcesPile;
+  private final DisplayingPile<ResourceCard> levelOneResourcesPile;
+  private final DisplayingPile<ResourceCard> levelTwoResourcesPile;
   private final DisplayingPile<BuildingCard> buildingPile;
 
   public GameBoard(NumOfPlayers numOfPlayers) throws DisplayPileException {
     var deck = CardDeck.get(numOfPlayers);
     basicResourcesPile = new BasicResourceDisplayingPile(deck.basicResource);
-    level1ResourcesPile = new LevelOneResourcePile(deck.level1Resource);
-    level2ResourcesPile = new LevelTwoResourcePile(deck.level2Resource);
+    levelOneResourcesPile = new LevelOneResourcePile(deck.levelOneResource);
+    levelTwoResourcesPile = new LevelTwoResourcePile(deck.levelTwoResource);
     buildingPile = new BuildingPile(deck.building);
   }
 
@@ -35,11 +35,11 @@ public class GameBoard {
   }
 
   public List<List<ResourceCard>> getDisplayingLevel1Resource() {
-    return level1ResourcesPile.getDisplaying();
+    return levelOneResourcesPile.getDisplaying();
   }
 
   public List<List<ResourceCard>> getDisplayingLevel2Resource() {
-    return level2ResourcesPile.getDisplaying();
+    return levelTwoResourcesPile.getDisplaying();
   }
 
   public List<List<BuildingCard>> getDisplayingBuildings() {
@@ -56,7 +56,7 @@ public class GameBoard {
 
   public void refillCards() throws DisplayPileException {
     basicResourcesPile.refillCards();
-    level1ResourcesPile.refillCards();
-    level2ResourcesPile.refillCards();
+    levelOneResourcesPile.refillCards();
+    levelTwoResourcesPile.refillCards();
   }
 }

@@ -8,15 +8,15 @@ import java.util.List;
 public class CardData {
 
   static public final List<ResourceCard> basicResource;
-  static public final List<ResourceCard> level1Resource;
-  static public final List<ResourceCard> level2Resource;
+  static public final List<ResourceCard> levelOneResource;
+  static public final List<ResourceCard> levelTwoResource;
   static public final List<BuildingCard> building;
 
   static {
     try {
       basicResource = loadCard(ResourceCard.class, "/type0.json");
-      level1Resource = loadCard(ResourceCard.class, "/type1.json");
-      level2Resource = loadCard(ResourceCard.class, "/type2.json");
+      levelOneResource = loadCard(ResourceCard.class, "/type1.json");
+      levelTwoResource = loadCard(ResourceCard.class, "/type2.json");
       building = loadCard(BuildingCard.class, "/type3.json");
     } catch (IOException e) {
       throw new RuntimeException(e);

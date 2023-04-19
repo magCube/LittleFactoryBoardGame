@@ -16,8 +16,8 @@ import org.magcube.player.NumOfPlayers;
 public class CardQuantity {
 
   public static final List<CardQuantity> basicResource;
-  public static final List<CardQuantity> level1Resource;
-  public static final List<CardQuantity> level2Resource;
+  public static final List<CardQuantity> levelOneResource;
+  public static final List<CardQuantity> levelTwoResource;
   public static final List<CardQuantity> building;
 
   private CardIdentity cardIdentity;
@@ -28,8 +28,8 @@ public class CardQuantity {
   static {
     try {
       basicResource = loadCard("/type0-quantity.json");
-      level1Resource = loadCard("/type1-quantity.json");
-      level2Resource = loadCard("/type2-quantity.json");
+      levelOneResource = loadCard("/type1-quantity.json");
+      levelTwoResource = loadCard("/type2-quantity.json");
       building = loadCard("/type3-quantity.json");
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -47,8 +47,8 @@ public class CardQuantity {
   public static int getQuantity(CardType cardType, int typeId, NumOfPlayers numOfPlayers) throws CardQuantityException {
     List<CardQuantity> cardQuantities = switch (cardType) {
       case BASIC_RESOURCE -> basicResource;
-      case LEVEL_ONE_RESOURCE -> level1Resource;
-      case LEVEL_TWO_RESOURCE -> level2Resource;
+      case LEVEL_ONE_RESOURCE -> levelOneResource;
+      case LEVEL_TWO_RESOURCE -> levelTwoResource;
       case BUILDING -> building;
     };
 

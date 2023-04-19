@@ -24,14 +24,14 @@ class CardQuantityTest {
             x.getThreePlayers() == 0 ||
             x.getFourPlayers() == 0
     ));
-    assertFalse(CardQuantity.level1Resource.stream().anyMatch(x ->
+    assertFalse(CardQuantity.levelOneResource.stream().anyMatch(x ->
         x.getTwoPlayers() == 0 ||
             x.getThreePlayers() == 0 ||
             x.getFourPlayers() == 0
     ));
 
     // for level 2 resource and building, they should be always 1
-    assertTrue(CardQuantity.level2Resource.stream().allMatch(x ->
+    assertTrue(CardQuantity.levelTwoResource.stream().allMatch(x ->
         x.getTwoPlayers() == 1 &&
             x.getThreePlayers() == 1 &&
             x.getFourPlayers() == 1
@@ -99,8 +99,8 @@ class CardQuantityTest {
   private static Stream<Arguments> cardQuantityDataProvider() {
     return Stream.of(
         Arguments.of(CardQuantity.basicResource),
-        Arguments.of(CardQuantity.level1Resource),
-        Arguments.of(CardQuantity.level2Resource),
+        Arguments.of(CardQuantity.levelOneResource),
+        Arguments.of(CardQuantity.levelTwoResource),
         Arguments.of(CardQuantity.building)
     );
   }
@@ -108,8 +108,8 @@ class CardQuantityTest {
   private static Stream<Arguments> quantityDataCoverAllCardDataTest() {
     return Stream.of(
         Arguments.of(CardQuantity.basicResource, CardData.basicResource),
-        Arguments.of(CardQuantity.level1Resource, CardData.level1Resource),
-        Arguments.of(CardQuantity.level2Resource, CardData.level2Resource),
+        Arguments.of(CardQuantity.levelOneResource, CardData.levelOneResource),
+        Arguments.of(CardQuantity.levelTwoResource, CardData.levelTwoResource),
         Arguments.of(CardQuantity.building, CardData.building)
     );
   }
