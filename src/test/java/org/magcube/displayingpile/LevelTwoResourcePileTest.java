@@ -76,9 +76,7 @@ public class LevelTwoResourcePileTest {
   void constructorShouldThrowTest2(CardType inconsistantCardType) {
     ArrayList<ResourceCard> mockDeck = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
-      for (int j = 0; j < 3; j++) {
-        mockDeck.add(new ResourceCard(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, i), "test" + i + j, 1, null, null));
-      }
+      mockDeck.add(new ResourceCard(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, i), "test" + i, 1, null, null));
     }
     mockDeck.add(new ResourceCard(new CardIdentity(inconsistantCardType, 1), "test", 1, null, null));
     assertThrows(DisplayPileException.class, () -> new LevelTwoResourcePile(mockDeck));
@@ -187,7 +185,6 @@ public class LevelTwoResourcePileTest {
     assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity)));
   }
 
-
   @ParameterizedTest
   @MethodSource("pileProvider")
   void cardsInDisplaySingleCardEmptyCaseTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
@@ -228,7 +225,7 @@ public class LevelTwoResourcePileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void cardsInDisplayMultipleCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+  void cardsInDisplayMultipleCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) {
     var cardIdentity1 = pile.getDisplaying().get(0).get(0).getCardIdentity();
     var cardIdentity2 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var cardIdentity3 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
@@ -472,7 +469,7 @@ public class LevelTwoResourcePileTest {
 
     var list = List.of(cardIdentity1, cardIdentity2);
 
-    var cards = takeCardHelper(pile, list);
+    takeCardHelper(pile, list);
     var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
     var curNumOfCardWithCardIdentity2 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity2);
 
