@@ -71,46 +71,61 @@ public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T
     return discardPile.size();
   }
 
-  private T takeCard(CardIdentity cardIdentity) throws DisplayPileException {
+  private T cardInDisplay(CardIdentity cardIdentity) {
     var card = availableCards.stream().filter(x -> x != null && x.isIdentical(cardIdentity)).findFirst();
-    if (card.isPresent()) {
-      var returnCard = card.get();
-      int index = availableCards.indexOf(returnCard);
-      availableCards.set(index, null);
-      return returnCard;
-    } else {
-      throw new DisplayPileException("Not all cards are in displaying pile");
-    }
+    return card.orElse(null);
   }
 
   @Override
-  public List<T> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
+  public List<T> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException {
     if (!isConsistentCardTypeInCardIdentity(cardIdentities)) {
-      throw new DisplayPileException("Not all cards are in displaying pile");
+      throw new DisplayPileException("Inconsistent card type in requesting cards");
     }
+
     if (haveDuplicatedCardIdentities(cardIdentities)) {
       throw new DisplayPileException("Not all cards are in displaying pile");
     }
+
     if (cardIdentities.size() == 1) {
-      return List.of(takeCard(cardIdentities.get(0)));
+      var card = cardInDisplay(cardIdentities.get(0));
+      return card == null ? null : List.of(card);
     }
 
     var cardsInDisplaying = new ArrayList<T>();
-    var indexes = new ArrayList<Integer>();
 
     for (CardIdentity cardIdentity : cardIdentities) {
-      var optionalCard = availableCards.stream().filter(x -> x != null && x.isIdentical(cardIdentity)).findFirst();
-      if (optionalCard.isPresent()) {
-        T card = optionalCard.get();
-        cardsInDisplaying.add(card);
-        int index = availableCards.indexOf(card);
-        indexes.add(index);
+      var card = availableCards.stream().filter(x -> x != null && x.isIdentical(cardIdentity)).findFirst();
+      if (card.isPresent()) {
+        cardsInDisplaying.add(card.get());
       } else {
-        throw new DisplayPileException("Not all cards are in displaying pile");
+        return null;
       }
     }
 
-    IntStream.range(0, cardsInDisplaying.size()).forEach(i -> availableCards.set(indexes.get(i), null));
+    return cardsInDisplaying;
+  }
+  
+  @Override
+  public List<T> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
+    var cardsInDisplaying = cardsInDisplay(cardIdentities);
+
+    if (cardsInDisplaying == null) {
+      throw new DisplayPileException("Not all cards are in displaying pile");
+    }
+
+    var indexes = new ArrayList<Integer>();
+
+    for (T card : cardsInDisplaying) {
+      int index = availableCards.indexOf(card);
+      if (index == -1) {
+        // should not happen
+        throw new DisplayPileException("Internal logic error");
+      }
+      indexes.add(index);
+    }
+
+    indexes.forEach(index -> availableCards.set(index, null));
+
     return cardsInDisplaying;
   }
 

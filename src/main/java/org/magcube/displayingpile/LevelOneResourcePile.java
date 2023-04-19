@@ -68,18 +68,23 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
     return discardPile.size();
   }
 
+  private ResourceCard cardInDisplay(CardIdentity cardIdentity) {
+    var listWithSameCardIdentity = findTheListWithTheSameCardIdentity(cardIdentity);
+    return listWithSameCardIdentity.map(cards -> cards.get(0)).orElse(null);
+  }
+
   @Override
-  public List<ResourceCard> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
+  public List<ResourceCard> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException {
     if (!isConsistentCardTypeInCardIdentity(cardIdentities)) {
-      throw new DisplayPileException("Not all cards are in displaying pile");
+      throw new DisplayPileException("Inconsistent card type in requesting cards");
     }
 
     if (cardIdentities.size() == 1) {
-      return List.of(takeCard(cardIdentities.get(0)));
+      var card = cardInDisplay(cardIdentities.get(0));
+      return card == null ? null : List.of(card);
     }
 
     var cardsInDisplaying = new ArrayList<ResourceCard>();
-    var indexes = new ArrayList<Integer>();
 
     var quantityMap = cardIdentities.stream().collect(Collectors.toMap(Function.identity(), x -> 1, Integer::sum));
 
@@ -90,26 +95,42 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
       if (listWithSameCardIdentity.isPresent()) {
         var list = listWithSameCardIdentity.get();
         cardsInDisplaying.addAll(list.subList(0, quantity));
-        int index = displaying.indexOf(list);
-        IntStream.range(0, quantity).forEach(i -> indexes.add(index));
       } else {
-        throw new DisplayPileException("Not all cards are in displaying pile");
+        return null;
       }
     }
 
-    IntStream.range(0, cardsInDisplaying.size()).forEach(i -> displaying.get(indexes.get(i)).remove(cardsInDisplaying.get(i)));
     return cardsInDisplaying;
   }
 
-  private ResourceCard takeCard(CardIdentity cardIdentity) throws DisplayPileException {
-    var listWithSameCardIdentity = findTheListWithTheSameCardIdentity(cardIdentity);
-    if (listWithSameCardIdentity.isPresent()) {
-      return listWithSameCardIdentity.get().remove(0);
-    } else {
+
+  @Override
+  public List<ResourceCard> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
+    var cardsInDisplaying = cardsInDisplay(cardIdentities);
+    if (cardsInDisplaying == null) {
       throw new DisplayPileException("Not all cards are in displaying pile");
     }
-  }
 
+    var lists = new ArrayList<List<ResourceCard>>();
+    for (ResourceCard card : cardsInDisplaying) {
+      var list = findTheListWithTheSameCardIdentity(card.getCardIdentity());
+      if (list.isPresent()) {
+        lists.add(list.get());
+      } else {
+        // should not happen
+        throw new DisplayPileException("Internal logic error");
+      }
+    }
+
+    for (int i = 0; i < cardsInDisplaying.size(); i++) {
+      var card = cardsInDisplaying.get(i);
+      var list = lists.get(i);
+      list.remove(card);
+    }
+
+    return cardsInDisplaying;
+  }
+  
   @Override
   public void discardCards(List<ResourceCard> cards) throws DisplayPileException {
     if (isConsistentCardType(cards)) {

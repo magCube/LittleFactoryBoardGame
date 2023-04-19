@@ -1,6 +1,7 @@
 package org.magcube.displayingpile;
 
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
@@ -21,6 +22,9 @@ public interface DisplayingPile<T extends Card> {
   int deckSize();
 
   int discardPileSize();
+
+  @Nullable
+  List<T> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException;
 
   List<T> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException;
 

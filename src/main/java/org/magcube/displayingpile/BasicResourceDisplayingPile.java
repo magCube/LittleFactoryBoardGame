@@ -62,13 +62,24 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
     return 0;
   }
 
-  public List<ResourceCard> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
+  private ResourceCard cardInDisplay(CardIdentity cardIdentity) {
+    var cards = availableCards.get(cardIdentity.getTypeId());
+    if (cards == null || cards.isEmpty()) {
+      return null;
+    } else {
+      return cards.get(0);
+    }
+  }
+
+  @Override
+  public List<ResourceCard> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException {
     if (!isConsistentCardTypeInCardIdentity(cardIdentities)) {
-      throw new DisplayPileException("Not all cards are in displaying pile");
+      throw new DisplayPileException("Inconsistent card type in requesting cards");
     }
 
     if (cardIdentities.size() == 1) {
-      return List.of(takeCard(cardIdentities.get(0)));
+      var card = cardInDisplay(cardIdentities.get(0));
+      return card == null ? null : List.of(card);
     }
 
     var cardsInDisplaying = new ArrayList<ResourceCard>();
@@ -81,23 +92,25 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
       Integer quantity = entry.getValue();
       var cards = availableCards.get(typeId);
       if (cards == null || cards.size() < quantity) {
-        throw new DisplayPileException("Not all cards are in displaying pile");
+        return null;
       } else {
         cardsInDisplaying.addAll(cards.subList(0, quantity));
       }
     }
 
-    cardsInDisplaying.forEach(card -> availableCards.get(card.typeId()).remove(card));
     return cardsInDisplaying;
   }
 
-  private ResourceCard takeCard(CardIdentity cardIdentity) throws DisplayPileException {
-    var cards = availableCards.get(cardIdentity.getTypeId());
-    if (cards == null || cards.isEmpty()) {
+  @Override
+  public List<ResourceCard> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
+    var cardsInDisplaying = cardsInDisplay(cardIdentities);
+
+    if (cardsInDisplaying == null) {
       throw new DisplayPileException("Not all cards are in displaying pile");
-    } else {
-      return cards.remove(0);
     }
+
+    cardsInDisplaying.forEach(card -> availableCards.get(card.typeId()).remove(card));
+    return cardsInDisplaying;
   }
 
   @Override
