@@ -2,6 +2,9 @@ package org.magcube.displayingpile;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,7 +15,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.magcube.card.Card;
 import org.magcube.card.CardDeck;
 import org.magcube.card.CardIdentity;
@@ -23,6 +28,20 @@ import org.magcube.player.NumOfPlayers;
 
 class LevelOneResourcePileTest {
 
+  private static List<ResourceCard> takeCardHelper(DisplayingPile<ResourceCard> pile, List<CardIdentity> cardIdentities) throws DisplayPileException {
+    var cardsInDisplay = pile.cardsInDisplay(cardIdentities);
+    if (cardsInDisplay == null) {
+      throw new DisplayPileException("Not all cards are in display");
+    }
+    return pile.takeCards(cardsInDisplay);
+  }
+
+  private static long numOfCardsWithCardIdentityInDisplaying(List<List<ResourceCard>> displaying, CardIdentity cardIdentity) {
+    return displaying.stream()
+        .map(x -> x.stream().filter(y -> y.isIdentical(cardIdentity)).count())
+        .reduce(0L, Long::sum);
+  }
+
   private static Stream<LevelOneResourcePile> pileProvider() throws DisplayPileException {
     return Stream.of(
         new LevelOneResourcePile(CardDeck.get(NumOfPlayers.TWO).levelOneResource),
@@ -31,29 +50,41 @@ class LevelOneResourcePileTest {
     );
   }
 
-  private static Stream<CardIdentity> invalidCardIdentitiesProvider() {
-    return Stream.of(
-        new CardIdentity(CardType.BASIC_RESOURCE, 1),
-        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1),
-        new CardIdentity(CardType.BUILDING, 1),
-        new CardIdentity(CardType.BASIC_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999),
-        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999),
-        new CardIdentity(CardType.BUILDING, 99999)
-    );
-  }
-
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
-  void constructorTest(NumOfPlayers numOfPlayers) {
+  void constructorTest1(NumOfPlayers numOfPlayers) {
     assertDoesNotThrow(() -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).levelOneResource));
   }
 
+  @Test
+  void constructorTest2() {
+    ArrayList<ResourceCard> mockDeck = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      for (int j = 0; j < 3; j++) {
+        mockDeck.add(new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, i), "test" + i + j, 1, null, null));
+      }
+    }
+    assertDoesNotThrow(() -> new LevelOneResourcePile(mockDeck));
+  }
+
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
-  void constructorShouldThrowTest(NumOfPlayers numOfPlayers) {
+  void constructorShouldThrowTest1(NumOfPlayers numOfPlayers) {
     assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).basicResource));
     assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(CardDeck.get(numOfPlayers).levelTwoResource));
+  }
+
+  @ParameterizedTest
+  @EnumSource(value = CardType.class, mode = Mode.INCLUDE, names = {"BASIC_RESOURCE", "LEVEL_TWO_RESOURCE"})
+  void constructorShouldThrowTest2(CardType inconsistantCardType) {
+    ArrayList<ResourceCard> mockDeck = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      for (int j = 0; j < 3; j++) {
+        mockDeck.add(new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, i), "test" + i + j, 1, null, null));
+      }
+    }
+    mockDeck.add(new ResourceCard(new CardIdentity(inconsistantCardType, 1), "test", 1, null, null));
+    assertThrows(DisplayPileException.class, () -> new LevelOneResourcePile(mockDeck));
   }
 
   @ParameterizedTest
@@ -76,16 +107,45 @@ class LevelOneResourcePileTest {
   }
 
   @ParameterizedTest
+  @EnumSource(NumOfPlayers.class)
+  void getDeckTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
+    var pile = new LevelOneResourcePile(CardDeck.get(numOfPlayers).levelOneResource);
+    assertTrue(pile.getDeck().size() > 0);
+    assertTrue(pile.getDeck().size() <= CardDeck.get(numOfPlayers).levelOneResource.size() - pile.getMaxDisplayingSize());
+  }
+
+  @ParameterizedTest
   @MethodSource("pileProvider")
-  void getMaxDisplayingSizeTest(DisplayingPile<ResourceCard> pile) {
+  void getDiscardPileTest(DisplayingPile<ResourceCard> pile) {
+    assertEquals(0, pile.getDiscardPile().size());
+  }
+
+  @ParameterizedTest
+  @MethodSource("pileProvider")
+  void getMaxDisplayingSizeTest1(DisplayingPile<ResourceCard> pile) {
     assertTrue(pile.getMaxDisplayingSize() > 0);
   }
 
   @ParameterizedTest
+  @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+  void getMaxDisplayingSizeTest2(int size) throws DisplayPileException {
+    ArrayList<ResourceCard> mockDeck = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      for (int j = 0; j < 3; j++) {
+        mockDeck.add(new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, i), "test" + i + j, 1, null, null));
+      }
+    }
+    var pile = new LevelOneResourcePile(mockDeck);
+    assertEquals(5, pile.getMaxDisplayingSize());
+  }
+
+  @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
-  void getDeckTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
+  void getDeckSizeTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
     var pile = new LevelOneResourcePile(CardDeck.get(numOfPlayers).levelOneResource);
-    assertTrue(pile.getDeck().size() <= CardDeck.get(numOfPlayers).levelOneResource.size() - pile.getMaxDisplayingSize());
+    assertEquals(pile.deckSize(), pile.getDeck().size());
+    assertTrue(pile.deckSize() > 0);
+    assertTrue(pile.deckSize() <= CardDeck.get(numOfPlayers).levelOneResource.size() - pile.getMaxDisplayingSize());
   }
 
   @ParameterizedTest
@@ -97,43 +157,158 @@ class LevelOneResourcePileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsSingleCardTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+  void cardsInDisplaySingleCardTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
     List<List<ResourceCard>> displaying = pile.getDisplaying();
-    List<Integer> sizes = new ArrayList<>(displaying.stream().map(List::size).toList());
+    assertTrue(displaying.size() > 0);
 
-    assertEquals(pile.getMaxDisplayingSize(), displaying.size());
-
-    for (int i = 0; i < displaying.size(); i++) {
-      var card = displaying.get(i).get(0);
-      var cards = pile.takeCards(List.of(card.getCardIdentity()));
-      sizes.set(i, sizes.get(i) - 1);
-      displaying = pile.getDisplaying();
-      assertEquals(sizes, displaying.stream().map(List::size).toList());
+    for (List<ResourceCard> resourceCards : displaying) {
+      var card = resourceCards.get(0);
+      var cards = pile.cardsInDisplay(List.of(card.getCardIdentity()));
+      assertNotNull(cards);
+      assertEquals(1, cards.size());
       assertEquals(List.of(card), cards);
     }
   }
 
   @ParameterizedTest
+  @MethodSource("pileProvider")
+  void cardsInDisplaySingleCardShouldReturnNullTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+    var card = new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999), "test", 1, null, null);
+    assertNull(pile.cardsInDisplay(List.of(card.getCardIdentity())));
+  }
+
+  private static Stream<CardIdentity> invalidCardIdentitiesProvider() {
+    return Stream.of(
+        new CardIdentity(CardType.BASIC_RESOURCE, 1),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1),
+        new CardIdentity(CardType.BUILDING, 1),
+        new CardIdentity(CardType.BASIC_RESOURCE, 99999),
+        new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999),
+        new CardIdentity(CardType.BUILDING, 99999)
+    );
+  }
+
+  @ParameterizedTest
   @MethodSource("invalidCardIdentitiesProvider")
-  void takeCardsSingleCardShouldThrowTest(CardIdentity cardIdentity) throws DisplayPileException {
+  void cardsInDisplaySingleCardShouldThrowTest(CardIdentity cardIdentity) throws DisplayPileException {
     var pile = new LevelOneResourcePile(CardDeck.get(NumOfPlayers.FOUR).levelOneResource);
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity)));
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity)));
   }
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsSingleCardEmptyCaseTest(DisplayingPile<ResourceCard> pile) {
+  void cardsInDisplaySingleCardEmptyCaseTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
     var cardIdentity1 = pile.getDisplaying().get(0).get(0).getCardIdentity();
     var initNumOfCardWithCardIdentity1 = pile.getDisplaying().get(0).size();
 
     for (int i = 0; i < initNumOfCardWithCardIdentity1; i++) {
-      assertDoesNotThrow(() -> pile.takeCards(List.of(cardIdentity1)));
+      var cards = pile.cardsInDisplay(List.of(cardIdentity1));
+      assertNotNull(cards);
+      var cardToken = pile.takeCards(cards);
+      assertEquals(1, cardToken.size());
+      assertEquals(cards, cardToken);
     }
 
     var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
 
     assertEquals(0, curNumOfCardWithCardIdentity1);
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity1)));
+    assertNull(pile.cardsInDisplay(List.of(cardIdentity1)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("pileProvider")
+  void cardsInDisplayMultipleCardsTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+    List<List<ResourceCard>> displaying = pile.getDisplaying();
+
+    var cardIdentity1 = displaying.get(0).get(0).getCardIdentity();
+    var cardIdentity2 = displaying.get(1).get(0).getCardIdentity();
+
+    var initNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
+    var initNumOfCardWithCardIdentity2 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity2);
+
+    var list = new ArrayList<CardIdentity>();
+    list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity1, cardIdentity1));
+    list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity2, cardIdentity2));
+    var cards = pile.cardsInDisplay(list);
+    assertNotNull(cards);
+    assertEquals(initNumOfCardWithCardIdentity1 + initNumOfCardWithCardIdentity2, cards.size());
+    assertEquals(initNumOfCardWithCardIdentity1, cards.stream().filter(x -> x.isIdentical(cardIdentity1)).count());
+    assertEquals(initNumOfCardWithCardIdentity2, cards.stream().filter(x -> x.isIdentical(cardIdentity2)).count());
+  }
+
+  @ParameterizedTest
+  @MethodSource("pileProvider")
+  void cardsInDisplayMultipleCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+    var cardIdentity1 = pile.getDisplaying().get(0).get(0).getCardIdentity();
+    var cardIdentity2 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
+    var cardIdentity3 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1);
+
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity2)));
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity3)));
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2)));
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity1)));
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity3)));
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity3, cardIdentity1)));
+    assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity3)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("pileProvider")
+  void cardsInDisplayMultipleCardsEmptyCaseTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+    List<List<ResourceCard>> displaying = pile.getDisplaying();
+
+    var cardIdentity1 = displaying.get(0).get(0).getCardIdentity();
+    var cardIdentity2 = displaying.get(1).get(0).getCardIdentity();
+
+    var initNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
+    var initNumOfCardWithCardIdentity2 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity2);
+
+    assertNull(pile.cardsInDisplay(Collections.nCopies((int) (initNumOfCardWithCardIdentity1 + 1), cardIdentity1)));
+    assertNull(pile.cardsInDisplay(Collections.nCopies((int) (initNumOfCardWithCardIdentity2 + 1), cardIdentity2)));
+
+    var list = new ArrayList<CardIdentity>();
+    list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity1, cardIdentity1));
+    list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity2, cardIdentity2));
+
+    var cards = pile.cardsInDisplay(list);
+
+    assertNotNull(cards);
+    assertEquals(initNumOfCardWithCardIdentity1 + initNumOfCardWithCardIdentity2, cards.size());
+    assertEquals(initNumOfCardWithCardIdentity1, cards.stream().filter(x -> x.isIdentical(cardIdentity1)).count());
+    assertEquals(initNumOfCardWithCardIdentity2, cards.stream().filter(x -> x.isIdentical(cardIdentity2)).count());
+
+    var cardToken = pile.takeCards(cards);
+    assertEquals(cards, cardToken);
+
+    var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
+    var curNumOfCardWithCardIdentity2 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity2);
+
+    assertEquals(0, curNumOfCardWithCardIdentity1);
+    assertEquals(0, curNumOfCardWithCardIdentity2);
+
+    assertNull(pile.cardsInDisplay(List.of(cardIdentity1)));
+    assertNull(pile.cardsInDisplay(List.of(cardIdentity2)));
+    assertNull(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2)));
+    assertNull(pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity1)));
+  }
+
+  @ParameterizedTest
+  @MethodSource("pileProvider")
+  void takeCardsSingleCardTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+    List<List<ResourceCard>> displaying = pile.getDisplaying();
+    List<Integer> sizes = new ArrayList<>(displaying.stream().map(List::size).toList());
+
+    assertTrue(displaying.size() > 0);
+    assertEquals(pile.getMaxDisplayingSize(), displaying.size());
+
+    for (int i = 0; i < displaying.size(); i++) {
+      var card = pile.getDisplaying().get(i).get(0);
+      var cardsInDisplay = pile.cardsInDisplay(List.of(card.getCardIdentity()));
+      var cards = pile.takeCards(cardsInDisplay);
+      sizes.set(i, sizes.get(i) - 1);
+      assertEquals(sizes, pile.getDisplaying().stream().map(List::size).toList());
+      assertEquals(List.of(card), cards);
+    }
   }
 
   @ParameterizedTest
@@ -151,57 +326,45 @@ class LevelOneResourcePileTest {
     list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity1, cardIdentity1));
     list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity2, cardIdentity2));
 
-    var cards = pile.takeCards(list);
+    var cards = pile.cardsInDisplay(list);
+    assertNotNull(cards);
+    var cardToken = pile.takeCards(cards);
+    assertEquals(cards, cardToken);
     var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
     var curNumOfCardWithCardIdentity2 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity2);
 
-    assertEquals(initNumOfCardWithCardIdentity1 + initNumOfCardWithCardIdentity2, cards.size());
-    assertEquals(initNumOfCardWithCardIdentity1, cards.stream().filter(x -> x.isIdentical(cardIdentity1)).count());
-    assertEquals(initNumOfCardWithCardIdentity2, cards.stream().filter(x -> x.isIdentical(cardIdentity2)).count());
+    assertEquals(initNumOfCardWithCardIdentity1 + initNumOfCardWithCardIdentity2, cardToken.size());
+    assertEquals(initNumOfCardWithCardIdentity1, cardToken.stream().filter(x -> x.isIdentical(cardIdentity1)).count());
+    assertEquals(initNumOfCardWithCardIdentity2, cardToken.stream().filter(x -> x.isIdentical(cardIdentity2)).count());
     assertEquals(0, curNumOfCardWithCardIdentity1);
     assertEquals(0, curNumOfCardWithCardIdentity2);
   }
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void takeCardsMultipleCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) {
-    var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
-    var cardIdentity2 = pile.getDisplaying().get(0).get(0).getCardIdentity();
-    var cardIdentity3 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999);
-    var cardIdentity4 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999);
+  void takeCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
+    ResourceCard validCard1 = pile.getDisplaying().get(0).get(0);
+    ResourceCard validCard2 = pile.getDisplaying().get(1).get(0);
+    ResourceCard invalidCard = new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1), "invalid", 0, null, null);
 
-    var initNumOfCards = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
+    var initDisplayingCard = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
 
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity1)));
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity1, cardIdentity2)));
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity3)));
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity2, cardIdentity3)));
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity4)));
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity2, cardIdentity4)));
+    var cards = List.of(validCard1, validCard2, invalidCard);
+    assertThrows(DisplayPileException.class, () -> pile.takeCards(cards));
 
-    var curNumOfCards = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
-    assertEquals(initNumOfCards, curNumOfCards);
-  }
+    var displayFlatten = pile.getDisplaying().stream().flatMap(List::stream).toList();
+    var curDisplayingCard = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
+    // should not remove any cards if one is invalid
+    assertTrue(displayFlatten.contains(validCard1));
+    assertEquals(initDisplayingCard, curDisplayingCard);
 
-  @ParameterizedTest
-  @MethodSource("pileProvider")
-  void takeCardsMultipleCardsEmptyCaseTest(DisplayingPile<ResourceCard> pile) {
-    var cardIdentity1 = pile.getDisplaying().get(0).get(0).getCardIdentity();
-    var initNumOfCardWithCardIdentity1 = pile.getDisplaying().get(0).size();
-
-    List<CardIdentity> list = Collections.nCopies((int) (initNumOfCardWithCardIdentity1 + 1), cardIdentity1);
-
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(list));
-
-    var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
-    assertEquals(initNumOfCardWithCardIdentity1, curNumOfCardWithCardIdentity1);
-
-    for (int i = 0; i < initNumOfCardWithCardIdentity1; i++) {
-      assertDoesNotThrow(() -> pile.takeCards(List.of(cardIdentity1)));
-    }
-    curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
-    assertEquals(0, curNumOfCardWithCardIdentity1);
-    assertThrows(DisplayPileException.class, () -> pile.takeCards(List.of(cardIdentity1, cardIdentity1)));
+    List<ResourceCard> validCards = List.of(validCard1, validCard2);
+    pile.takeCards(validCards);
+    displayFlatten = pile.getDisplaying().stream().flatMap(List::stream).toList();
+    curDisplayingCard = pile.getDisplaying().stream().flatMap(List::stream).toList().size();
+    assertFalse(displayFlatten.contains(validCard1));
+    assertFalse(displayFlatten.contains(validCard2));
+    assertEquals(initDisplayingCard - 2, curDisplayingCard);
   }
 
   @ParameterizedTest
@@ -211,9 +374,10 @@ class LevelOneResourcePileTest {
     var cardIdentity1 = card1.getCardIdentity();
 
     var initNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
-    var cards = pile.takeCards(List.of(cardIdentity1));
+    var cards = takeCardHelper(pile, List.of(cardIdentity1));
     var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
     assertEquals(initNumOfCardWithCardIdentity1 - 1, curNumOfCardWithCardIdentity1);
+    assertFalse(pile.getDisplaying().stream().flatMap(List::stream).toList().containsAll(cards));
 
     pile.discardCards(cards);
     assertEquals(1, pile.getDiscardPile().size());
@@ -236,7 +400,7 @@ class LevelOneResourcePileTest {
     list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity1, cardIdentity1));
     list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity2, cardIdentity2));
 
-    var cards = pile.takeCards(list);
+    var cards = takeCardHelper(pile, list);
     var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
     var curNumOfCardWithCardIdentity2 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity2);
     assertEquals(0, curNumOfCardWithCardIdentity1);
@@ -253,7 +417,7 @@ class LevelOneResourcePileTest {
   void discardCardsShouldThrowTest(DisplayingPile<ResourceCard> pile) throws DisplayPileException {
     var card1 = new ResourceCard(new CardIdentity(CardType.BASIC_RESOURCE, 1), "test", 1, null, null);
     var card2 = new ResourceCard(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1), "test", 1, null, null);
-    var card3 = pile.takeCards(List.of(pile.getDisplaying().get(0).get(0).getCardIdentity())).get(0);
+    var card3 = takeCardHelper(pile, List.of(pile.getDisplaying().get(0).get(0).getCardIdentity())).get(0);
 
     assertThrows(DisplayPileException.class, () -> pile.discardCards(List.of(card1)));
     assertThrows(DisplayPileException.class, () -> pile.discardCards(List.of(card2)));
@@ -339,7 +503,7 @@ class LevelOneResourcePileTest {
     list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity1, cardIdentity1));
     list.addAll(Collections.nCopies((int) initNumOfCardWithCardIdentity2, cardIdentity2));
 
-    var cards = pile.takeCards(list);
+    var cards = takeCardHelper(pile, list);
     var curNumOfCardWithCardIdentity1 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity1);
     var curNumOfCardWithCardIdentity2 = numOfCardsWithCardIdentityInDisplaying(pile.getDisplaying(), cardIdentity2);
 
@@ -354,11 +518,5 @@ class LevelOneResourcePileTest {
     assertTrue(pile.getDisplaying().get(0).size() > 0);
     assertTrue(pile.getDisplaying().get(1).size() > 0);
     assertEquals(0, pile.getDisplaying().stream().filter(x -> x.size() == 0).count());
-  }
-
-  private long numOfCardsWithCardIdentityInDisplaying(List<List<ResourceCard>> displaying, CardIdentity cardIdentity) {
-    return displaying.stream()
-        .map(x -> x.stream().filter(y -> y.isIdentical(cardIdentity)).count())
-        .reduce(0L, Long::sum);
   }
 }
