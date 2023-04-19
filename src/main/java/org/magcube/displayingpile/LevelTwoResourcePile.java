@@ -22,6 +22,7 @@ public class LevelTwoResourcePile extends UniqueCardPile<ResourceCard> {
     if (isConsistentCardType(cards) && !haveDuplicatedCards(cards)) {
       this.discardPile.addAll(cards);
     } else {
+      // guarded by GameBoard, should not happen in real game
       throw new DisplayPileException("Cards to discard are not consistent");
     }
   }

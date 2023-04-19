@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.jetbrains.annotations.NotNull;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
@@ -74,6 +75,7 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
   @Override
   public List<ResourceCard> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException {
     if (!isConsistentCardTypeInCardIdentity(cardIdentities)) {
+      // guarded by GameBoard, should not happen in real game
       throw new DisplayPileException("Inconsistent card type in requesting cards");
     }
 
@@ -102,30 +104,40 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
   }
 
   @Override
-  public List<ResourceCard> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
-    var cardsInDisplaying = cardsInDisplay(cardIdentities);
-
-    if (cardsInDisplaying == null) {
-      throw new DisplayPileException("Not all cards are in displaying pile");
+  @NotNull
+  public List<ResourceCard> takeCards(List<ResourceCard> cardsInDisplaying) throws DisplayPileException {
+    var correspondingInnerLists = new ArrayList<List<ResourceCard>>();
+    for (ResourceCard card : cardsInDisplaying) {
+      var cards = availableCards.get(card.typeId());
+      if (cards == null || !cards.contains(card)) {
+        // guarded by GameBoard, should not happen in real game
+        throw new DisplayPileException("Card not in displaying pile");
+      }
+      correspondingInnerLists.add(cards);
     }
 
-    cardsInDisplaying.forEach(card -> availableCards.get(card.typeId()).remove(card));
+    for (int i = 0; i < cardsInDisplaying.size(); i++) {
+      var card = cardsInDisplaying.get(i);
+      var list = correspondingInnerLists.get(i);
+      list.remove(card);
+    }
+
     return cardsInDisplaying;
   }
 
   @Override
   public void discardCards(List<ResourceCard> cards) throws DisplayPileException {
     if (!isConsistentCardType(cards)) {
+      // guarded by GameBoard, should not happen in real game
+      throw new DisplayPileException("Cards to discard are not consistent");
+    }
+
+    if (!cards.stream().allMatch(card -> availableCards.containsKey(card.typeId()))) {
       throw new DisplayPileException("Cards to discard are not consistent");
     }
 
     for (var card : cards) {
-      var cardList = availableCards.get(card.typeId());
-      if (cardList == null) {
-        throw new DisplayPileException("Unknown typeId");
-      } else {
-        cardList.add(card);
-      }
+      availableCards.get(card.typeId()).add(card);
     }
   }
 

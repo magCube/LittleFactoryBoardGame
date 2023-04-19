@@ -1,6 +1,7 @@
 package org.magcube.displayingpile;
 
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
@@ -26,7 +27,8 @@ public interface DisplayingPile<T extends Card> {
   @Nullable
   List<T> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException;
 
-  List<T> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException;
+  @NotNull
+  List<T> takeCards(List<T> cardsInDisplaying) throws DisplayPileException;
 
   void discardCards(List<T> cards) throws DisplayPileException;
 

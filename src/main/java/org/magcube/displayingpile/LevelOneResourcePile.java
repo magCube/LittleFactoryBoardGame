@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.jetbrains.annotations.NotNull;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
@@ -103,41 +104,51 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
     return cardsInDisplaying;
   }
 
-
+  @NotNull
   @Override
-  public List<ResourceCard> takeCards(List<CardIdentity> cardIdentities) throws DisplayPileException {
-    var cardsInDisplaying = cardsInDisplay(cardIdentities);
-    if (cardsInDisplaying == null) {
-      throw new DisplayPileException("Not all cards are in displaying pile");
-    }
-
-    var lists = new ArrayList<List<ResourceCard>>();
+  public List<ResourceCard> takeCards(List<ResourceCard> cardsInDisplaying) throws DisplayPileException {
+    var correspondingInnerLists = new ArrayList<List<ResourceCard>>();
     for (ResourceCard card : cardsInDisplaying) {
       var list = findTheListWithTheSameCardIdentity(card.getCardIdentity());
-      if (list.isPresent()) {
-        lists.add(list.get());
+      if (list.isPresent() && list.get().contains(card)) {
+        correspondingInnerLists.add(list.get());
       } else {
-        // should not happen
-        throw new DisplayPileException("Internal logic error");
+        // guarded by GameBoard, should not happen in real game
+        throw new DisplayPileException("Cards not in displaying");
       }
     }
 
     for (int i = 0; i < cardsInDisplaying.size(); i++) {
       var card = cardsInDisplaying.get(i);
-      var list = lists.get(i);
+      var list = correspondingInnerLists.get(i);
       list.remove(card);
     }
 
     return cardsInDisplaying;
   }
-  
+
   @Override
   public void discardCards(List<ResourceCard> cards) throws DisplayPileException {
     if (isConsistentCardType(cards)) {
       this.discardPile.addAll(cards);
     } else {
+      // guarded by GameBoard, should not happen in real game
       throw new DisplayPileException("Cards to discard are not consistent");
     }
+  }
+
+  private void fillDeckWithDiscardPileIfDeckUsedUp() {
+    if (deck.isEmpty() && displaying.stream().anyMatch(List::isEmpty)) {
+      deck.addAll(discardPile);
+      Collections.shuffle(deck);
+      discardPile.clear();
+    }
+  }
+
+  private Optional<List<ResourceCard>> findEmptyListInDisplayingPile() {
+    return displaying.stream()
+        .filter(List::isEmpty)
+        .findFirst();
   }
 
   @Override
@@ -157,12 +168,6 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
     }
   }
 
-  private Optional<List<ResourceCard>> findEmptyListInDisplayingPile() {
-    return displaying.stream()
-        .filter(List::isEmpty)
-        .findFirst();
-  }
-
   private Optional<List<ResourceCard>> findTheListWithTheSameCardIdentity(CardIdentity cardIdentity) {
     return displaying.stream()
         .filter(innerList -> innerList.stream().anyMatch(card -> card.isIdentical(cardIdentity)))
@@ -180,13 +185,5 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
     return displaying.stream()
         .filter(innerList -> innerList.stream().anyMatch(card::isIdentical))
         .findFirst();
-  }
-
-  private void fillDeckWithDiscardPileIfDeckUsedUp() {
-    if (deck.isEmpty() && displaying.stream().anyMatch(List::isEmpty)) {
-      deck.addAll(discardPile);
-      Collections.shuffle(deck);
-      discardPile.clear();
-    }
   }
 }
