@@ -21,7 +21,6 @@ import org.magcube.card.Card;
 import org.magcube.card.CardDeck;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
-import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.player.NumOfPlayers;
 
@@ -43,20 +42,21 @@ public class BuildingPileTest {
 
   private static Stream<BuildingPile> pileProvider() throws DisplayPileException {
     return Stream.of(
-        new BuildingPile(CardDeck.get(NumOfPlayers.TWO).building),
-        new BuildingPile(CardDeck.get(NumOfPlayers.THREE).building),
-        new BuildingPile(CardDeck.get(NumOfPlayers.FOUR).building)
+        new BuildingPile(CardDeck.get(NumOfPlayers.TWO).building, NumOfPlayers.TWO),
+        new BuildingPile(CardDeck.get(NumOfPlayers.THREE).building, NumOfPlayers.THREE),
+        new BuildingPile(CardDeck.get(NumOfPlayers.FOUR).building, NumOfPlayers.FOUR)
     );
   }
 
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void constructorTest1(NumOfPlayers numOfPlayers) {
-    assertDoesNotThrow(() -> new BuildingPile(CardDeck.get(numOfPlayers).building));
+    assertDoesNotThrow(() -> new BuildingPile(CardDeck.get(numOfPlayers).building, numOfPlayers));
   }
 
-  @Test
-  void constructorTest2() {
+  @ParameterizedTest
+  @EnumSource(NumOfPlayers.class)
+  void constructorTest2(NumOfPlayers numOfPlayers) {
     ArrayList<BuildingCard> mockDeck = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
       mockDeck.add(BuildingCard.builder()
@@ -64,11 +64,12 @@ public class BuildingPileTest {
           .name("test" + i)
           .build());
     }
-    assertDoesNotThrow(() -> new BuildingPile(mockDeck));
+    assertDoesNotThrow(() -> new BuildingPile(mockDeck, numOfPlayers));
   }
 
-  @Test
-  void constructorShouldThrowTest() {
+  @ParameterizedTest
+  @EnumSource(NumOfPlayers.class)
+  void constructorShouldThrowTest(NumOfPlayers numOfPlayers) {
     ArrayList<BuildingCard> mockDeck = new ArrayList<>();
     mockDeck.add(BuildingCard.builder()
         .cardIdentity(new CardIdentity(CardType.BUILDING, 0))
@@ -82,7 +83,7 @@ public class BuildingPileTest {
           .build();
       mockDeck.add(card);
     }
-    assertThrows(DisplayPileException.class, () -> new BuildingPile(mockDeck));
+    assertThrows(DisplayPileException.class, () -> new BuildingPile(mockDeck, numOfPlayers));
   }
 
   @ParameterizedTest
@@ -103,14 +104,33 @@ public class BuildingPileTest {
   @ParameterizedTest
   @EnumSource(NumOfPlayers.class)
   void getDeckTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
-    var pile = new BuildingPile(CardDeck.get(numOfPlayers).building);
-    assertEquals(pile.getDeck().size(), CardDeck.get(numOfPlayers).building.size() - pile.getMaxDisplayingSize());
+    List<BuildingCard> buildingDeck = CardDeck.get(numOfPlayers).building;
+    var pile = new BuildingPile(buildingDeck, numOfPlayers);
+
+    var startingBuildings = buildingDeck.stream().filter(x -> Boolean.TRUE.equals(x.getIsStartingBuilding())).toList();
+    var maxDisplayingSize = pile.getMaxDisplayingSize();
+    var numOfStartingBuildingInDisplay = Math.min(maxDisplayingSize, startingBuildings.size());
+    numOfStartingBuildingInDisplay = Math.min(numOfStartingBuildingInDisplay, numOfPlayers.getValue() + 1);
+
+    assertEquals(pile.getDeck().size(), buildingDeck.size() - startingBuildings.size() - (maxDisplayingSize - numOfStartingBuildingInDisplay));
+    assertTrue(pile.getDeck().stream().noneMatch(BuildingCard::getIsStartingBuilding));
   }
 
   @ParameterizedTest
-  @MethodSource("pileProvider")
-  void getDiscardPileTest(DisplayingPile<ResourceCard> pile) {
-    assertEquals(0, pile.getDiscardPile().size());
+  @EnumSource(NumOfPlayers.class)
+  void getDiscardPileTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
+    List<BuildingCard> buildingDeck = CardDeck.get(numOfPlayers).building;
+    var pile = new BuildingPile(buildingDeck, numOfPlayers);
+
+    var startingBuildings = buildingDeck.stream().filter(x -> Boolean.TRUE.equals(x.getIsStartingBuilding())).toList();
+    var maxDisplayingSize = pile.getMaxDisplayingSize();
+    var numOfStartingBuildingInDisplay = Math.min(maxDisplayingSize, startingBuildings.size());
+    numOfStartingBuildingInDisplay = Math.min(numOfStartingBuildingInDisplay, numOfPlayers.getValue() + 1);
+
+    var expectedDiscardPileSize = maxDisplayingSize - numOfStartingBuildingInDisplay;
+
+    assertEquals(expectedDiscardPileSize, pile.getDiscardPile().size());
+    assertTrue(pile.getDiscardPile().stream().allMatch(BuildingCard::getIsStartingBuilding));
   }
 
   @ParameterizedTest
@@ -129,15 +149,14 @@ public class BuildingPileTest {
           .name("test" + i)
           .build());
     }
-    var pile = new BuildingPile(mockDeck);
+    var pile = new BuildingPile(mockDeck, NumOfPlayers.FOUR);
     assertEquals(5, pile.getMaxDisplayingSize());
   }
 
   @ParameterizedTest
   @MethodSource("pileProvider")
   void getDiscardSizeTest(DisplayingPile<BuildingCard> pile) {
-    assertEquals(0, pile.getDiscardPile().size());
-    assertEquals(0, pile.discardPileSize());
+    assertEquals(pile.getDiscardPile().size(), pile.discardPileSize());
   }
 
   @ParameterizedTest
@@ -176,7 +195,7 @@ public class BuildingPileTest {
   @ParameterizedTest
   @MethodSource("invalidCardIdentitiesProvider")
   void cardsInDisplaySingleCardShouldThrowTest(CardIdentity cardIdentity) throws DisplayPileException {
-    var pile = new BuildingPile(CardDeck.get(NumOfPlayers.FOUR).building);
+    var pile = new BuildingPile(CardDeck.get(NumOfPlayers.FOUR).building, NumOfPlayers.FOUR);
     assertThrows(DisplayPileException.class, () -> pile.cardsInDisplay(List.of(cardIdentity)));
   }
 
@@ -367,7 +386,7 @@ public class BuildingPileTest {
       );
     }
 
-    var pile = new BuildingPile(mockDeck);
+    var pile = new BuildingPile(mockDeck, NumOfPlayers.FOUR);
     assertEquals(0, pile.deckSize());
     assertEquals(5, pile.getDisplaying().size());
     assertEquals(mockDeck.size(), pile.getDisplaying().stream().filter(innerList -> innerList.size() > 0).count());

@@ -10,10 +10,6 @@ public class LevelTwoResourcePile extends UniqueCardPile<ResourceCard> {
 
   public LevelTwoResourcePile(List<ResourceCard> deck) throws DisplayPileException {
     super(CardType.LEVEL_TWO_RESOURCE, deck);
-  }
-
-  @Override
-  protected void initPile() {
     refillCards();
   }
 

@@ -26,7 +26,7 @@ public class GameBoard {
     basicResourcesPile = new BasicResourceDisplayingPile(deck.basicResource);
     levelOneResourcesPile = new LevelOneResourcePile(deck.levelOneResource);
     levelTwoResourcesPile = new LevelTwoResourcePile(deck.levelTwoResource);
-    buildingPile = new BuildingPile(deck.building);
+    buildingPile = new BuildingPile(deck.building, numOfPlayers);
   }
 
   public <T extends Card> PileState<T> getPileState(CardType cardType) {

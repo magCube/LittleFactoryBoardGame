@@ -32,15 +32,17 @@ public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T
     availableCards = new ArrayList<>(Collections.nCopies(maxDisplayingSize, null));
     this.deck = new ArrayList<>();
     discardPile = new ArrayList<>(deck);
-    initPile();
+  }
+
+  private interface PileInitializer {
+
+    void init();
   }
 
   protected boolean haveDuplicatedCards(List<T> cards) {
     var cardIdentities = cards.stream().map(Card::getCardIdentity).collect(Collectors.toSet());
     return cardIdentities.size() != cards.size();
   }
-
-  protected abstract void initPile();
 
   @Override
   public CardType getCardType() {
