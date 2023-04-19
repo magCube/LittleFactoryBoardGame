@@ -1,10 +1,10 @@
-package org.magcube;
+package org.magcube.gameboard;
 
 import java.util.List;
-import lombok.Getter;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardDeck;
+import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.displayingpile.BasicResourceDisplayingPile;
 import org.magcube.displayingpile.BuildingPile;
@@ -14,7 +14,6 @@ import org.magcube.displayingpile.LevelTwoResourcePile;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.player.NumOfPlayers;
 
-@Getter
 public class GameBoard {
 
   private final DisplayingPile<ResourceCard> basicResourcesPile;
@@ -30,20 +29,18 @@ public class GameBoard {
     buildingPile = new BuildingPile(deck.building);
   }
 
-  public List<List<ResourceCard>> getDisplayingBasicResource() {
-    return basicResourcesPile.getDisplaying();
+  public <T extends Card> PileState<T> getPileState(CardType cardType) {
+    @SuppressWarnings("unchecked")
+    DisplayingPile<T> pile = (DisplayingPile<T>) getPile(cardType);
+    return new PileState<>(cardType, pile.getDisplaying(), pile.getDeck(), pile.getDiscardPile());
   }
 
-  public List<List<ResourceCard>> getDisplayingLevel1Resource() {
-    return levelOneResourcesPile.getDisplaying();
-  }
-
-  public List<List<ResourceCard>> getDisplayingLevel2Resource() {
-    return levelTwoResourcesPile.getDisplaying();
-  }
-
-  public List<List<BuildingCard>> getDisplayingBuildings() {
-    return buildingPile.getDisplaying();
+  public GameBoardState getGameBoardState() {
+    return new GameBoardState(
+        getPileState(CardType.BASIC_RESOURCE),
+        getPileState(CardType.LEVEL_ONE_RESOURCE),
+        getPileState(CardType.LEVEL_TWO_RESOURCE),
+        getPileState(CardType.BUILDING));
   }
 
   public void takeCards(List<Card> cards) throws DisplayPileException {
@@ -58,5 +55,14 @@ public class GameBoard {
     basicResourcesPile.refillCards();
     levelOneResourcesPile.refillCards();
     levelTwoResourcesPile.refillCards();
+  }
+
+  private DisplayingPile<? extends Card> getPile(CardType cardType) {
+    return switch (cardType) {
+      case BASIC_RESOURCE -> basicResourcesPile;
+      case LEVEL_ONE_RESOURCE -> levelOneResourcesPile;
+      case LEVEL_TWO_RESOURCE -> levelTwoResourcesPile;
+      case BUILDING -> buildingPile;
+    };
   }
 }

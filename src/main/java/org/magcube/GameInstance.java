@@ -10,6 +10,7 @@ import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.GameStartupException;
+import org.magcube.gameboard.GameBoard;
 import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 
