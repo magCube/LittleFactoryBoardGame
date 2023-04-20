@@ -3,14 +3,16 @@ package org.magcube.card;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 
 public class CardData {
 
-  static public final List<ResourceCard> basicResource;
-  static public final List<ResourceCard> levelOneResource;
-  static public final List<ResourceCard> levelTwoResource;
-  static public final List<BuildingCard> building;
+  public static final List<ResourceCard> basicResource;
+  public static final List<ResourceCard> levelOneResource;
+  public static final List<ResourceCard> levelTwoResource;
+  public static final List<BuildingCard> building;
+  public static final HashMap<CardType, Integer> maxTypeId = new HashMap<>();
 
   static {
     try {
@@ -18,6 +20,15 @@ public class CardData {
       levelOneResource = loadCard(ResourceCard.class, "/type1.json");
       levelTwoResource = loadCard(ResourceCard.class, "/type2.json");
       building = loadCard(BuildingCard.class, "/type3.json");
+
+      //noinspection OptionalGetWithoutIsPresent
+      maxTypeId.put(CardType.BASIC_RESOURCE, basicResource.stream().map(Card::typeId).max(Integer::compare).get());
+      //noinspection OptionalGetWithoutIsPresent
+      maxTypeId.put(CardType.LEVEL_ONE_RESOURCE, levelOneResource.stream().map(Card::typeId).max(Integer::compare).get());
+      //noinspection OptionalGetWithoutIsPresent
+      maxTypeId.put(CardType.LEVEL_TWO_RESOURCE, levelTwoResource.stream().map(Card::typeId).max(Integer::compare).get());
+      //noinspection OptionalGetWithoutIsPresent
+      maxTypeId.put(CardType.BUILDING, building.stream().map(Card::typeId).max(Integer::compare).get());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

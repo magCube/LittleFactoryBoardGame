@@ -1,9 +1,11 @@
 package org.magcube.card;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 @ToString
+@EqualsAndHashCode
 @Getter
 public abstract class Card {
 

@@ -1,10 +1,12 @@
 package org.magcube.card;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
 @ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
 @Getter
 public class BuildingCard extends Card {
 

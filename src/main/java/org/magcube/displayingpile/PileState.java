@@ -1,4 +1,4 @@
-package org.magcube.gameboard;
+package org.magcube.displayingpile;
 
 import java.util.List;
 import org.magcube.card.Card;

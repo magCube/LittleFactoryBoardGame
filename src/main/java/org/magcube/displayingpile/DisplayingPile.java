@@ -24,6 +24,10 @@ public interface DisplayingPile<T extends Card> {
 
   int discardPileSize();
 
+  default PileState<T> pileState() {
+    return new PileState<>(getCardType(), getDisplaying(), getDeck(), getDiscardPile());
+  }
+
   @Nullable
   List<T> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException;
 

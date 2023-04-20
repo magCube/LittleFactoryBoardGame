@@ -117,7 +117,8 @@ public class GameInstance {
 
     if (payment >= targets.stream().map(Card::getValue).reduce(0, Integer::sum)) {
 
-      gameBoard.takeCards(targets);
+      // todo
+//      gameBoard.takeCards(targets);
 
       var targetResourceCards = targets.stream()
           .filter(card -> card.cardType() == CardType.BASIC_RESOURCE ||
