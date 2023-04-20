@@ -80,22 +80,21 @@ public class GameBoard {
     return categorizedCards;
   }
 
-  public HashMap<CardType, List<? extends Card>> validateAndCategorizeDiscardCards(List<? extends Card> cards) throws DisplayPileException {
+  public static HashMap<CardType, List<? extends Card>> validateAndCategorizeDiscardCards(List<? extends Card> cards) throws DisplayPileException {
     if (!GameBoards.isCardsValidate(cards)) {
       throw new DisplayPileException("Invalid cards");
     }
     if (!GameBoards.isNoBuildingCards(cards)) {
       throw new DisplayPileException("Cannot discard building cards");
     }
-
     return GameBoards.categorizeCards(cards);
   }
 
-  public void discardCards(HashMap<CardType, List<ResourceCard>> categorizedCards) throws DisplayPileException {
+  public void discardCards(HashMap<CardType, List<? extends Card>> categorizedCards) throws DisplayPileException {
     for (var entry : categorizedCards.entrySet()) {
       var cardType = entry.getKey();
       var pile = getResourcePile(cardType);
-      pile.discardCards(entry.getValue());
+      pile.discardCards((List<ResourceCard>) entry.getValue());
     }
   }
 
