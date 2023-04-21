@@ -1,5 +1,8 @@
 package org.magcube.card;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -38,5 +41,17 @@ public class BuildingCard extends Card {
     this.isStartingBuilding = isStartingBuilding;
     this.isExtension = isExtension;
     this.specialEffect = specialEffect;
+  }
+
+  // todo: move to Card
+  public boolean costMatch(List<CardIdentity> checkingCardIdentities) {
+    // the outer layer is OR, the inner layer is AND
+    for (CardIdentity[] option : cost) {
+      var optionList = new ArrayList<>(Arrays.asList(option));
+      if (Cards.isCardIdentitiesSame(optionList, checkingCardIdentities)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

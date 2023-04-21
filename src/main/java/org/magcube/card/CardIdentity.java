@@ -7,7 +7,7 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class CardIdentity {
+public class CardIdentity implements Comparable<CardIdentity> {
 
   private CardType cardType;
   private int typeId;
@@ -15,6 +15,7 @@ public class CardIdentity {
   public CardIdentity() {
   }
 
+  @Builder
   public CardIdentity(CardType cardType, int typeId) {
     this.cardType = cardType;
     this.typeId = typeId;
@@ -35,5 +36,15 @@ public class CardIdentity {
   @Override
   public int hashCode() {
     return Objects.hash(cardType, typeId);
+  }
+
+  @Override
+  public int compareTo(CardIdentity o) {
+    int compareByCardType = this.cardType.compareTo(o.cardType);
+    if (compareByCardType != 0) {
+      return compareByCardType;
+    } else {
+      return Integer.compare(this.typeId, o.typeId);
+    }
   }
 }
