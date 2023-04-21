@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
@@ -81,9 +80,12 @@ public class GameInstance {
 //        display winner
   }
 
-  @Nullable
-  public HashMap<CardType, List<? extends Card>> availableCardsInGameBoard(List<CardIdentity> cardIdentities) throws DisplayPileException {
-    return gameBoard.cardsInDisplay(cardIdentities);
+  private HashMap<CardType, List<? extends Card>> availableCardsInGameBoard(List<CardIdentity> cardIdentities) throws DisplayPileException {
+    var cards = gameBoard.cardsInDisplay(cardIdentities);
+    if (cards == null) {
+      throw new DisplayPileException("cards are not available in game board");
+    }
+    return cards;
   }
 
   private int sumOfCardsValue(List<? extends Card> cards) {
@@ -98,23 +100,44 @@ public class GameInstance {
     return value;
   }
 
-  public void tradeCardsByCoins(List<CardIdentity> targets) throws DisplayPileException {
+  private void checkIsTradedOrPlayerProduced() throws DisplayPileException {
     if (isTradedOrPlayerProduced) {
-      throw new DisplayPileException("Player already traded!");
+      throw new DisplayPileException("Player already traded or produced.");
     }
+  }
 
-    if (!GameBoards.isCardIdentitiesValid(targets)) {
-      throw new DisplayPileException("Invalid card identities!");
-    }
-
-    if (currentPlayer.willExceedMaxNumOfResourceCard(targets.size())) {
+  private void checkWillExceedMaxNumOfResourceCard(int add) throws DisplayPileException {
+    if (currentPlayer.willExceedMaxNumOfResourceCard(add)) {
       throw new DisplayPileException("Player will exceed max number of resource cards!");
     }
+  }
+
+  private void validateCardIdentities(List<CardIdentity> cardIdentities) throws DisplayPileException {
+    if (!GameBoards.isCardIdentitiesValid(cardIdentities)) {
+      throw new DisplayPileException("Invalid card identities!");
+    }
+  }
+
+  private List<ResourceCard> playerEquivalentResourcesCards(List<CardIdentity> payment) throws DisplayPileException {
+    var playerEquivalentResourcesCards = currentPlayer.equivalentResources(payment);
+    if (playerEquivalentResourcesCards == null) {
+      throw new DisplayPileException("Player do not own the payment cards!");
+    }
+    return playerEquivalentResourcesCards;
+  }
+
+  private void checkPlayerOwnResourcesCards(List<CardIdentity> payment) throws DisplayPileException {
+    if (currentPlayer.equivalentResources(payment) == null) {
+      throw new DisplayPileException("Player do not own the payment cards!");
+    }
+  }
+
+  public void tradeCardsByCoins(List<CardIdentity> targets) throws DisplayPileException {
+    checkIsTradedOrPlayerProduced();
+    checkWillExceedMaxNumOfResourceCard(targets.size());
+    validateCardIdentities(targets);
 
     var availableCardsInGameBoard = availableCardsInGameBoard(targets);
-    if (availableCardsInGameBoard == null) {
-      throw new DisplayPileException("Target cards are not available!");
-    }
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
 
     var playerCoin = currentPlayer.getCoin();
@@ -128,41 +151,29 @@ public class GameInstance {
   }
 
   public void tradeCardsByCards(List<CardIdentity> payment, List<CardIdentity> targets) throws DisplayPileException {
-    if (isTradedOrPlayerProduced) {
-      throw new DisplayPileException("Player already traded!");
-    }
+    checkIsTradedOrPlayerProduced();
 
     if (payment.size() != 1 || targets.size() != 1) {
       throw new DisplayPileException("Trading must be 1:n or n:1!");
     }
 
-    if (currentPlayer.willExceedMaxNumOfResourceCard(targets.size())) {
-      throw new DisplayPileException("Player will exceed max number of resource cards!");
-    }
+    checkWillExceedMaxNumOfResourceCard(targets.size());
+    validateCardIdentities(payment);
+    validateCardIdentities(targets);
 
-    if (!GameBoards.isCardIdentitiesValid(payment) || !GameBoards.isCardIdentitiesValid(targets)) {
-      throw new DisplayPileException("Invalid card identities!");
-    }
+    var cardsForPayment = playerEquivalentResourcesCards(payment);
+    var categorizeDiscardCards = GameBoard.validateAndCategorizeDiscardCards(cardsForPayment);
 
-    var playerEquivalentResources = currentPlayer.equivalentResources(payment);
-    if (playerEquivalentResources == null) {
-      throw new DisplayPileException("Player do not own the payment cards!");
-    }
-    var categorizeDiscardCards = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
-
-    var sumOfPaymentValue = sumOfCardsValue(playerEquivalentResources);
+    var sumOfPaymentValue = sumOfCardsValue(cardsForPayment);
 
     var availableCardsInGameBoard = availableCardsInGameBoard(targets);
-    if (availableCardsInGameBoard == null) {
-      throw new DisplayPileException("Target cards are not available!");
-    }
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
     if (sumOfPaymentValue < sumOfTargetsValue) {
       throw new DisplayPileException("Payment does not have enough value to trade!");
     }
 
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
-    currentPlayer.discardCards(playerEquivalentResources);
+    currentPlayer.discardCards(cardsForPayment);
     gameBoard.discardCards(categorizeDiscardCards);
     isTradedOrPlayerProduced = true;
   }
@@ -184,28 +195,14 @@ public class GameInstance {
   }
 
   public void playerProduceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity) throws DisplayPileException {
-    if (isTradedOrPlayerProduced) {
-      throw new DisplayPileException("Player already produced!");
-    }
+    checkIsTradedOrPlayerProduced();
+    checkWillExceedMaxNumOfResourceCard(1);
+    validateCardIdentities(costCardIdentities);
+    validateCardIdentities(List.of(productCardIdentity));
 
-    if (currentPlayer.willExceedMaxNumOfResourceCard(1)) {
-      throw new DisplayPileException("Player will exceed max number of resource cards!");
-    }
-
-    if (!GameBoards.isCardIdentitiesValid(costCardIdentities)) {
-      throw new DisplayPileException("Invalid card identities!");
-    }
-
-    var playerEquivalentResources = currentPlayer.equivalentResources(costCardIdentities);
-    if (playerEquivalentResources == null) {
-      throw new DisplayPileException("Player do not own the cost cards!");
-    }
+    var playerEquivalentResources = playerEquivalentResourcesCards(costCardIdentities);
     var categorizeDiscardCards = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
-
-    var cardsInGameBoard = gameBoard.cardsInDisplay(List.of(productCardIdentity));
-    if (cardsInGameBoard == null) {
-      throw new DisplayPileException("Target card is not available!");
-    }
+    var cardsInGameBoard = availableCardsInGameBoard(List.of(productCardIdentity));
 
     var productCard = cardsInGameBoard.get(productCardIdentity.getCardType()).get(0);
     boolean costMatch = productCard.cardType() == CardType.BUILDING
@@ -220,28 +217,15 @@ public class GameInstance {
     gameBoard.discardCards(categorizeDiscardCards);
   }
 
+  // todo: we don't need to provide capitalCardIdentities, currently we only have 1 option in capital
   public void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity) throws DisplayPileException {
-    if (isTradedOrPlayerProduced) {
-      throw new DisplayPileException("Player already produced!");
-    }
+    checkIsTradedOrPlayerProduced();
+    checkWillExceedMaxNumOfResourceCard(1);
+    validateCardIdentities(capitalCardIdentities);
+    validateCardIdentities(List.of(productCardIdentity));
+    checkPlayerOwnResourcesCards(capitalCardIdentities);
 
-    if (currentPlayer.willExceedMaxNumOfResourceCard(1)) {
-      throw new DisplayPileException("Player will exceed max number of resource cards!");
-    }
-
-    if (!GameBoards.isCardIdentitiesValid(capitalCardIdentities)) {
-      throw new DisplayPileException("Invalid card identities!");
-    }
-
-    var playerEquivalentResources = currentPlayer.equivalentResources(capitalCardIdentities);
-    if (playerEquivalentResources == null) {
-      throw new DisplayPileException("Player do not own the capital cards!");
-    }
-
-    var cardsInGameBoard = gameBoard.cardsInDisplay(List.of(productCardIdentity));
-    if (cardsInGameBoard == null) {
-      throw new DisplayPileException("Target card is not available!");
-    }
+    var cardsInGameBoard = availableCardsInGameBoard(List.of(productCardIdentity));
 
     var productCard = cardsInGameBoard.get(productCardIdentity.getCardType()).get(0);
     boolean capitalMatch = productCard.cardType() != CardType.BUILDING && ((ResourceCard) productCard).capitalMatch(capitalCardIdentities);
@@ -250,6 +234,22 @@ public class GameInstance {
     }
 
     playerTakeCardsFormGameBoard(cardsInGameBoard);
+  }
+
+  public void activateBuildingToGetPointsTokenByCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities) {
+    // todo: implement
+  }
+
+  public void activateBuildingToProduceByCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities) {
+    // todo: implement
+  }
+
+  public void activateBuildingToProduceByCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities) {
+    // todo: implement
+  }
+
+  public void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity) {
+    throw new RuntimeException("Not implemented yet!");
   }
 
   private void playerTakeCardsFormGameBoard(HashMap<CardType, List<? extends Card>> categorizedCards) throws DisplayPileException {
