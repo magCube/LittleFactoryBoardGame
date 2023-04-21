@@ -1,7 +1,7 @@
 package org.magcube.player;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class PlayerTest {
   @Test
   void userGiveAndTakeCardAndPointTest() {
     var user = new Player("1", "test12312412312");
-    assertEquals(0, user.getPoints());
+    assertEquals(0, user.points());
     var card1 = ResourceCard.builder()
         .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
         .value(1)
@@ -52,11 +52,11 @@ public class PlayerTest {
     assertEquals(2, user.getBuildings().size());
     assertTrue(user.getBuildings().containsAll(buildings));
 
-    assertEquals(2, user.getPoints());
+    assertEquals(2, user.points());
     user.addPoints(1);
-    assertEquals(3, user.getPoints());
+    assertEquals(3, user.points());
     user.addPoints(10);
-    assertEquals(13, user.getPoints());
+    assertEquals(13, user.points());
 
     user.discardCards(List.of(card1));
     assertEquals(1, user.getResources().size());
@@ -64,55 +64,7 @@ public class PlayerTest {
   }
 
   @Test
-  void userOwnCardTest() {
-    var user = new Player("1", "player1");
-    assertEquals(0, user.getPoints());
-    var card1 = ResourceCard.builder()
-        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
-        .value(1)
-        .build();
-    var anotherCard1 = ResourceCard.builder()
-        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
-        .value(1)
-        .build();
-    var card2 = ResourceCard.builder()
-        .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2))
-        .value(1)
-        .build();
-
-    assertFalse(user.ownCard(card1));
-    user.takeResourceCards(List.of(card1));
-    assertTrue(user.ownCard(card1));
-    assertTrue(user.ownCard(anotherCard1));
-    assertFalse(user.ownCard(card2));
-  }
-
-  @Test
-  void userOwnFactoryCardTest() {
-    var user = new Player("1", "player1");
-    assertEquals(0, user.getPoints());
-    var card1 = BuildingCard.builder()
-        .cardIdentity(new CardIdentity(CardType.BUILDING, 1))
-        .value(6)
-        .build();
-    var anotherCard1 = BuildingCard.builder()
-        .cardIdentity(new CardIdentity(CardType.BUILDING, 1))
-        .value(6)
-        .build();
-    var card2 = BuildingCard.builder()
-        .cardIdentity(new CardIdentity(CardType.BUILDING, 2))
-        .value(6)
-        .build();
-
-    assertFalse(user.ownCard(card1));
-    user.takeBuildingCards(List.of(card1));
-    assertTrue(user.ownCard(card1));
-    assertTrue(user.ownCard(anotherCard1));
-    assertFalse(user.ownCard(card2));
-  }
-
-  @Test
-  void isOwnAllResourcesTest() {
+  void equivalentResourcesTest() {
     var card1Builder = ResourceCard.builder()
         .cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1))
         .value(1);
@@ -126,24 +78,54 @@ public class PlayerTest {
     var ownCard1a = card1Builder.build();
     var ownCard1b = card1Builder.build();
     var ownCard2 = card2Builder.build();
-    var user = new Player("1", "player1");
-    user.takeResourceCards(List.of(ownCard1a, ownCard1b, ownCard2));
+    var player = new Player("1", "player1");
+    player.takeResourceCards(List.of(ownCard1a, ownCard1b, ownCard2));
 
-    var testCard1a = card1Builder.build();
-    var testCard1b = card1Builder.build();
-    var testCard2a = card2Builder.build();
-    var testCard2b = card2Builder.build();
-    var testCard3 = card3Builder.build();
+    var testCardIdentity1a = new CardIdentity(CardType.BASIC_RESOURCE, 1);
+    var testCardIdentity1b = new CardIdentity(CardType.BASIC_RESOURCE, 1);
+    var testCardIdentity2a = new CardIdentity(CardType.BASIC_RESOURCE, 2);
+    var testCardIdentity2b = new CardIdentity(CardType.BASIC_RESOURCE, 2);
+    var testCardIdentity3 = new CardIdentity(CardType.BASIC_RESOURCE, 3);
 
-    assertTrue(user.isOwnAllResources(List.of(testCard1a)));
-    assertTrue(user.isOwnAllResources(List.of(testCard1b)));
-    assertTrue(user.isOwnAllResources(List.of(testCard1a, testCard1b)));
-    assertTrue(user.isOwnAllResources(List.of(testCard1a, testCard2a)));
-    assertTrue(user.isOwnAllResources(List.of(testCard1a, testCard1b, testCard2a)));
-    assertTrue(user.isOwnAllResources(List.of(testCard2b, testCard1a, testCard1b)));
+    assertEquals(List.of(ownCard1a), player.equivalentResources(List.of(testCardIdentity1a)));
+    assertEquals(List.of(ownCard1b), player.equivalentResources(List.of(testCardIdentity1b)));
+    assertEquals(List.of(ownCard1a, ownCard1b), player.equivalentResources(List.of(testCardIdentity1a, testCardIdentity1b)));
+    assertEquals(List.of(ownCard1a, ownCard2), player.equivalentResources(List.of(testCardIdentity1a, testCardIdentity2a)));
+    assertEquals(List.of(ownCard1a, ownCard1b, ownCard2),
+        player.equivalentResources(List.of(testCardIdentity1a, testCardIdentity1b, testCardIdentity2a)));
+    assertEquals(List.of(ownCard2, ownCard1a, ownCard1b),
+        player.equivalentResources(List.of(testCardIdentity2b, testCardIdentity1a, testCardIdentity1b)));
 
-    assertFalse(user.isOwnAllResources(List.of(testCard3)));
-    assertFalse(user.isOwnAllResources(List.of(testCard2a, testCard2b)));
-    assertFalse(user.isOwnAllResources(List.of(testCard1a, testCard1b, testCard2a, testCard2b)));
+    assertNull(player.equivalentResources(List.of(testCardIdentity3)));
+    assertNull(player.equivalentResources(List.of(testCardIdentity2a, testCardIdentity2b)));
+    assertNull(player.equivalentResources(List.of(testCardIdentity1a, testCardIdentity1b, testCardIdentity2a, testCardIdentity2b)));
+  }
+
+  @Test
+  void equivalentBuildingTest() {
+    var building1 = BuildingCard.builder()
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 1))
+        .build();
+    var building2 = BuildingCard.builder()
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 2))
+        .build();
+    var building3 = BuildingCard.builder()
+        .cardIdentity(new CardIdentity(CardType.BUILDING, 3))
+        .build();
+
+    var player = new Player("1", "player1");
+    player.takeBuildingCards(List.of(building1, building2, building3));
+
+    var testCardIdentity1 = new CardIdentity(CardType.BUILDING, 1);
+    var testCardIdentity2 = new CardIdentity(CardType.BUILDING, 2);
+    var testCardIdentity3 = new CardIdentity(CardType.BUILDING, 3);
+    var testCardIdentity4 = new CardIdentity(CardType.BUILDING, 4);
+    var testCardIdentity5 = new CardIdentity(CardType.BUILDING, 5);
+
+    assertEquals(building1, player.equivalentBuilding(testCardIdentity1));
+    assertEquals(building2, player.equivalentBuilding(testCardIdentity2));
+    assertEquals(building3, player.equivalentBuilding(testCardIdentity3));
+    assertNull(player.equivalentBuilding(testCardIdentity4));
+    assertNull(player.equivalentBuilding(testCardIdentity5));
   }
 }

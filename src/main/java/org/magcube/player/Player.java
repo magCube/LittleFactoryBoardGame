@@ -2,22 +2,29 @@ package org.magcube.player;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
+import org.magcube.card.CardIdentity;
+import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 
 @Getter
 public class Player {
 
+  public static final int maxNumOfResourceCard = 7;
+
   private final ArrayList<ResourceCard> resources = new ArrayList<>();
   private final ArrayList<BuildingCard> buildings = new ArrayList<>();
+  private final ArrayList<BuildingCard> activatedBuildings = new ArrayList<>();
   private final String id;
   private final String name;
   private int coin;
-  private int points;
+  private int pointTokens;
 
   @Builder
   public Player(String id, String name) {
@@ -33,9 +40,23 @@ public class Player {
     return Collections.unmodifiableList(this.buildings);
   }
 
-  public int getPoints() {
+  public int points() {
     var buildingPoints = this.buildings.stream().mapToInt(BuildingCard::getPoints).sum();
-    return points + buildingPoints;
+    return pointTokens + buildingPoints;
+  }
+
+  public boolean willExceedMaxNumOfResourceCard(int add) {
+    return resources.size() + add > maxNumOfResourceCard;
+  }
+
+  public void takeCards(HashMap<CardType, List<? extends Card>> categorizedCards) {
+    for (var entry : categorizedCards.entrySet()) {
+      if (entry.getKey() == CardType.BUILDING) {
+        takeBuildingCards((List<BuildingCard>) entry.getValue());
+      } else {
+        takeResourceCards((List<ResourceCard>) entry.getValue());
+      }
+    }
   }
 
   public void takeResourceCards(List<ResourceCard> cards) {
@@ -59,37 +80,37 @@ public class Player {
   }
 
   public void addPoints(int points) {
-    if (points < 0) {
-      System.out.println("Negative number is not expected in addPoints!");
-      return;
-    }
-    this.points += points;
+    this.pointTokens += points;
   }
 
-  public boolean ownCard(Card card) {
-    return isOwnResource(card) || isOwnBuilding(card);
-  }
-
-  public boolean isOwnResource(Card card) {
-    return resources.stream().anyMatch(x -> x.isIdentical(card));
-  }
-
-  public boolean isOwnBuilding(Card card) {
-    return buildings.stream().anyMatch(x -> x.isIdentical(card));
-  }
-
-  public boolean isOwnAllResources(List<ResourceCard> cards) {
-    var resourcesClone = new ArrayList<>(this.resources);
-    for (var card : cards) {
-      var cardInClone = resourcesClone.stream().filter(x -> x.isIdentical(card)).findFirst();
-
+  @Nullable
+  public List<ResourceCard> equivalentResources(List<CardIdentity> cardIdentities) {
+    var resourcesClone = new ArrayList<>(resources);
+    var equivalentCards = new ArrayList<ResourceCard>();
+    for (var cardIdentity : cardIdentities) {
+      var cardInClone = resourcesClone.stream().filter(x -> x.isIdentical(cardIdentity)).findFirst();
       if (cardInClone.isEmpty()) {
-        return false;
+        return null;
       } else {
-        resourcesClone.remove(cardInClone.get());
+        var card = cardInClone.get();
+        resourcesClone.remove(card);
+        equivalentCards.add(card);
       }
     }
 
-    return true;
+    return equivalentCards;
+  }
+
+  @Nullable
+  public BuildingCard equivalentBuilding(CardIdentity cardIdentity) {
+    return buildings.stream().filter(x -> x.isIdentical(cardIdentity)).findFirst().orElse(null);
+  }
+
+  public void resetActivatedBuildings() {
+    activatedBuildings.clear();
+  }
+
+  public void activateBuildings(BuildingCard buildingCard) {
+    activatedBuildings.add(buildingCard);
   }
 }
