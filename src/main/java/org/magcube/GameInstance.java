@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiPredicate;
 import lombok.Getter;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
@@ -53,31 +54,6 @@ public class GameInstance {
     distributeCoin();
     currentPlayer = players.get(0);
     isTradedOrPlayerProduced = false;
-//        REPEAT for Each user (in order)
-//        currentuser = reference of the user in action
-//        availabeFactories = new ArrayList(currentuser.getFactories());
-//        isTraded = false
-//        wait for actions = actions
-//        SWITCH(actions)
-//        case TRADE:
-//        check isTraded == false
-//        according to the target Card type , call the correct trade function
-//        1. if trade FirstTier resources, call tradeFirstTierResource(payment, target);
-//        2. if trade factory, call tradeFactory(payment, target);
-//        isTraded = true
-//        case PRODUCE:
-//        check the Factory's produces Card, produce accordingly
-//        this.produceCard(card)
-//        availableFactories.remove(factory)
-//
-//        case BUILDING_EFFECT:
-//          doBuildEffect()
-//        case END:
-//        check if the current user have enough points to win, if
-//        yes: break
-//                no: continue
-//                END REPEAT
-//        display winner
   }
 
   private HashMap<CardType, List<? extends Card>> availableCardsInGameBoard(List<CardIdentity> cardIdentities) throws DisplayPileException {
@@ -112,6 +88,17 @@ public class GameInstance {
     }
   }
 
+  private void checkWillExceedMaxNumOfResourceCard(CardIdentity cardIdentity) throws DisplayPileException {
+    if (cardIdentity.getCardType() != CardType.BUILDING) {
+      checkWillExceedMaxNumOfResourceCard(1);
+    }
+  }
+
+  private void checkWillExceedMaxNumOfResourceCard(List<CardIdentity> cardIdentities) throws DisplayPileException {
+    int add = (int) cardIdentities.stream().filter(cardIdentity -> cardIdentity.getCardType() != CardType.BUILDING).count();
+    checkWillExceedMaxNumOfResourceCard(add);
+  }
+
   private void validateCardIdentities(List<CardIdentity> cardIdentities) throws DisplayPileException {
     if (!GameBoards.isCardIdentitiesValid(cardIdentities)) {
       throw new DisplayPileException("Invalid card identities!");
@@ -134,17 +121,13 @@ public class GameInstance {
 
   public void tradeCardsByCoins(List<CardIdentity> targets) throws DisplayPileException {
     checkIsTradedOrPlayerProduced();
-    checkWillExceedMaxNumOfResourceCard(targets.size());
     validateCardIdentities(targets);
-
+    checkWillExceedMaxNumOfResourceCard(targets);
     var availableCardsInGameBoard = availableCardsInGameBoard(targets);
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
-
-    var playerCoin = currentPlayer.getCoin();
-    if (playerCoin < sumOfTargetsValue) {
+    if (currentPlayer.getCoin() < sumOfTargetsValue) {
       throw new DisplayPileException("Player do not have enough coin to trade!");
     }
-
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.spendCoin();
     isTradedOrPlayerProduced = true;
@@ -156,25 +139,22 @@ public class GameInstance {
     if (payment.size() != 1 || targets.size() != 1) {
       throw new DisplayPileException("Trading must be 1:n or n:1!");
     }
-
-    checkWillExceedMaxNumOfResourceCard(targets.size());
     validateCardIdentities(payment);
     validateCardIdentities(targets);
+    checkWillExceedMaxNumOfResourceCard(targets);
 
     var cardsForPayment = playerEquivalentResourcesCards(payment);
-    var categorizeDiscardCards = GameBoard.validateAndCategorizeDiscardCards(cardsForPayment);
+    var categorizedCardsForDiscard = GameBoard.validateAndCategorizeDiscardCards(cardsForPayment);
+    var availableCardsInGameBoard = availableCardsInGameBoard(targets);
 
     var sumOfPaymentValue = sumOfCardsValue(cardsForPayment);
-
-    var availableCardsInGameBoard = availableCardsInGameBoard(targets);
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
     if (sumOfPaymentValue < sumOfTargetsValue) {
       throw new DisplayPileException("Payment does not have enough value to trade!");
     }
-
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.discardCards(cardsForPayment);
-    gameBoard.discardCards(categorizeDiscardCards);
+    gameBoard.discardCards(categorizedCardsForDiscard);
     isTradedOrPlayerProduced = true;
   }
 
@@ -194,32 +174,42 @@ public class GameInstance {
     return resourceCards;
   }
 
-  public void playerProduceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity) throws DisplayPileException {
-    checkIsTradedOrPlayerProduced();
-    checkWillExceedMaxNumOfResourceCard(1);
+  private void produceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity,
+      BiPredicate<List<CardIdentity>, Card> costMatchFn) throws DisplayPileException {
     validateCardIdentities(costCardIdentities);
     validateCardIdentities(List.of(productCardIdentity));
+    checkWillExceedMaxNumOfResourceCard(productCardIdentity);
 
     var playerEquivalentResources = playerEquivalentResourcesCards(costCardIdentities);
-    var categorizeDiscardCards = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
+    var categorizedCardsForDiscard = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
     var cardsInGameBoard = availableCardsInGameBoard(List.of(productCardIdentity));
 
     var productCard = cardsInGameBoard.get(productCardIdentity.getCardType()).get(0);
-    boolean costMatch = productCard.cardType() == CardType.BUILDING
-        ? ((BuildingCard) productCard).costMatch(costCardIdentities)
-        : ((ResourceCard) productCard).costMatch(costCardIdentities);
+
+    var costMatch = costMatchFn.test(costCardIdentities, productCard);
     if (!costMatch) {
       throw new DisplayPileException("Cost does not match!");
     }
 
     playerTakeCardsFormGameBoard(cardsInGameBoard);
     currentPlayer.discardCards(playerEquivalentResources);
-    gameBoard.discardCards(categorizeDiscardCards);
+    gameBoard.discardCards(categorizedCardsForDiscard);
   }
 
-  // todo: we don't need to provide capitalCardIdentities, currently we only have 1 option in capital
-  public void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity) throws DisplayPileException {
+  public void playerProduceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity) throws DisplayPileException {
     checkIsTradedOrPlayerProduced();
+
+    BiPredicate<List<CardIdentity>, Card> costMatchFn = (costCardIds, productCard) -> productCard.cardType() == CardType.BUILDING
+        ? ((BuildingCard) productCard).costMatch(costCardIds)
+        : ((ResourceCard) productCard).costMatch(costCardIds);
+
+    produceBySpentCost(costCardIdentities, productCardIdentity, costMatchFn);
+
+    isTradedOrPlayerProduced = true;
+  }
+
+  private void produceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity,
+      BiPredicate<List<CardIdentity>, Card> capitalMatchFn) throws DisplayPileException {
     checkWillExceedMaxNumOfResourceCard(1);
     validateCardIdentities(capitalCardIdentities);
     validateCardIdentities(List.of(productCardIdentity));
@@ -228,24 +218,92 @@ public class GameInstance {
     var cardsInGameBoard = availableCardsInGameBoard(List.of(productCardIdentity));
 
     var productCard = cardsInGameBoard.get(productCardIdentity.getCardType()).get(0);
-    boolean capitalMatch = productCard.cardType() != CardType.BUILDING && ((ResourceCard) productCard).capitalMatch(capitalCardIdentities);
+
+    boolean capitalMatch = capitalMatchFn.test(capitalCardIdentities, productCard);
     if (!capitalMatch) {
-      throw new DisplayPileException("Cost does not match!");
+      throw new DisplayPileException("Capital does not match!");
     }
 
     playerTakeCardsFormGameBoard(cardsInGameBoard);
   }
 
-  public void activateBuildingToGetPointsTokenByCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities) {
-    // todo: implement
+  // todo: we don't need to provide capitalCardIdentities, currently we only have 1 option in capital
+  public void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity) throws DisplayPileException {
+    checkIsTradedOrPlayerProduced();
+
+    BiPredicate<List<CardIdentity>, Card> capitalMatchFn = (capitalCardIds, productCard) -> productCard.cardType() != CardType.BUILDING
+        && ((ResourceCard) productCard).capitalMatch(capitalCardIdentities);
+
+    produceByOwningCapital(capitalCardIdentities, productCardIdentity, capitalMatchFn);
+    isTradedOrPlayerProduced = true;
   }
 
-  public void activateBuildingToProduceByCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities) {
-    // todo: implement
+  private void checkBuildingCanActivate(BuildingCard building) throws DisplayPileException {
+    if (currentPlayer.getActivatedBuildings().contains(building)) {
+      throw new DisplayPileException("Building has already activated!");
+    }
   }
 
-  public void activateBuildingToProduceByCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities) {
-    // todo: implement
+  private BuildingCard playerEquivalentBuildingCard(CardIdentity cardIdentity) throws DisplayPileException {
+    var playerEquivalentBuildingCard = currentPlayer.equivalentBuilding(cardIdentity);
+    if (playerEquivalentBuildingCard == null) {
+      throw new DisplayPileException("Player do not own the payment cards!");
+    }
+    return playerEquivalentBuildingCard;
+  }
+
+  public void activateBuildingToGetPointsTokenBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
+      throws DisplayPileException {
+    var building = playerEquivalentBuildingCard(buildingCardIdentity);
+    checkBuildingCanActivate(building);
+
+    validateCardIdentities(costCardIdentities);
+
+    var playerEquivalentResources = playerEquivalentResourcesCards(costCardIdentities);
+    var categorizeDiscardCards = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
+
+    boolean costMatch = building.effectCostMatch(costCardIdentities);
+    if (!costMatch) {
+      throw new DisplayPileException("Cost does not match!");
+    }
+
+    currentPlayer.activateBuildings(building);
+    currentPlayer.discardCards(playerEquivalentResources);
+    gameBoard.discardCards(categorizeDiscardCards);
+    currentPlayer.addPoints(building.getEffectPoints());
+  }
+
+  private CardIdentity buildingProduct(BuildingCard card) throws DisplayPileException {
+    CardIdentity effectProduct = card.getEffectProduct();
+    if (effectProduct != null) {
+      return effectProduct;
+    } else {
+      throw new DisplayPileException("Building cannot produce!");
+    }
+  }
+
+  public void activateBuildingToProduceBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
+      throws DisplayPileException {
+    var building = playerEquivalentBuildingCard(buildingCardIdentity);
+    checkBuildingCanActivate(building);
+    var productCardIdentity = buildingProduct(building);
+
+    BiPredicate<List<CardIdentity>, Card> costMatchFn = (costCards, productCard) -> building.effectCostMatch(costCards);
+
+    produceBySpentCost(costCardIdentities, productCardIdentity, costMatchFn);
+    currentPlayer.activateBuildings(building);
+  }
+
+  public void activateBuildingToProduceByOwningCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities)
+      throws DisplayPileException {
+    var building = playerEquivalentBuildingCard(buildingCardIdentity);
+    checkBuildingCanActivate(building);
+    var productCardIdentity = buildingProduct(building);
+
+    BiPredicate<List<CardIdentity>, Card> capitalMatchFn = (capitalCardIds, productCard) -> building.effectCapitalMatch(capitalCardIds);
+
+    produceByOwningCapital(capitalCardIdentities, productCardIdentity, capitalMatchFn);
+    currentPlayer.activateBuildings(building);
   }
 
   public void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity) {
@@ -259,17 +317,12 @@ public class GameInstance {
     if (targetResourceCards.size() > 0) {
       currentPlayer.takeResourceCards(targetResourceCards);
     }
-
     if (categorizedCards.containsKey(CardType.BUILDING)) {
       var targetBuildingCards = categorizedCards.get(CardType.BUILDING).stream()
           .map(card -> (BuildingCard) card)
           .toList();
       currentPlayer.takeBuildingCards(targetBuildingCards);
     }
-  }
-
-  public void activateBuilding(BuildingCard card, List<ResourceCard> effectCost, List<ResourceCard> effectCapital) {
-    // todo: implement
   }
 
   private void distributeCoin() {
@@ -284,5 +337,7 @@ public class GameInstance {
     currentPlayer = players.get((players.indexOf(currentPlayer) + 1) % players.size());
     gameBoard.refillCards();
     isTradedOrPlayerProduced = false;
+
+    // todo: check if the current user have enough points to win, if
   }
 }

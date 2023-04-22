@@ -54,4 +54,23 @@ public class BuildingCard extends Card {
     }
     return false;
   }
+
+  public boolean effectCostMatch(List<CardIdentity> checkingCardIdentities) {
+    // the outer layer is OR, the inner layer is AND
+    for (CardIdentity[] option : effectCost) {
+      var optionList = new ArrayList<>(Arrays.asList(option));
+      if (Cards.isCardIdentitiesSame(optionList, checkingCardIdentities)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public boolean effectCapitalMatch(List<CardIdentity> checkingCardIdentities) {
+    if (effectCapital.length == 0) {
+      return false;
+    }
+    var capitalList = new ArrayList<>(Arrays.asList(effectCapital));
+    return Cards.isCardIdentitiesSame(capitalList, checkingCardIdentities);
+  }
 }
