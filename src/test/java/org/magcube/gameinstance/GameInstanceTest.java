@@ -1,5 +1,7 @@
 package org.magcube.gameinstance;
 
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -8,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +27,7 @@ import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.exception.AlreadyTradedOrProducedException;
+import org.magcube.exception.BuildingActivationException;
 import org.magcube.exception.CardIdentitiesException;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
@@ -907,6 +912,327 @@ public class GameInstanceTest {
           productCard
       )));
       verify(game.getGameBoard()).takeCards(expectedCategorizedProductCard);
+    }
+  }
+
+  @Nested
+  class building {
+
+    @Test
+    void allMethodCheckIfPlayerHaveTheBuildingAndTheBuildingCanActivate() {
+      String[] expectedMethods = {
+          "activateBuildingToGetPointsTokenBySpendCost",
+          "activateBuildingToProduceBySpendCost",
+          "activateBuildingToProduceByOwningCapital",
+          "activateBuildingForSpecialEffect"
+      };
+      Arrays.sort(expectedMethods);
+
+      assertArrayEquals(expectedMethods, Arrays.stream(GameInstance.class.getDeclaredMethods())
+          .map(Method::getName)
+          .filter(name -> name.startsWith("activateBuilding"))
+          .sorted().toArray());
+
+      var buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+
+      assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.activateBuildingToGetPointsTokenBySpendCost(buildingCardIdentity, null));
+      assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.activateBuildingToProduceBySpendCost(buildingCardIdentity, null));
+      assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.activateBuildingToProduceByOwningCapital(buildingCardIdentity, null));
+      assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.activateBuildingForSpecialEffect(buildingCardIdentity));
+
+      var buildingCard = BuildingCard.builder().cardIdentity(buildingCardIdentity).build();
+      var currentPlayer = game.getCurrentPlayer();
+      currentPlayer.takeBuildingCards(List.of(buildingCard));
+      currentPlayer.activateBuilding(buildingCard);
+
+      assertThrows(BuildingActivationException.class, () -> game.activateBuildingToGetPointsTokenBySpendCost(buildingCardIdentity, null));
+      assertThrows(BuildingActivationException.class, () -> game.activateBuildingToProduceBySpendCost(buildingCardIdentity, null));
+      assertThrows(BuildingActivationException.class, () -> game.activateBuildingToProduceByOwningCapital(buildingCardIdentity, null));
+      assertThrows(BuildingActivationException.class, () -> game.activateBuildingForSpecialEffect(buildingCardIdentity));
+    }
+
+    @Nested
+    class activateBuildingToGetPointsTokenBySpendCost {
+
+      @Test
+      void cannotProducePoint() {
+        List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard costCard = ResourceCard.builder()
+            .cardIdentity(costCardIdentities.get(0))
+            .build();
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{costCardIdentities.toArray(new CardIdentity[0])})
+            .build();
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(costCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        Exception exception = assertThrows(BuildingActivationException.class,
+            () -> game.activateBuildingToGetPointsTokenBySpendCost(buildingCardIdentity, costCardIdentities));
+        assertEquals(BuildingActivationException.class, exception.getClass());
+        assertEquals(BuildingActivationException.cannotProducePoint, exception.getMessage());
+      }
+
+      @Test
+      void costNoMatchTest() {
+        List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard costCard = ResourceCard.builder()
+            .cardIdentity(costCardIdentities.get(0))
+            .build();
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{{new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 2)}})
+            .effectPoints(1)
+            .build();
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(costCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        Exception exception = assertThrows(InvalidTradingException.class,
+            () -> game.activateBuildingToGetPointsTokenBySpendCost(buildingCardIdentity, costCardIdentities));
+        assertEquals(InvalidTradingException.class, exception.getClass());
+        assertEquals(InvalidTradingException.costNotMatch, exception.getMessage());
+      }
+
+      @Test
+      void shouldSuccessTest() throws DisplayPileException {
+        List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard costCard = ResourceCard.builder()
+            .cardIdentity(costCardIdentities.get(0))
+            .build();
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{{new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)}})
+            .effectPoints(2)
+            .build();
+
+        var categorizedCostCards = new HashMap<CardType, List<? extends Card>>() {{
+          put(CardType.LEVEL_TWO_RESOURCE, List.of(costCard));
+        }};
+
+        GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
+        });
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(costCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        var pointsBefore = currentPlayer.points();
+
+        assertTrue(currentPlayer.getActivatedBuildings().isEmpty());
+
+        assertDoesNotThrow(() -> game.activateBuildingToGetPointsTokenBySpendCost(buildingCardIdentity, costCardIdentities));
+        assertEquals(2, currentPlayer.points() - pointsBefore);
+        assertEquals(1, currentPlayer.getActivatedBuildings().size());
+        assertTrue(currentPlayer.getActivatedBuildings().contains(buildingCard));
+        assertEquals(1, currentPlayer.getBuildings().size());
+        assertTrue(currentPlayer.getBuildings().contains(buildingCard));
+        assertTrue(currentPlayer.getResources().isEmpty());
+        verify(game.getGameBoard()).discardCards(categorizedCostCards);
+      }
+    }
+
+    @Nested
+    class activateBuildingToProduceBySpendCost {
+
+      @Test
+      void cannotProduceProductTest() {
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard costCard = ResourceCard.builder()
+            .cardIdentity(costCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{costCardIdentities.toArray(new CardIdentity[0])})
+            .build();
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(costCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        Exception exception = assertThrows(BuildingActivationException.class,
+            () -> game.activateBuildingToProduceBySpendCost(buildingCardIdentity, costCardIdentities));
+        assertEquals(BuildingActivationException.class, exception.getClass());
+        assertEquals(BuildingActivationException.cannotProduceProduct, exception.getMessage());
+      }
+
+      @Test
+      void costNotMatchTest() {
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
+        ResourceCard costCard = ResourceCard.builder()
+            .cardIdentity(costCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{{new CardIdentity(CardType.BASIC_RESOURCE, 2)}})
+            .effectProduct(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1))
+            .build();
+
+        GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
+          GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
+          GameTestUtils.mockTakeCards(gameBoard);
+        });
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(costCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        Exception exception = assertThrows(InvalidTradingException.class,
+            () -> game.activateBuildingToProduceBySpendCost(buildingCardIdentity, costCardIdentities));
+        assertEquals(InvalidTradingException.class, exception.getClass());
+        assertEquals(InvalidTradingException.costNotMatch, exception.getMessage());
+      }
+
+      @Test
+      void shouldSuccessTest() throws DisplayPileException {
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
+        ResourceCard costCard = ResourceCard.builder()
+            .cardIdentity(costCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{{new CardIdentity(CardType.BASIC_RESOURCE, 1)}})
+            .effectProduct(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1))
+            .build();
+        ResourceCard productCard = ResourceCard.builder()
+            .cardIdentity(buildingCard.getEffectProduct())
+            .build();
+
+        GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
+          GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
+          GameTestUtils.mockTakeCards(gameBoard);
+        });
+
+        var categorizedCostCards = new HashMap<CardType, List<? extends Card>>() {{
+          put(CardType.BASIC_RESOURCE, List.of(costCard));
+        }};
+
+        var categorizedProductCards = new HashMap<CardType, List<? extends Card>>() {{
+          put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
+        }};
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(costCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        assertTrue(currentPlayer.getActivatedBuildings().isEmpty());
+
+        assertDoesNotThrow(() -> game.activateBuildingToProduceBySpendCost(buildingCardIdentity, costCardIdentities));
+
+        assertEquals(1, currentPlayer.getActivatedBuildings().size());
+        assertTrue(currentPlayer.getActivatedBuildings().contains(buildingCard));
+        assertEquals(1, currentPlayer.getBuildings().size());
+        assertTrue(currentPlayer.getBuildings().contains(buildingCard));
+        assertEquals(1, currentPlayer.getResources().size());
+        assertTrue(currentPlayer.getResources().contains(productCard));
+        verify(game.getGameBoard()).takeCards(categorizedProductCards);
+        verify(game.getGameBoard()).discardCards(categorizedCostCards);
+      }
+    }
+
+    @Nested
+    class activateBuildingToProduceByOwningCapital {
+
+      @Test
+      void cannotProduceProductTest() {
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> capitalCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard capitalCard = ResourceCard.builder()
+            .cardIdentity(capitalCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{capitalCardIdentities.toArray(new CardIdentity[0])})
+            .build();
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(capitalCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        Exception exception = assertThrows(BuildingActivationException.class,
+            () -> game.activateBuildingToProduceByOwningCapital(buildingCardIdentity, capitalCardIdentities));
+        assertEquals(BuildingActivationException.class, exception.getClass());
+        assertEquals(BuildingActivationException.cannotProduceProduct, exception.getMessage());
+      }
+
+      @Test
+      void capitalNotMatchTest() {
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> capitalCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard capitalCard = ResourceCard.builder()
+            .cardIdentity(capitalCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCapital(new CardIdentity[]{new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 2)})
+            .effectProduct(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1))
+            .build();
+
+        GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
+          GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
+          GameTestUtils.mockTakeCards(gameBoard);
+        });
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(capitalCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        Exception exception = assertThrows(InvalidTradingException.class,
+            () -> game.activateBuildingToProduceByOwningCapital(buildingCardIdentity, capitalCardIdentities));
+        assertEquals(InvalidTradingException.class, exception.getClass());
+        assertEquals(InvalidTradingException.capitalNotMatch, exception.getMessage());
+      }
+
+      @Test
+      void shouldSuccessTest() throws DisplayPileException {
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> capitalCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard capitalCard = ResourceCard.builder()
+            .cardIdentity(capitalCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCapital(new CardIdentity[]{new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)})
+            .effectProduct(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1))
+            .build();
+        ResourceCard productCard = ResourceCard.builder()
+            .cardIdentity(buildingCard.getEffectProduct())
+            .build();
+
+        GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
+          GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
+          GameTestUtils.mockTakeCards(gameBoard);
+        });
+
+        var categorizedProductCards = new HashMap<CardType, List<? extends Card>>() {{
+          put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
+        }};
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(capitalCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+
+        assertTrue(currentPlayer.getActivatedBuildings().isEmpty());
+
+        assertDoesNotThrow(() -> game.activateBuildingToProduceByOwningCapital(buildingCardIdentity, capitalCardIdentities));
+
+        assertEquals(1, currentPlayer.getActivatedBuildings().size());
+        assertTrue(currentPlayer.getActivatedBuildings().contains(buildingCard));
+        assertEquals(1, currentPlayer.getBuildings().size());
+        assertTrue(currentPlayer.getBuildings().contains(buildingCard));
+        assertEquals(2, currentPlayer.getResources().size());
+        assertTrue(currentPlayer.getResources().containsAll(List.of(capitalCard, productCard)));
+        verify(game.getGameBoard()).takeCards(categorizedProductCards);
+      }
     }
   }
 }

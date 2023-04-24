@@ -265,75 +265,78 @@ public class GameInstance {
     isTradedOrPlayerProduced = true;
   }
 
-  private void checkBuildingCanActivate(BuildingCard building) throws BuildingActivationException {
-    if (currentPlayer.getActivatedBuildings().contains(building)) {
-      throw new BuildingActivationException();
-    }
-  }
-
-  private BuildingCard playerEquivalentBuildingCard(CardIdentity cardIdentity) throws PlayerDoesNotOwnCardsException {
+  private BuildingCard playerEquivalentBuildingCardWhichCanActivate(CardIdentity cardIdentity)
+      throws PlayerDoesNotOwnCardsException, BuildingActivationException {
     var playerEquivalentBuildingCard = currentPlayer.equivalentBuilding(cardIdentity);
     if (playerEquivalentBuildingCard == null) {
       throw new PlayerDoesNotOwnCardsException("building");
+    }
+    if (currentPlayer.getActivatedBuildings().contains(playerEquivalentBuildingCard)) {
+      throw new BuildingActivationException(BuildingActivationException.alreadyActivated);
     }
     return playerEquivalentBuildingCard;
   }
 
   public void activateBuildingToGetPointsTokenBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
-      throws DisplayPileException, CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException {
-    var building = playerEquivalentBuildingCard(buildingCardIdentity);
-    checkBuildingCanActivate(building);
+      throws DisplayPileException, CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException, InvalidTradingException {
+    var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
 
     validateCardIdentities(costCardIdentities);
 
     var playerEquivalentResources = playerEquivalentResourcesCards(costCardIdentities);
     var categorizeDiscardCards = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
 
-    boolean costMatch = building.effectCostMatch(costCardIdentities);
-    if (!costMatch) {
-      throw new DisplayPileException("Cost does not match!");
+    int effectPoints = building.getEffectPoints();
+    if (effectPoints <= 0) {
+      throw new BuildingActivationException(BuildingActivationException.cannotProducePoint);
     }
 
-    currentPlayer.activateBuildings(building);
+    boolean costMatch = building.effectCostMatch(costCardIdentities);
+    if (!costMatch) {
+      throw new InvalidTradingException(InvalidTradingException.costNotMatch);
+    }
+
+    currentPlayer.activateBuilding(building);
     currentPlayer.discardCards(playerEquivalentResources);
     gameBoard.discardCards(categorizeDiscardCards);
-    currentPlayer.addPoints(building.getEffectPoints());
+    currentPlayer.addPoints(effectPoints);
   }
 
-  private CardIdentity buildingProduct(BuildingCard card) throws DisplayPileException {
+  private CardIdentity buildingProduct(BuildingCard card) throws BuildingActivationException {
     CardIdentity effectProduct = card.getEffectProduct();
     if (effectProduct != null) {
       return effectProduct;
     } else {
-      throw new DisplayPileException("Building cannot produce!");
+      throw new BuildingActivationException(BuildingActivationException.cannotProduceProduct);
     }
   }
 
   public void activateBuildingToProduceBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
       throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
-    var building = playerEquivalentBuildingCard(buildingCardIdentity);
-    checkBuildingCanActivate(building);
+    var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
+
     var productCardIdentity = buildingProduct(building);
 
     BiPredicate<List<CardIdentity>, Card> costMatchFn = (costCards, productCard) -> building.effectCostMatch(costCards);
 
     produceBySpentCost(costCardIdentities, productCardIdentity, costMatchFn);
-    currentPlayer.activateBuildings(building);
+    currentPlayer.activateBuilding(building);
   }
 
   public void activateBuildingToProduceByOwningCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities)
       throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
-    var building = playerEquivalentBuildingCard(buildingCardIdentity);
-    checkBuildingCanActivate(building);
+    var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
+
     var productCardIdentity = buildingProduct(building);
 
     BiPredicate<List<CardIdentity>, Card> capitalMatchFn = (capitalCardIds, productCard) -> building.effectCapitalMatch(capitalCardIds);
 
     produceByOwningCapital(capitalCardIdentities, productCardIdentity, capitalMatchFn);
-    currentPlayer.activateBuildings(building);
+    currentPlayer.activateBuilding(building);
   }
 
-  public void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity) {
+  public void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity) throws PlayerDoesNotOwnCardsException, BuildingActivationException {
+    var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
     throw new RuntimeException("Not implemented yet!");
   }
 

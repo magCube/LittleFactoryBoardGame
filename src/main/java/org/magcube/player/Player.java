@@ -114,7 +114,7 @@ public class Player {
     activatedBuildings.clear();
   }
 
-  public void activateBuildings(BuildingCard buildingCard) {
+  public void activateBuilding(BuildingCard buildingCard) {
     activatedBuildings.add(buildingCard);
   }
 }
