@@ -1,11 +1,6 @@
 package org.magcube;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import org.magcube.card.BuildingCard;
-import org.magcube.card.CardType;
-import org.magcube.card.ResourceCard;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 public class Main {
 
   public static void main(String[] args) {
-    System.out.println("Hello world!");
+    SpringApplication.run(Main.class, args);
   }
 
   @Bean

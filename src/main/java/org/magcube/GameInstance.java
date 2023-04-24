@@ -27,7 +27,6 @@ import org.magcube.player.Player;
 
 @Getter
 public class GameInstance {
-
   private GameBoard gameBoard;
   private List<Player> players;
   private Player currentPlayer; // only accessible by this object itself, need to be thread safe
