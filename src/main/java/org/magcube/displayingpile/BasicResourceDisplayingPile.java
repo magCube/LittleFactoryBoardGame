@@ -90,11 +90,11 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
     cardIdentities.forEach(cardIdentity -> quantityMap.compute(cardIdentity.getTypeId(), (k, v) -> v == null ? 1 : v + 1));
 
     for (Entry<Integer, Integer> entry : quantityMap.entrySet()) {
-      Integer typeId = entry.getKey();
-      Integer quantity = entry.getValue();
+      var typeId = entry.getKey();
+      var quantity = entry.getValue();
       var cards = availableCards.get(typeId);
       if (cards == null || cards.size() < quantity) {
-        return null;
+        return null;//TODO:@Tam null is consider anti-pattern now, may think of using Optional
       } else {
         cardsInDisplaying.addAll(cards.subList(0, quantity));
       }
@@ -122,7 +122,7 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
       list.remove(card);
     }
 
-    return cardsInDisplaying;
+    return cardsInDisplaying;//TODO:@Tam do we need to return this list?
   }
 
   @Override

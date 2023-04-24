@@ -34,7 +34,7 @@ public class GameBoard {
   }
 
   public PileState<? extends Card> getPileState(CardType cardType) {
-    DisplayingPile<? extends Card> pile = (cardType == CardType.BUILDING) ? getBuildingPile() : getResourcePile(cardType);
+    var pile = (cardType == CardType.BUILDING) ? getBuildingPile() : getResourcePile(cardType);
     return pile.pileState();
   }
 
