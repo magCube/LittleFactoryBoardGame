@@ -45,8 +45,12 @@ public class Player {
     return pointTokens + buildingPoints;
   }
 
-  public boolean willExceedMaxNumOfResourceCard(int add) {
-    return resources.size() + add > maxNumOfResourceCard;
+  public boolean willExceedMaxNumOfResourceCard(int take, int discard) {
+    return resources.size() + take - discard > maxNumOfResourceCard;
+  }
+
+  public boolean willExceedMaxNumOfResourceCard(int take) {
+    return resources.size() + take > maxNumOfResourceCard;
   }
 
   public void takeCards(HashMap<CardType, List<? extends Card>> categorizedCards) {
