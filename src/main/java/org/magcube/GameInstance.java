@@ -17,7 +17,7 @@ import org.magcube.exception.CardIdentitiesException;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
 import org.magcube.exception.GameStartupException;
-import org.magcube.exception.InvalidTrading;
+import org.magcube.exception.InvalidTradingException;
 import org.magcube.exception.NotAvailableInGameBoardException;
 import org.magcube.exception.PlayerDoesNotOwnCardsException;
 import org.magcube.gameboard.GameBoard;
@@ -144,14 +144,14 @@ public class GameInstance {
   }
 
   public void tradeCardsByCoins(List<CardIdentity> targets)
-      throws DisplayPileException, AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, NotAvailableInGameBoardException, InvalidTrading {
+      throws DisplayPileException, AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, NotAvailableInGameBoardException, InvalidTradingException {
     checkIsTradedOrPlayerProduced();
     validateCardIdentities(targets);
     checkWillExceedMaxNumOfResourceCard(targets);
     var availableCardsInGameBoard = availableCardsInGameBoard(targets);
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
     if (currentPlayer.getCoin() < sumOfTargetsValue) {
-      throw new InvalidTrading(InvalidTrading.paymentNoEnough);
+      throw new InvalidTradingException(InvalidTradingException.paymentNoEnough);
     }
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.spendCoin();
@@ -159,11 +159,11 @@ public class GameInstance {
   }
 
   public void tradeCardsByCards(List<CardIdentity> payment, List<CardIdentity> targets)
-      throws DisplayPileException, AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTrading {
+      throws DisplayPileException, AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException {
     checkIsTradedOrPlayerProduced();
 
     if (!(payment.size() == 1 || targets.size() == 1)) {
-      throw new InvalidTrading(InvalidTrading.notOneToNOrNToOne);
+      throw new InvalidTradingException(InvalidTradingException.notOneToNOrNToOne);
     }
     validateCardIdentities(payment);
     validateCardIdentities(targets);
@@ -176,7 +176,7 @@ public class GameInstance {
     var sumOfPaymentValue = sumOfCardsValue(cardsForPayment);
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
     if (sumOfPaymentValue < sumOfTargetsValue) {
-      throw new InvalidTrading(InvalidTrading.paymentNoEnough);
+      throw new InvalidTradingException(InvalidTradingException.paymentNoEnough);
     }
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.discardCards(cardsForPayment);
@@ -198,7 +198,7 @@ public class GameInstance {
 
   private void produceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity,
       BiPredicate<List<CardIdentity>, Card> costMatchFn)
-      throws DisplayPileException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTrading {
+      throws DisplayPileException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException {
     validateCardIdentities(costCardIdentities);
     validateCardIdentities(List.of(productCardIdentity));
     // currently, it is impossible to throw, because the cost size is always larger than or equal to 1 and the product size is always equal to 1
@@ -212,7 +212,7 @@ public class GameInstance {
 
     var costMatch = costMatchFn.test(costCardIdentities, productCard);
     if (!costMatch) {
-      throw new InvalidTrading(InvalidTrading.costNotMatch);
+      throw new InvalidTradingException(InvalidTradingException.costNotMatch);
     }
 
     playerTakeCardsFormGameBoard(cardsInGameBoard);
@@ -221,7 +221,7 @@ public class GameInstance {
   }
 
   public void playerProduceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity)
-      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTrading {
+      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
     checkIsTradedOrPlayerProduced();
 
     BiPredicate<List<CardIdentity>, Card> costMatchFn = (costCardIds, productCard) -> productCard.cardType() == CardType.BUILDING
@@ -235,7 +235,7 @@ public class GameInstance {
 
   private void produceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity,
       BiPredicate<List<CardIdentity>, Card> capitalMatchFn)
-      throws DisplayPileException, ExceededMaxNumOfHandException, CardIdentitiesException, NotAvailableInGameBoardException {
+      throws DisplayPileException, ExceededMaxNumOfHandException, CardIdentitiesException, NotAvailableInGameBoardException, InvalidTradingException {
     checkWillExceedMaxNumOfResourceCard(1);
     validateCardIdentities(capitalCardIdentities);
     validateCardIdentities(List.of(productCardIdentity));
@@ -247,7 +247,7 @@ public class GameInstance {
 
     boolean capitalMatch = capitalMatchFn.test(capitalCardIdentities, productCard);
     if (!capitalMatch) {
-      throw new DisplayPileException("Capital does not match!");
+      throw new InvalidTradingException(InvalidTradingException.capitalNotMatch);
     }
 
     playerTakeCardsFormGameBoard(cardsInGameBoard);
@@ -255,7 +255,7 @@ public class GameInstance {
 
   // todo: we don't need to provide capitalCardIdentities, currently we only have 1 option in capital
   public void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity)
-      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException {
+      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
     checkIsTradedOrPlayerProduced();
 
     BiPredicate<List<CardIdentity>, Card> capitalMatchFn = (capitalCardIds, productCard) -> productCard.cardType() != CardType.BUILDING
@@ -310,7 +310,7 @@ public class GameInstance {
   }
 
   public void activateBuildingToProduceBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
-      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTrading {
+      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
     var building = playerEquivalentBuildingCard(buildingCardIdentity);
     checkBuildingCanActivate(building);
     var productCardIdentity = buildingProduct(building);
@@ -322,7 +322,7 @@ public class GameInstance {
   }
 
   public void activateBuildingToProduceByOwningCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities)
-      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException {
+      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
     var building = playerEquivalentBuildingCard(buildingCardIdentity);
     checkBuildingCanActivate(building);
     var productCardIdentity = buildingProduct(building);
