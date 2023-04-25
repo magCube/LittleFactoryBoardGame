@@ -21,6 +21,15 @@ public class GameInstanceController {
     return new GameInstance();
   }
 
+  @GetMapping("/list")
+  public GameInstance listGameInstances(@RequestParam(value = "playerId") String playerId) {
+    if (Strings.isNullOrEmpty(playerId)) {
+      throw new IllegalArgumentException("missing playerId!");
+    }
+    //TODO: to find the real gameInstance from cache/DB and return
+    return new GameInstance();
+  }
+
   @PostMapping("/")
   public ResponseEntity createGameInstance() {
     //TODO create a game instance with the params and return it
