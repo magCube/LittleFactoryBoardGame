@@ -20,26 +20,26 @@ class CardQuantityTest {
   @Test
   void allDataIsNonZeroTest() {
     assertFalse(CardQuantity.basicResource.stream().anyMatch(x ->
-        x.getTwoPlayers() == 0 ||
-            x.getThreePlayers() == 0 ||
-            x.getFourPlayers() == 0
+        x.twoPlayers() == 0 ||
+            x.threePlayers() == 0 ||
+            x.fourPlayers() == 0
     ));
     assertFalse(CardQuantity.levelOneResource.stream().anyMatch(x ->
-        x.getTwoPlayers() == 0 ||
-            x.getThreePlayers() == 0 ||
-            x.getFourPlayers() == 0
+        x.twoPlayers() == 0 ||
+            x.threePlayers() == 0 ||
+            x.fourPlayers() == 0
     ));
 
     // for level 2 resource and building, they should be always 1
     assertTrue(CardQuantity.levelTwoResource.stream().allMatch(x ->
-        x.getTwoPlayers() == 1 &&
-            x.getThreePlayers() == 1 &&
-            x.getFourPlayers() == 1
+        x.twoPlayers() == 1 &&
+            x.threePlayers() == 1 &&
+            x.fourPlayers() == 1
     ));
     assertTrue(CardQuantity.building.stream().allMatch(x ->
-        x.getTwoPlayers() == 1 &&
-            x.getThreePlayers() == 1 &&
-            x.getFourPlayers() == 1
+        x.twoPlayers() == 1 &&
+            x.threePlayers() == 1 &&
+            x.fourPlayers() == 1
     ));
   }
 

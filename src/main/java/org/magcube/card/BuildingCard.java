@@ -1,13 +1,13 @@
 package org.magcube.card;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+@NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @Getter
@@ -23,10 +23,7 @@ public class BuildingCard extends Card {
   private Boolean isExtension;
   // todo
   private String specialEffect;
-
-  public BuildingCard() {
-  }
-
+  
   @Builder
   public BuildingCard(CardIdentity cardIdentity, String name, int value, CardIdentity[][] cost, int points, CardIdentity[][] effectCost,
       CardIdentity[] effectCapital, CardIdentity effectProduct, int effectPoints, Boolean isStartingBuilding, Boolean isExtension,
@@ -43,34 +40,15 @@ public class BuildingCard extends Card {
     this.specialEffect = specialEffect;
   }
 
-  // todo: move to Card
-  public boolean costMatch(List<CardIdentity> checkingCardIdentities) {
-    // the outer layer is OR, the inner layer is AND
-    for (CardIdentity[] option : cost) {
-      var optionList = new ArrayList<>(Arrays.asList(option));
-      if (Cards.isCardIdentitiesSame(optionList, checkingCardIdentities)) {
-        return true;
-      }
-    }
-    return false;
+  public boolean costMatch(List<CardIdentity> cardIdentities) {
+    return Cards.isTwoDimCardIdentitiesMatch(cost, cardIdentities.toArray(new CardIdentity[0]));
   }
 
-  public boolean effectCostMatch(List<CardIdentity> checkingCardIdentities) {
-    // the outer layer is OR, the inner layer is AND
-    for (CardIdentity[] option : effectCost) {
-      var optionList = new ArrayList<>(Arrays.asList(option));
-      if (Cards.isCardIdentitiesSame(optionList, checkingCardIdentities)) {
-        return true;
-      }
-    }
-    return false;
+  public boolean effectCostMatch(List<CardIdentity> cardIdentities) {
+    return Cards.isTwoDimCardIdentitiesMatch(effectCost, cardIdentities.toArray(new CardIdentity[0]));
   }
 
-  public boolean effectCapitalMatch(List<CardIdentity> checkingCardIdentities) {
-    if (effectCapital.length == 0) {
-      return false;
-    }
-    var capitalList = new ArrayList<>(Arrays.asList(effectCapital));
-    return Cards.isCardIdentitiesSame(capitalList, checkingCardIdentities);
+  public boolean effectCapitalMatch(List<CardIdentity> cardIdentities) {
+    return Cards.isOneDimCardIdentitiesMatch(effectCapital, cardIdentities.toArray(new CardIdentity[0]));
   }
 }

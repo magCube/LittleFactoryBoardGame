@@ -3,6 +3,7 @@ package org.magcube.card;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.magcube.exception.CardQuantityException;
@@ -31,8 +32,7 @@ public class CardDeck {
     return data.get(numOfPlayers);
   }
 
-  private static <T extends Card> List<T> deepCloneCard(T card, int quantity, Class<T> clazz)
-      throws JsonProcessingException {
+  private static <T extends Card> List<T> deepCloneCard(T card, int quantity, Class<T> clazz) throws JsonProcessingException {
     List<T> cards = new ArrayList<>();
     ObjectMapper objectMapper = new ObjectMapper();
     String json = objectMapper.writeValueAsString(card);
@@ -49,11 +49,10 @@ public class CardDeck {
       int quantity = CardQuantity.getQuantity(card.cardType(), card.typeId(), numOfPlayers);
       cards.addAll(deepCloneCard(card, quantity, clazz));
     }
-    return cards;
+    return Collections.unmodifiableList(cards);
   }
 
-  private CardDeck(NumOfPlayers numOfPlayers)
-      throws JsonProcessingException, CardQuantityException {
+  private CardDeck(NumOfPlayers numOfPlayers) throws JsonProcessingException, CardQuantityException {
     this.basicResource = getCards(CardData.basicResource, numOfPlayers, ResourceCard.class);
     this.levelOneResource = getCards(CardData.levelOneResource, numOfPlayers, ResourceCard.class);
     this.levelTwoResource = getCards(CardData.levelTwoResource, numOfPlayers, ResourceCard.class);

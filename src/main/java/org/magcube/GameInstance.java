@@ -103,18 +103,18 @@ public class GameInstance {
   }
 
   private void checkWillExceedMaxNumOfResourceCard(CardIdentity cardIdentity) throws ExceededMaxNumOfHandException {
-    if (cardIdentity.getCardType() != CardType.BUILDING) {
+    if (cardIdentity.cardType() != CardType.BUILDING) {
       checkWillExceedMaxNumOfResourceCard(1);
     }
   }
 
   private void checkWillExceedMaxNumOfResourceCard(List<CardIdentity> cardIdentities) throws ExceededMaxNumOfHandException {
-    int take = (int) cardIdentities.stream().filter(cardIdentity -> cardIdentity.getCardType() != CardType.BUILDING).count();
+    int take = (int) cardIdentities.stream().filter(cardIdentity -> cardIdentity.cardType() != CardType.BUILDING).count();
     checkWillExceedMaxNumOfResourceCard(take);
   }
 
   private void checkWillExceedMaxNumOfResourceCard(List<CardIdentity> take, List<CardIdentity> discard) throws ExceededMaxNumOfHandException {
-    int takeCount = (int) take.stream().filter(cardIdentity -> cardIdentity.getCardType() != CardType.BUILDING).count();
+    int takeCount = (int) take.stream().filter(cardIdentity -> cardIdentity.cardType() != CardType.BUILDING).count();
     // building is not allow to discard
     int discardCount = discard.size();
     checkWillExceedMaxNumOfResourceCard(takeCount, discardCount);
@@ -208,7 +208,7 @@ public class GameInstance {
     var categorizedCardsForDiscard = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
     var cardsInGameBoard = availableCardsInGameBoard(List.of(productCardIdentity));
 
-    var productCard = cardsInGameBoard.get(productCardIdentity.getCardType()).get(0);
+    var productCard = cardsInGameBoard.get(productCardIdentity.cardType()).get(0);
 
     var costMatch = costMatchFn.test(costCardIdentities, productCard);
     if (!costMatch) {
@@ -243,7 +243,7 @@ public class GameInstance {
 
     var cardsInGameBoard = availableCardsInGameBoard(List.of(productCardIdentity));
 
-    var productCard = cardsInGameBoard.get(productCardIdentity.getCardType()).get(0);
+    var productCard = cardsInGameBoard.get(productCardIdentity.cardType()).get(0);
 
     boolean capitalMatch = capitalMatchFn.test(capitalCardIdentities, productCard);
     if (!capitalMatch) {

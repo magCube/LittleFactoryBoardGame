@@ -5,25 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Optional;
-import lombok.Getter;
-import lombok.ToString;
 import org.magcube.exception.CardQuantityException;
 import org.magcube.player.NumOfPlayers;
 
-@ToString
-@Getter
-public class CardQuantity {
+public record CardQuantity(CardIdentity cardIdentity, int twoPlayers, int threePlayers, int fourPlayers) {
 
   public static final List<CardQuantity> basicResource;
   public static final List<CardQuantity> levelOneResource;
   public static final List<CardQuantity> levelTwoResource;
   public static final List<CardQuantity> building;
-
-  private CardIdentity cardIdentity;
-  private int twoPlayers;
-  private int threePlayers;
-  private int fourPlayers;
 
   static {
     try {
@@ -36,11 +26,10 @@ public class CardQuantity {
     }
   }
 
-  public static List<CardQuantity> loadCard(String filename)
-      throws IOException {
+  public static List<CardQuantity> loadCard(String filename) throws IOException {
     ObjectMapper objectMapper = new ObjectMapper();
-    InputStream inputStream = CardData.class.getResourceAsStream(filename);
-    return objectMapper.readValue(inputStream, new TypeReference<List<CardQuantity>>() {
+    InputStream inputStream = CardIdentity.class.getResourceAsStream(filename);
+    return objectMapper.readValue(inputStream, new TypeReference<>() {
     });
   }
 
@@ -52,37 +41,25 @@ public class CardQuantity {
       case BUILDING -> building;
     };
 
-    Optional<CardQuantity> cardQuantity = cardQuantities.stream()
+    var cardQuantity = cardQuantities.stream()
         .filter(x -> x.cardType() == cardType && x.typeId() == typeId)
         .findFirst();
 
     if (cardQuantity.isEmpty()) {
-      String message = String.format("Card not found: cardType=%s, typeId=%d", cardType, typeId);
-      throw new CardQuantityException(message);
+      throw new CardQuantityException(String.format("Card not found: cardType=%s, typeId=%d", cardType, typeId));
     }
 
     return cardQuantity.get().getQuantityForNumOfPlayers(numOfPlayers);
   }
 
-  public CardQuantity() {
-  }
-
-  public CardQuantity(CardIdentity cardIdentity, int twoPlayers, int threePlayers,
-      int fourPlayers) {
-    this.cardIdentity = cardIdentity;
-    this.twoPlayers = twoPlayers;
-    this.threePlayers = threePlayers;
-    this.fourPlayers = fourPlayers;
-  }
-
   // don't use getCardType as name as Jackson will parse it is a field
   public CardType cardType() {
-    return cardIdentity.getCardType();
+    return cardIdentity.cardType();
   }
 
   // don't use getTypeId as name as Jackson will parse it is a field
   public int typeId() {
-    return cardIdentity.getTypeId();
+    return cardIdentity.typeId();
   }
 
   public int getQuantityForNumOfPlayers(NumOfPlayers numOfPlayers) {

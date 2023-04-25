@@ -39,7 +39,7 @@ public interface DisplayingPile<T extends Card> {
   void refillCards() throws DisplayPileException;
 
   default boolean isConsistentCardTypeInCardIdentity(CardIdentity cardIdentity) {
-    return cardIdentity.getCardType() == getCardType();
+    return cardIdentity.cardType() == getCardType();
   }
 
   default boolean isConsistentCardTypeInCardIdentity(List<CardIdentity> cardIdentities) {

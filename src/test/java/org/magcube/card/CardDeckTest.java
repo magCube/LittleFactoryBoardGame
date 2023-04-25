@@ -86,9 +86,9 @@ class CardDeckTest {
 
   static private Stream<Arguments> deckSizeShouldMatchTest() throws NoSuchMethodException {
     return Stream.of(
-        Arguments.of(NumOfPlayers.TWO, CardQuantity.class.getDeclaredMethod("getTwoPlayers")),
-        Arguments.of(NumOfPlayers.THREE, CardQuantity.class.getDeclaredMethod("getThreePlayers")),
-        Arguments.of(NumOfPlayers.FOUR, CardQuantity.class.getDeclaredMethod("getFourPlayers"))
+        Arguments.of(NumOfPlayers.TWO, CardQuantity.class.getDeclaredMethod("twoPlayers")),
+        Arguments.of(NumOfPlayers.THREE, CardQuantity.class.getDeclaredMethod("threePlayers")),
+        Arguments.of(NumOfPlayers.FOUR, CardQuantity.class.getDeclaredMethod("fourPlayers"))
     );
   }
 }

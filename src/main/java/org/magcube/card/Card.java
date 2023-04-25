@@ -1,35 +1,30 @@
 package org.magcube.card;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 @ToString
 @EqualsAndHashCode
-@Getter
 public abstract class Card {
 
   protected CardIdentity cardIdentity;
   protected String name;
   protected int value;
 
-  public Card() {
-  }
-
-  public Card(CardIdentity cardIdentity, String name, int value) {
-    this.cardIdentity = cardIdentity;
-    this.name = name;
-    this.value = value;
-  }
-
   // don't use getCardType as name as Jackson will parse it is a field
   public CardType cardType() {
-    return cardIdentity.getCardType();
+    return cardIdentity.cardType();
   }
 
   // don't use getTypeId as name as Jackson will parse it is a field
   public int typeId() {
-    return cardIdentity.getTypeId();
+    return cardIdentity.typeId();
   }
 
   public boolean isIdentical(CardIdentity cardIdentity) {

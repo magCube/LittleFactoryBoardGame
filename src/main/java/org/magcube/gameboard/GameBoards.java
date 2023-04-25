@@ -19,7 +19,7 @@ public class GameBoards {
   public static HashMap<CardType, List<CardIdentity>> categorizeCardIdentities(List<CardIdentity> cardIdentities) {
     HashMap<CardType, List<CardIdentity>> data = new HashMap<>();
     for (var cardIdentity : cardIdentities) {
-      data.computeIfAbsent(cardIdentity.getCardType(), k -> new ArrayList<>()).add(cardIdentity);
+      data.computeIfAbsent(cardIdentity.cardType(), k -> new ArrayList<>()).add(cardIdentity);
     }
     return data;
   }
@@ -59,11 +59,11 @@ public class GameBoards {
 
   public static boolean isCardIdentitiesValid(List<CardIdentity> cardIdentities) {
     for (var cardIdentity : cardIdentities) {
-      var cardType = cardIdentity.getCardType();
+      var cardType = cardIdentity.cardType();
       if (cardType == null) {
         return false;
       } else {
-        int typeId = cardIdentity.getTypeId();
+        int typeId = cardIdentity.typeId();
         if (typeId > CardData.maxTypeId.get(cardType) || typeId < 1) {
           return false;
         }

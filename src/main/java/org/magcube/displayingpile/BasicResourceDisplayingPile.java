@@ -64,7 +64,7 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
   }
 
   private ResourceCard cardInDisplay(CardIdentity cardIdentity) {
-    var cards = availableCards.get(cardIdentity.getTypeId());
+    var cards = availableCards.get(cardIdentity.typeId());
     if (cards == null || cards.isEmpty()) {
       return null;
     } else {
@@ -87,7 +87,7 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
     var cardsInDisplaying = new ArrayList<ResourceCard>();
 
     var quantityMap = new HashMap<Integer, Integer>();
-    cardIdentities.forEach(cardIdentity -> quantityMap.compute(cardIdentity.getTypeId(), (k, v) -> v == null ? 1 : v + 1));
+    cardIdentities.forEach(cardIdentity -> quantityMap.compute(cardIdentity.typeId(), (k, v) -> v == null ? 1 : v + 1));
 
     for (Entry<Integer, Integer> entry : quantityMap.entrySet()) {
       var typeId = entry.getKey();

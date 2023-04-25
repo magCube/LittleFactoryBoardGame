@@ -27,12 +27,12 @@ public class GameTestUtils {
   }
 
   public static HashMap<CardType, List<? extends Card>> cardsInDisplayReturnDummyCards(List<CardIdentity> cardIdentities) {
-    UnaryOperator<CardIdentity> cloneCardIdentity = (x) -> new CardIdentity(x.getCardType(), x.getTypeId());
+    UnaryOperator<CardIdentity> cloneCardIdentity = (x) -> new CardIdentity(x.cardType(), x.typeId());
 
     ArrayList<Card> cards = new ArrayList<>();
     for (var cardIdentity : cardIdentities) {
       CardIdentity clonedCardIdentity = cloneCardIdentity.apply(cardIdentity);
-      Card card = cardIdentity.getCardType() == CardType.BUILDING
+      Card card = cardIdentity.cardType() == CardType.BUILDING
           ? BuildingCard.builder().cardIdentity(clonedCardIdentity).build()
           : ResourceCard.builder().cardIdentity(clonedCardIdentity).build();
       cards.add(card);
