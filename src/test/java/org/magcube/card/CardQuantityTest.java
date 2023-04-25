@@ -17,17 +17,35 @@ import org.magcube.player.NumOfPlayers;
 
 class CardQuantityTest {
 
+  private static Stream<Arguments> cardQuantityDataProvider() {
+    return Stream.of(
+        Arguments.of(CardQuantity.basicResource),
+        Arguments.of(CardQuantity.levelOneResource),
+        Arguments.of(CardQuantity.levelTwoResource),
+        Arguments.of(CardQuantity.building)
+    );
+  }
+
+  private static Stream<Arguments> quantityDataCoverAllCardDataTest() {
+    return Stream.of(
+        Arguments.of(CardQuantity.basicResource, CardData.basicResource),
+        Arguments.of(CardQuantity.levelOneResource, CardData.levelOneResource),
+        Arguments.of(CardQuantity.levelTwoResource, CardData.levelTwoResource),
+        Arguments.of(CardQuantity.building, CardData.building)
+    );
+  }
+
   @Test
-  void allDataIsNonZeroTest() {
+  void allDataIsLargerThanZeroTest() {
     assertFalse(CardQuantity.basicResource.stream().anyMatch(x ->
-        x.twoPlayers() == 0 ||
-            x.threePlayers() == 0 ||
-            x.fourPlayers() == 0
+        x.twoPlayers() <= 0 ||
+            x.threePlayers() <= 0 ||
+            x.fourPlayers() <= 0
     ));
     assertFalse(CardQuantity.levelOneResource.stream().anyMatch(x ->
-        x.twoPlayers() == 0 ||
-            x.threePlayers() == 0 ||
-            x.fourPlayers() == 0
+        x.twoPlayers() <= 0 ||
+            x.threePlayers() <= 0 ||
+            x.fourPlayers() <= 0
     ));
 
     // for level 2 resource and building, they should be always 1
@@ -46,16 +64,15 @@ class CardQuantityTest {
   @ParameterizedTest
   @MethodSource("cardQuantityDataProvider")
   void allCardTypeIsSameTest(List<CardQuantity> cardQuantities) {
-    assertTrue(cardQuantities.stream()
-        .allMatch(x -> x.cardType() == cardQuantities.get(0).cardType()));
+    var firstCardType = cardQuantities.get(0).cardType();
+    assertTrue(cardQuantities.stream().allMatch(x -> x.cardType() == firstCardType));
   }
 
-  // no duplicate data identifier (same cardType and typeId)
   @ParameterizedTest
   @MethodSource("cardQuantityDataProvider")
   void noDuplicateDataIdentifierTest(List<CardQuantity> data) {
     long uniqueCount = data.stream()
-        .map(x -> x.cardType().toString() + "-" + x.typeId())
+        .map(CardQuantity::cardIdentity)
         .distinct()
         .count();
     assertEquals(data.size(), uniqueCount);
@@ -67,10 +84,8 @@ class CardQuantityTest {
   void quantityDataCoverAllCardDataTest(List<CardQuantity> data, List<? extends Card> cardData) {
     assertTrue(cardData.stream().allMatch(card ->
         data.stream().anyMatch(cardQuantity ->
-            cardQuantity.cardType() == card.cardType() &&
-                cardQuantity.typeId() == card.typeId()
-        )
-    ));
+            card.getCardIdentity().equals(cardQuantity.cardIdentity())
+        )));
   }
 
   @ParameterizedTest
@@ -84,8 +99,7 @@ class CardQuantityTest {
 
   @Test
   void getQuantityExceptionTest() {
-    assertThrows(CardQuantityException.class,
-        () -> CardQuantity.getQuantity(CardType.BASIC_RESOURCE, 99999, NumOfPlayers.FOUR));
+    assertThrows(CardQuantityException.class, () -> CardQuantity.getQuantity(CardType.BASIC_RESOURCE, 99999, NumOfPlayers.FOUR));
   }
 
   @Test
@@ -94,23 +108,5 @@ class CardQuantityTest {
     assertEquals(5, cardQuantity.getQuantityForNumOfPlayers(NumOfPlayers.TWO));
     assertEquals(7, cardQuantity.getQuantityForNumOfPlayers(NumOfPlayers.THREE));
     assertEquals(9, cardQuantity.getQuantityForNumOfPlayers(NumOfPlayers.FOUR));
-  }
-
-  private static Stream<Arguments> cardQuantityDataProvider() {
-    return Stream.of(
-        Arguments.of(CardQuantity.basicResource),
-        Arguments.of(CardQuantity.levelOneResource),
-        Arguments.of(CardQuantity.levelTwoResource),
-        Arguments.of(CardQuantity.building)
-    );
-  }
-
-  private static Stream<Arguments> quantityDataCoverAllCardDataTest() {
-    return Stream.of(
-        Arguments.of(CardQuantity.basicResource, CardData.basicResource),
-        Arguments.of(CardQuantity.levelOneResource, CardData.levelOneResource),
-        Arguments.of(CardQuantity.levelTwoResource, CardData.levelTwoResource),
-        Arguments.of(CardQuantity.building, CardData.building)
-    );
   }
 }

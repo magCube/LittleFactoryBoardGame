@@ -4,33 +4,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.magcube.player.NumOfPlayers;
 
 class CardDeckTest {
 
   @ParameterizedTest
-  @MethodSource
-  void deckSizeShouldMatchTest(NumOfPlayers numOfPlayers, Method m) {
-    assertEquals(sumHelper(CardQuantity.basicResource, m),
-        CardDeck.get(numOfPlayers).basicResource.size());
-    assertEquals(sumHelper(CardQuantity.levelOneResource, m),
-        CardDeck.get(numOfPlayers).levelOneResource.size());
-    assertEquals(sumHelper(CardQuantity.levelTwoResource, m),
-        CardDeck.get(numOfPlayers).levelTwoResource.size());
-    assertEquals(sumHelper(CardQuantity.building, m), CardDeck.get(numOfPlayers).building.size());
+  @EnumSource
+  void deckSizeShouldMatchTest(NumOfPlayers numOfPlayers) {
+    BiFunction<List<CardQuantity>, NumOfPlayers, Integer> sumFn = (cardQuantities, n) -> cardQuantities.stream()
+        .mapToInt(x -> x.getQuantityForNumOfPlayers(n))
+        .sum();
+
+    assertEquals(sumFn.apply(CardQuantity.basicResource, numOfPlayers), CardDeck.get(numOfPlayers).basicResource.size());
+    assertEquals(sumFn.apply(CardQuantity.levelOneResource, numOfPlayers), CardDeck.get(numOfPlayers).levelOneResource.size());
+    assertEquals(sumFn.apply(CardQuantity.levelTwoResource, numOfPlayers), CardDeck.get(numOfPlayers).levelTwoResource.size());
+    assertEquals(sumFn.apply(CardQuantity.building, numOfPlayers), CardDeck.get(numOfPlayers).building.size());
   }
 
   @ParameterizedTest
-  @EnumSource(NumOfPlayers.class)
+  @EnumSource
   void shouldHaveDataTest(NumOfPlayers numOfPlayers) {
     assertNotNull(CardDeck.get(numOfPlayers));
   }
@@ -38,6 +37,17 @@ class CardDeckTest {
   // note: this test only check if the card is shallow clone
   @Test
   void isCloneTest() {
+    Function<List<? extends Card>, Boolean> allRefNoSameFn = (list) -> {
+      for (int i = 0; i < list.size(); i++) {
+        for (int j = i + 1; j < list.size(); j++) {
+          if (list.get(i) == list.get(j)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    };
+
     List<ResourceCard> resourceCards = new ArrayList<>();
     resourceCards.addAll(CardDeck.get(NumOfPlayers.TWO).basicResource);
     resourceCards.addAll(CardDeck.get(NumOfPlayers.TWO).levelOneResource);
@@ -50,7 +60,7 @@ class CardDeckTest {
     resourceCards.addAll(CardDeck.get(NumOfPlayers.FOUR).levelTwoResource);
 
     assertTrue(resourceCards.size() > 0);
-    assertTrue(allDistinctElements(resourceCards));
+    assertTrue(allRefNoSameFn.apply(resourceCards));
 
     List<BuildingCard> buildingCards = new ArrayList<>();
     buildingCards.addAll(CardDeck.get(NumOfPlayers.TWO).building);
@@ -58,37 +68,6 @@ class CardDeckTest {
     buildingCards.addAll(CardDeck.get(NumOfPlayers.FOUR).building);
 
     assertTrue(buildingCards.size() > 0);
-    assertTrue(allDistinctElements(buildingCards));
-  }
-
-  private <T> boolean allDistinctElements(List<T> list) {
-    for (int i = 0; i < list.size(); i++) {
-      for (int j = i + 1; j < list.size(); j++) {
-        if (list.get(i) == list.get(j)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  private int sumHelper(List<CardQuantity> cardQuantities, Method method) {
-    return cardQuantities.stream()
-        .mapToInt(card -> {
-          try {
-            return (int) method.invoke(card);
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-        })
-        .sum();
-  }
-
-  static private Stream<Arguments> deckSizeShouldMatchTest() throws NoSuchMethodException {
-    return Stream.of(
-        Arguments.of(NumOfPlayers.TWO, CardQuantity.class.getDeclaredMethod("twoPlayers")),
-        Arguments.of(NumOfPlayers.THREE, CardQuantity.class.getDeclaredMethod("threePlayers")),
-        Arguments.of(NumOfPlayers.FOUR, CardQuantity.class.getDeclaredMethod("fourPlayers"))
-    );
+    assertTrue(allRefNoSameFn.apply(buildingCards));
   }
 }

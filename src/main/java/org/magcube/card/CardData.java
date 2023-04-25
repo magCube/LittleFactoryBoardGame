@@ -20,7 +20,7 @@ public class CardData {
       levelOneResource = loadCard(ResourceCard.class, "/type1.json");
       levelTwoResource = loadCard(ResourceCard.class, "/type2.json");
       building = loadCard(BuildingCard.class, "/type3.json");
-      
+
       maxTypeId.put(CardType.BASIC_RESOURCE, maxTypeIdInList(basicResource));
       maxTypeId.put(CardType.LEVEL_ONE_RESOURCE, maxTypeIdInList(levelOneResource));
       maxTypeId.put(CardType.LEVEL_TWO_RESOURCE, maxTypeIdInList(levelTwoResource));

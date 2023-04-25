@@ -58,7 +58,7 @@ class CardsTest {
           new CardIdentity(CardType.BASIC_RESOURCE, 2)
       }));
     }
-    
+
     @Test
     void withDuplicateCardIdentities() {
       CardIdentity[] actual = {

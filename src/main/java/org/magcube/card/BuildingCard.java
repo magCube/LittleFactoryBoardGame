@@ -23,7 +23,7 @@ public class BuildingCard extends Card {
   private Boolean isExtension;
   // todo
   private String specialEffect;
-  
+
   @Builder
   public BuildingCard(CardIdentity cardIdentity, String name, int value, CardIdentity[][] cost, int points, CardIdentity[][] effectCost,
       CardIdentity[] effectCapital, CardIdentity effectProduct, int effectPoints, Boolean isStartingBuilding, Boolean isExtension,

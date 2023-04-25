@@ -46,7 +46,7 @@ public record CardQuantity(CardIdentity cardIdentity, int twoPlayers, int threeP
         .findFirst();
 
     if (cardQuantity.isEmpty()) {
-      throw new CardQuantityException(String.format("Card not found: cardType=%s, typeId=%d", cardType, typeId));
+      throw new CardQuantityException(cardType, typeId);
     }
 
     return cardQuantity.get().getQuantityForNumOfPlayers(numOfPlayers);
