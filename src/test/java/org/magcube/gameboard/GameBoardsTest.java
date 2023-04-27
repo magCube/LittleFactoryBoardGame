@@ -26,7 +26,7 @@ class GameBoardsTest {
 
   @Test
   void categorizeCardIdentitiesTest1() {
-    List<CardIdentity> cardIdentities = Arrays.asList(
+    var cardIdentities = Arrays.asList(
         new CardIdentity(CardType.BASIC_RESOURCE, 1234),
         new CardIdentity(CardType.BASIC_RESOURCE, 1234),
         new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 5678),
@@ -63,7 +63,7 @@ class GameBoardsTest {
 
   @Test
   void categorizeCardIdentitiesTest2() {
-    List<CardIdentity> cardIdentities = Arrays.asList(
+    var cardIdentities = Arrays.asList(
         new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 5678),
         new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 5678),
         new CardIdentity(CardType.BUILDING, 7890)
@@ -90,7 +90,7 @@ class GameBoardsTest {
 
   @Test
   void categorizeCardsTest1() {
-    List<? extends Card> cards = List.of(
+    var cards = List.of(
         ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1234)).build(),
         ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1234)).build(),
         ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 5678)).build(),
@@ -128,7 +128,7 @@ class GameBoardsTest {
 
   @Test
   void categorizeCardsTest2() {
-    List<? extends Card> cards = List.of(
+    var cards = List.of(
         ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 5678)).build(),
         ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 5678)).build(),
         BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 7890)).build()
@@ -176,13 +176,13 @@ class GameBoardsTest {
 
   @Test
   void isCardIdentitiesValidTest2() {
-    CardIdentity valid1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
-    CardIdentity valid2 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
-    CardIdentity valid3 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1);
-    CardIdentity valid4 = new CardIdentity(CardType.BUILDING, 1);
+    var valid1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
+    var valid2 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
+    var valid3 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1);
+    var valid4 = new CardIdentity(CardType.BUILDING, 1);
 
-    CardIdentity invalid1 = new CardIdentity(CardType.BASIC_RESOURCE, 99999);
-    CardIdentity invalid2 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999);
+    var invalid1 = new CardIdentity(CardType.BASIC_RESOURCE, 99999);
+    var invalid2 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999);
 
     assertTrue(GameBoards.isCardIdentitiesValid(List.of(valid1, valid2)));
     assertTrue(GameBoards.isCardIdentitiesValid(List.of(valid3, valid4)));
@@ -207,15 +207,15 @@ class GameBoardsTest {
 
   @Test
   void isClassValidTest2() {
-    ResourceCard valid1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
-    ResourceCard valid2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).build();
-    ResourceCard valid3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).build();
-    BuildingCard valid4 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).build();
+    var valid1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
+    var valid2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).build();
+    var valid3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).build();
+    var valid4 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).build();
 
-    BuildingCard invalid1 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
-    BuildingCard invalid2 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).build();
-    BuildingCard invalid3 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).build();
-    ResourceCard invalid4 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).build();
+    var invalid1 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
+    var invalid2 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).build();
+    var invalid3 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).build();
+    var invalid4 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).build();
 
     assertTrue(GameBoards.isClassValid(List.of(valid1)));
     assertTrue(GameBoards.isClassValid(List.of(valid2)));

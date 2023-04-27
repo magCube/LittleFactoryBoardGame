@@ -2,7 +2,7 @@ package org.magcube.gameboard;
 
 import java.util.HashMap;
 import java.util.List;
-import org.jetbrains.annotations.Nullable;
+import java.util.Optional;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardDeck;
@@ -15,6 +15,7 @@ import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.displayingpile.LevelOneResourcePile;
 import org.magcube.displayingpile.LevelTwoResourcePile;
 import org.magcube.displayingpile.PileState;
+import org.magcube.exception.CardIdentitiesException;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.player.NumOfPlayers;
 
@@ -25,7 +26,7 @@ public class GameBoard {
   private final DisplayingPile<ResourceCard> levelTwoResourcesPile;
   private final DisplayingPile<BuildingCard> buildingPile;
 
-  public GameBoard(NumOfPlayers numOfPlayers) throws DisplayPileException {
+  public GameBoard(NumOfPlayers numOfPlayers) {
     var deck = CardDeck.get(numOfPlayers);
     basicResourcesPile = new BasicResourceDisplayingPile(deck.basicResource);
     levelOneResourcesPile = new LevelOneResourcePile(deck.levelOneResource);
@@ -33,7 +34,7 @@ public class GameBoard {
     buildingPile = new BuildingPile(deck.building, numOfPlayers);
   }
 
-  public PileState<? extends Card> getPileState(CardType cardType) {
+  public PileState<? extends Card> pileState(CardType cardType) {
     var pile = (cardType == CardType.BUILDING) ? getBuildingPile() : getResourcePile(cardType);
     return pile.pileState();
   }
@@ -46,55 +47,53 @@ public class GameBoard {
         buildingPile.pileState());
   }
 
-  @Nullable
-  public HashMap<CardType, List<? extends Card>> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException {
-    var isValidate = GameBoards.isCardIdentitiesValid(cardIdentities);
-    if (!isValidate) {
-      throw new DisplayPileException("Card identities are not valid");
-    }
+  public Optional<HashMap<CardType, List<? extends Card>>> cardsInDisplay(List<CardIdentity> cardIdentities) {
     var categorizedCardIdentities = GameBoards.categorizeCardIdentities(cardIdentities);
     var categorizedCards = new HashMap<CardType, List<? extends Card>>();
     for (var entry : categorizedCardIdentities.entrySet()) {
       var cardType = entry.getKey();
-      DisplayingPile<? extends Card> pile = cardType == CardType.BUILDING ? getBuildingPile() : getResourcePile(cardType);
+      var pile = cardType == CardType.BUILDING ? getBuildingPile() : getResourcePile(cardType);
       var optCards = pile.cardsInDisplay(entry.getValue());
       if (optCards.isEmpty()) {
-        return null;
+        return Optional.empty();
       }
       categorizedCards.put(cardType, optCards.get());
     }
-    return categorizedCards;
+    return Optional.of(categorizedCards);
   }
 
-  public HashMap<CardType, List<? extends Card>> takeCards(HashMap<CardType, List<? extends Card>> categorizedCards) throws DisplayPileException {
+  public void takeCards(HashMap<CardType, List<? extends Card>> categorizedCards) {
     for (var entry : categorizedCards.entrySet()) {
       var cardType = entry.getKey();
       if (cardType == CardType.BUILDING) {
         var pile = getBuildingPile();
-        pile.takeCards((List<BuildingCard>) entry.getValue());
+        @SuppressWarnings("unchecked")
+        var cards = (List<BuildingCard>) entry.getValue();
+        pile.takeCards(cards);
       } else {
         var pile = getResourcePile(cardType);
-        pile.takeCards((List<ResourceCard>) entry.getValue());
+        @SuppressWarnings("unchecked")
+        var cards = (List<ResourceCard>) entry.getValue();
+        pile.takeCards(cards);
       }
     }
-    return categorizedCards;
   }
 
-  public static HashMap<CardType, List<? extends Card>> validateAndCategorizeDiscardCards(List<? extends Card> cards) throws DisplayPileException {
-    if (!GameBoards.isCardsValidate(cards)) {
-      throw new DisplayPileException("Invalid cards");
+  public static HashMap<CardType, List<? extends Card>> validateAndCategorizeDiscardCards(List<? extends Card> cards) throws CardIdentitiesException {
+    if (!GameBoards.isCardsValidate(cards) || !GameBoards.isNoBuildingCards(cards)) {
+      throw new CardIdentitiesException();
     }
-    if (!GameBoards.isNoBuildingCards(cards)) {
-      throw new DisplayPileException("Cannot discard building cards");
-    }
+
     return GameBoards.categorizeCards(cards);
   }
 
-  public void discardCards(HashMap<CardType, List<? extends Card>> categorizedCards) throws DisplayPileException {
+  public void discardCards(HashMap<CardType, List<? extends Card>> categorizedCards) {
     for (var entry : categorizedCards.entrySet()) {
       var cardType = entry.getKey();
       var pile = getResourcePile(cardType);
-      pile.discardCards((List<ResourceCard>) entry.getValue());
+      @SuppressWarnings("unchecked")
+      var cards = (List<ResourceCard>) entry.getValue();
+      pile.discardCards(cards);
     }
   }
 

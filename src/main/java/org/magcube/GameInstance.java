@@ -38,7 +38,7 @@ public class GameInstance {
   }
 
   // todo: the following is temp implementation
-  public void setPlayers(NumOfPlayers numOfPlayers) throws DisplayPileException {
+  public void setPlayers(NumOfPlayers numOfPlayers) {
     players = new ArrayList<>();
     for (var i = 1; i <= numOfPlayers.getValue(); i++) {
       var tempPlayer = new Player(String.valueOf(i), "Player" + i);
@@ -64,12 +64,12 @@ public class GameInstance {
   }
 
   private HashMap<CardType, List<? extends Card>> availableCardsInGameBoard(List<CardIdentity> cardIdentities)
-      throws DisplayPileException, NotAvailableInGameBoardException {
-    var cards = gameBoard.cardsInDisplay(cardIdentities);
-    if (cards == null) {
+      throws NotAvailableInGameBoardException {
+    var optCards = gameBoard.cardsInDisplay(cardIdentities);
+    if (optCards.isEmpty()) {
       throw new NotAvailableInGameBoardException();
     }
-    return cards;
+    return optCards.get();
   }
 
   private int sumOfCardsValue(List<? extends Card> cards) {
@@ -278,7 +278,7 @@ public class GameInstance {
   }
 
   public void activateBuildingToGetPointsTokenBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
-      throws DisplayPileException, CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException, InvalidTradingException {
+      throws CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException, InvalidTradingException {
     var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
 
     validateCardIdentities(costCardIdentities);
@@ -340,7 +340,7 @@ public class GameInstance {
     throw new RuntimeException("Not implemented yet!");
   }
 
-  private void playerTakeCardsFormGameBoard(HashMap<CardType, List<? extends Card>> categorizedCards) throws DisplayPileException {
+  private void playerTakeCardsFormGameBoard(HashMap<CardType, List<? extends Card>> categorizedCards) {
     gameBoard.takeCards(categorizedCards);
 
     var targetResourceCards = flattenResourceCardsFromCategorizedCards(categorizedCards);

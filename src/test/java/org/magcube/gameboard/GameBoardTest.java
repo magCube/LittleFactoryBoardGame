@@ -1,16 +1,16 @@
 package org.magcube.gameboard;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.magcube.displayingpile.DisplayingPileTestUtil.numOfCardsInDisplaying;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -19,19 +19,21 @@ import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
-import org.magcube.exception.DisplayPileException;
+import org.magcube.exception.CardIdentitiesException;
 import org.magcube.player.NumOfPlayers;
 
 
 class GameBoardTest {
 
-  private static long numOfCardsWithCardIdentityInDisplaying(List<List<ResourceCard>> displaying, CardIdentity cardIdentity) {
-    return displaying.stream()
-        .map(x -> x.stream().filter(y -> y.isIdentical(cardIdentity)).count())
-        .reduce(0L, Long::sum);
+  private static Stream<GameBoard> gameBoardProvider() {
+    return Stream.of(
+        new GameBoard(NumOfPlayers.TWO),
+        new GameBoard(NumOfPlayers.THREE),
+        new GameBoard(NumOfPlayers.FOUR)
+    );
   }
 
-  private static Stream<Arguments> getPileStateTest() throws DisplayPileException {
+  private static Stream<Arguments> getPileStateTest() {
     return Stream.of(
         Arguments.of(new GameBoard(NumOfPlayers.TWO), CardType.BASIC_RESOURCE, ResourceCard.class),
         Arguments.of(new GameBoard(NumOfPlayers.TWO), CardType.LEVEL_ONE_RESOURCE, ResourceCard.class),
@@ -48,18 +50,10 @@ class GameBoardTest {
     );
   }
 
-  private static Stream<GameBoard> gameBoardProvider() throws DisplayPileException {
-    return Stream.of(
-        new GameBoard(NumOfPlayers.TWO),
-        new GameBoard(NumOfPlayers.THREE),
-        new GameBoard(NumOfPlayers.FOUR)
-    );
-  }
-
   @ParameterizedTest
   @MethodSource
   void getPileStateTest(GameBoard gameBoard, CardType cardType, Class<? extends Card> clazz) {
-    var pileState = gameBoard.getPileState(cardType);
+    var pileState = gameBoard.pileState(cardType);
     assertEquals(cardType, pileState.cardType());
     assertFalse(pileState.displaying().isEmpty());
     pileState.displaying().forEach(
@@ -78,45 +72,49 @@ class GameBoardTest {
     assertNotNull(gameBoardState.levelOneResource());
     assertNotNull(gameBoardState.levelTwoResource());
     assertNotNull(gameBoardState.building());
-    assertEquals(gameBoard.getPileState(CardType.BASIC_RESOURCE), gameBoardState.basicResource());
-    assertEquals(gameBoard.getPileState(CardType.LEVEL_ONE_RESOURCE), gameBoardState.levelOneResource());
-    assertEquals(gameBoard.getPileState(CardType.LEVEL_TWO_RESOURCE), gameBoardState.levelTwoResource());
-    assertEquals(gameBoard.getPileState(CardType.BUILDING), gameBoardState.building());
+    assertEquals(gameBoard.pileState(CardType.BASIC_RESOURCE), gameBoardState.basicResource());
+    assertEquals(gameBoard.pileState(CardType.LEVEL_ONE_RESOURCE), gameBoardState.levelOneResource());
+    assertEquals(gameBoard.pileState(CardType.LEVEL_TWO_RESOURCE), gameBoardState.levelTwoResource());
+    assertEquals(gameBoard.pileState(CardType.BUILDING), gameBoardState.building());
   }
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void cardsInDisplayTest1(GameBoard gameBoard) throws DisplayPileException {
+  void cardsInDisplayTest1(GameBoard gameBoard) {
     var valid1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var valid2 = new CardIdentity(CardType.BASIC_RESOURCE, 3);
     assertNotNull(gameBoard.cardsInDisplay(List.of(valid1)));
     assertNotNull(gameBoard.cardsInDisplay(List.of(valid2)));
 
-    var categorizedCards1 = gameBoard.cardsInDisplay(List.of(valid1));
-    assertNotNull(categorizedCards1);
+    var optCategorizedCards1 = gameBoard.cardsInDisplay(List.of(valid1));
+    assertTrue(optCategorizedCards1.isPresent());
+    var categorizedCards1 = optCategorizedCards1.get();
     assertEquals(1, categorizedCards1.size());
     assertTrue(categorizedCards1.containsKey(CardType.BASIC_RESOURCE));
     assertEquals(1, categorizedCards1.get(CardType.BASIC_RESOURCE).size());
     assertEquals(1, categorizedCards1.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(valid1)).count());
 
-    var categorizedCards2 = gameBoard.cardsInDisplay(List.of(valid1, valid2));
-    assertNotNull(categorizedCards2);
+    var optCategorizedCards2 = gameBoard.cardsInDisplay(List.of(valid1, valid2));
+    assertTrue(optCategorizedCards2.isPresent());
+    var categorizedCards2 = optCategorizedCards2.get();
     assertEquals(1, categorizedCards2.size());
     assertTrue(categorizedCards2.containsKey(CardType.BASIC_RESOURCE));
     assertEquals(2, categorizedCards2.get(CardType.BASIC_RESOURCE).size());
     assertEquals(1, categorizedCards2.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(valid1)).count());
     assertEquals(1, categorizedCards2.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(valid2)).count());
 
-    var categorizedCards3 = gameBoard.cardsInDisplay(List.of(valid2, valid1));
-    assertNotNull(categorizedCards3);
+    var optCategorizedCards3 = gameBoard.cardsInDisplay(List.of(valid2, valid1));
+    assertTrue(optCategorizedCards3.isPresent());
+    var categorizedCards3 = optCategorizedCards3.get();
     assertEquals(1, categorizedCards3.size());
     assertTrue(categorizedCards3.containsKey(CardType.BASIC_RESOURCE));
     assertEquals(2, categorizedCards3.get(CardType.BASIC_RESOURCE).size());
     assertEquals(1, categorizedCards2.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(valid1)).count());
     assertEquals(1, categorizedCards2.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(valid2)).count());
 
-    var categorizedCards4 = gameBoard.cardsInDisplay(List.of(valid2, valid1, valid2));
-    assertNotNull(categorizedCards4);
+    var optCategorizedCards4 = gameBoard.cardsInDisplay(List.of(valid2, valid1, valid2));
+    assertTrue(optCategorizedCards4.isPresent());
+    var categorizedCards4 = optCategorizedCards4.get();
     assertEquals(1, categorizedCards4.size());
     assertTrue(categorizedCards4.containsKey(CardType.BASIC_RESOURCE));
     assertEquals(3, categorizedCards4.get(CardType.BASIC_RESOURCE).size());
@@ -126,17 +124,18 @@ class GameBoardTest {
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void cardsInDisplayTest2(GameBoard gameBoard) throws DisplayPileException {
+  void cardsInDisplayTest2(GameBoard gameBoard) {
     var gameBoardState = gameBoard.gameBoardState();
     var valid1 = gameBoardState.levelOneResource().displaying().get(0).get(0).getCardIdentity();
     var valid2 = gameBoardState.building().displaying().get(0).get(0).getCardIdentity();
     var valid3 = gameBoardState.building().displaying().get(1).get(0).getCardIdentity();
-    assertNotNull(gameBoard.cardsInDisplay(List.of(valid1)));
-    assertNotNull(gameBoard.cardsInDisplay(List.of(valid2)));
-    assertNotNull(gameBoard.cardsInDisplay(List.of(valid3)));
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid1)).isPresent());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid2)).isPresent());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid3)).isPresent());
 
-    var categorizedCards = gameBoard.cardsInDisplay(List.of(valid1, valid2, valid3));
-    assertNotNull(categorizedCards);
+    var optCategorizedCards = gameBoard.cardsInDisplay(List.of(valid1, valid2, valid3));
+    assertTrue(optCategorizedCards.isPresent());
+    var categorizedCards = optCategorizedCards.get();
     assertEquals(2, categorizedCards.size());
     assertTrue(categorizedCards.containsKey(CardType.LEVEL_ONE_RESOURCE));
     assertTrue(categorizedCards.containsKey(CardType.BUILDING));
@@ -149,7 +148,7 @@ class GameBoardTest {
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void cardsInDisplayTest3(GameBoard gameBoard) throws DisplayPileException {
+  void cardsInDisplayShouldReturnOptionalEmptyTest1(GameBoard gameBoard) {
     var gameBoardState = gameBoard.gameBoardState();
     var valid1 = gameBoardState.building().displaying().get(0).get(0).getCardIdentity();
     var valid2 = gameBoardState.building().displaying().get(1).get(0).getCardIdentity();
@@ -157,26 +156,26 @@ class GameBoardTest {
     var invalid1 = gameBoardState.levelTwoResource().deck().get(0).getCardIdentity();
     var invalid2 = gameBoardState.building().deck().get(0).getCardIdentity();
 
-    assertNotNull(gameBoard.cardsInDisplay(List.of(valid1, valid2)));
+    assertFalse(gameBoard.cardsInDisplay(List.of(valid1, valid2)).isEmpty());
 
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid1)));
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid1)));
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid2)));
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid1, invalid2)));
-    assertNull(gameBoard.cardsInDisplay(List.of(valid1, invalid1)));
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid1, valid1)));
-    assertNull(gameBoard.cardsInDisplay(List.of(valid2, invalid2)));
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid2, valid2)));
-    assertNull(gameBoard.cardsInDisplay(List.of(valid1, invalid2)));
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid2, valid1)));
-    assertNull(gameBoard.cardsInDisplay(List.of(valid1, valid2, invalid1)));
-    assertNull(gameBoard.cardsInDisplay(List.of(valid1, valid2, invalid2)));
-    assertNull(gameBoard.cardsInDisplay(List.of(invalid2, valid1, valid2)));
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid1, invalid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid1, invalid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid1, valid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid2, invalid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid2, valid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid1, invalid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid2, valid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid1, valid2, invalid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid1, valid2, invalid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid2, valid1, valid2)).isEmpty());
   }
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void cardsInDisplayShouldThrowTest(GameBoard gameBoard) throws DisplayPileException {
+  void cardsInDisplayShouldReturnOptionalEmptyTest2(GameBoard gameBoard) {
     var gameBoardState = gameBoard.gameBoardState();
     var valid1 = gameBoardState.building().displaying().get(0).get(0).getCardIdentity();
     var valid2 = gameBoardState.building().displaying().get(1).get(0).getCardIdentity();
@@ -186,69 +185,69 @@ class GameBoardTest {
     var invalid3 = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999);
     var invalid4 = new CardIdentity(CardType.BUILDING, 99999);
 
-    assertDoesNotThrow(() -> gameBoard.cardsInDisplay(List.of(valid1, valid2)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(invalid1)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(invalid2)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(invalid3)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(invalid4)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(valid1, invalid1)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(invalid1, valid1)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(valid2, invalid2)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(invalid2, valid2)));
-    assertThrows(DisplayPileException.class, () -> gameBoard.cardsInDisplay(List.of(valid1, valid2, invalid1)));
+    assertFalse(gameBoard.cardsInDisplay(List.of(valid1, valid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid3)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid4)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid1, invalid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid1, valid1)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid2, invalid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(invalid2, valid2)).isEmpty());
+    assertTrue(gameBoard.cardsInDisplay(List.of(valid1, valid2, invalid1)).isEmpty());
   }
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void takeCardsTest1(GameBoard gameBoard) throws DisplayPileException {
+  void takeCardsTest1(GameBoard gameBoard) {
     var cardIdentity1 = new CardIdentity(CardType.BASIC_RESOURCE, 1);
     var cardIdentity2 = new CardIdentity(CardType.BASIC_RESOURCE, 2);
     var cardIdentity3 = new CardIdentity(CardType.BASIC_RESOURCE, 5);
 
-    var cards = gameBoard.cardsInDisplay(List.of(cardIdentity1, cardIdentity2, cardIdentity3));
-    assertNotNull(cards);
-    var cardsToken = gameBoard.takeCards(cards);
-    assertNotNull(cardsToken);
-    assertEquals(1, cardsToken.size());
-    assertTrue(cardsToken.containsKey(CardType.BASIC_RESOURCE));
-    assertEquals(3, cardsToken.get(CardType.BASIC_RESOURCE).size());
-    assertEquals(1, cardsToken.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(cardIdentity1)).count());
-    assertEquals(1, cardsToken.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(cardIdentity2)).count());
-    assertEquals(1, cardsToken.get(CardType.BASIC_RESOURCE).stream().filter(card -> card.getCardIdentity().equals(cardIdentity3)).count());
+    var initNumOfCardWithCardIdentity1 = numOfCardsInDisplaying(gameBoard.gameBoardState().basicResource().displaying(), cardIdentity1);
+    var initNumOfCardWithCardIdentity2 = numOfCardsInDisplaying(gameBoard.gameBoardState().basicResource().displaying(), cardIdentity2);
+
+    var optCards = gameBoard.cardsInDisplay(List.of(cardIdentity1, cardIdentity2, cardIdentity3));
+    assertTrue(optCards.isPresent());
+    var cards = optCards.get();
+    gameBoard.takeCards(cards);
+
+    var curNumOfCardWithCardIdentity1 = numOfCardsInDisplaying(gameBoard.gameBoardState().basicResource().displaying(), cardIdentity1);
+    var curNumOfCardWithCardIdentity2 = numOfCardsInDisplaying(gameBoard.gameBoardState().basicResource().displaying(), cardIdentity2);
+
+    assertEquals(initNumOfCardWithCardIdentity1 - 1, curNumOfCardWithCardIdentity1);
+    assertEquals(initNumOfCardWithCardIdentity2 - 1, curNumOfCardWithCardIdentity2);
   }
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void takeCardTest2(GameBoard gameBoard) throws DisplayPileException {
-    var gameBoardState = gameBoard.gameBoardState();
-    var card1 = gameBoardState.levelOneResource().displaying().get(0).get(0);
-    var card2 = gameBoardState.levelTwoResource().displaying().get(1).get(0);
-    var card3 = gameBoardState.building().displaying().get(2).get(0);
+  void takeCardTest2(GameBoard gameBoard) {
+    var card1 = gameBoard.gameBoardState().levelOneResource().displaying().get(0).get(0);
+    var card2 = gameBoard.gameBoardState().levelTwoResource().displaying().get(1).get(0);
+    var card3 = gameBoard.gameBoardState().building().displaying().get(2).get(0);
+
+    var initNumOfCardWithCardIdentity1 = numOfCardsInDisplaying(gameBoard.gameBoardState().levelOneResource().displaying(), card1.getCardIdentity());
+    var initNumOfCardWithCardIdentity2 = numOfCardsInDisplaying(gameBoard.gameBoardState().levelTwoResource().displaying(), card2.getCardIdentity());
+    var initNumOfCardWithCardIdentity3 = numOfCardsInDisplaying(gameBoard.gameBoardState().building().displaying(), card3.getCardIdentity());
 
     var cardIdentities = List.of(card1.getCardIdentity(), card2.getCardIdentity(), card3.getCardIdentity());
-    var cards = gameBoard.cardsInDisplay(cardIdentities);
-    assertNotNull(cards);
-    var cardsToken = gameBoard.takeCards(cards);
-    assertEquals(3, cardsToken.size());
-    assertTrue(cardsToken.containsKey(CardType.LEVEL_ONE_RESOURCE));
-    assertTrue(cardsToken.containsKey(CardType.LEVEL_TWO_RESOURCE));
-    assertTrue(cardsToken.containsKey(CardType.BUILDING));
-    assertEquals(List.of(card1), cardsToken.get(CardType.LEVEL_ONE_RESOURCE));
-    assertEquals(List.of(card2), cardsToken.get(CardType.LEVEL_TWO_RESOURCE));
-    assertEquals(List.of(card3), cardsToken.get(CardType.BUILDING));
+    var optCards = gameBoard.cardsInDisplay(cardIdentities);
+    assertTrue(optCards.isPresent());
+    var cards = optCards.get();
+    gameBoard.takeCards(cards);
+
+    var curNumOfCardWithCardIdentity1 = numOfCardsInDisplaying(gameBoard.gameBoardState().levelOneResource().displaying(), card1.getCardIdentity());
+    var curNumOfCardWithCardIdentity2 = numOfCardsInDisplaying(gameBoard.gameBoardState().levelTwoResource().displaying(), card2.getCardIdentity());
+    var curNumOfCardWithCardIdentity3 = numOfCardsInDisplaying(gameBoard.gameBoardState().building().displaying(), card3.getCardIdentity());
+
+    assertEquals(initNumOfCardWithCardIdentity1 - 1, curNumOfCardWithCardIdentity1);
+    assertEquals(initNumOfCardWithCardIdentity2 - 1, curNumOfCardWithCardIdentity2);
+    assertEquals(initNumOfCardWithCardIdentity3 - 1, curNumOfCardWithCardIdentity3);
   }
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void takeCardTest3(GameBoard gameBoard) throws DisplayPileException {
-    HashMap<CardType, List<? extends Card>> emptyMap = new HashMap<>();
-    var cardsToken = gameBoard.takeCards(emptyMap);
-    assertEquals(0, cardsToken.size());
-  }
-
-  @ParameterizedTest
-  @MethodSource("gameBoardProvider")
-  void validateAndCategorizeDiscardCardsTest1() throws DisplayPileException {
+  void validateAndCategorizeDiscardCardsTest1() throws CardIdentitiesException {
     var card1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2)).build();
@@ -257,40 +256,33 @@ class GameBoardTest {
     var card6 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 3)).build();
     var card7 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 2)).build();
 
+    HashMap<CardType, List<? extends Card>> expected = new HashMap<>();
+    expected.put(CardType.BASIC_RESOURCE, List.of(card1, card2, card3));
+    expected.put(CardType.LEVEL_ONE_RESOURCE, List.of(card4, card5, card6));
+    expected.put(CardType.LEVEL_TWO_RESOURCE, List.of(card7));
+
     var categorizedCards = GameBoard.validateAndCategorizeDiscardCards(List.of(card1, card2, card3, card4, card5, card6, card7));
-    assertEquals(3, categorizedCards.size());
-    assertTrue(categorizedCards.containsKey(CardType.BASIC_RESOURCE));
-    assertTrue(categorizedCards.containsKey(CardType.LEVEL_ONE_RESOURCE));
-    assertTrue(categorizedCards.containsKey(CardType.LEVEL_TWO_RESOURCE));
-    assertEquals(3, categorizedCards.get(CardType.BASIC_RESOURCE).size());
-    assertEquals(3, categorizedCards.get(CardType.LEVEL_ONE_RESOURCE).size());
-    assertEquals(1, categorizedCards.get(CardType.LEVEL_TWO_RESOURCE).size());
-    assertEquals(List.of(card1, card2, card3), categorizedCards.get(CardType.BASIC_RESOURCE));
-    assertEquals(List.of(card4, card5, card6), categorizedCards.get(CardType.LEVEL_ONE_RESOURCE));
-    assertEquals(List.of(card7), categorizedCards.get(CardType.LEVEL_TWO_RESOURCE));
+    assertEquals(expected, categorizedCards);
   }
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void validateAndCategorizeDiscardCardsTest2() throws DisplayPileException {
+  void validateAndCategorizeDiscardCardsTest2() throws CardIdentitiesException {
     var card1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2)).build();
     var card4 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2)).build();
 
+    HashMap<CardType, List<? extends Card>> expected = new HashMap<>();
+    expected.put(CardType.BASIC_RESOURCE, List.of(card1, card2, card3));
+    expected.put(CardType.LEVEL_ONE_RESOURCE, List.of(card4));
+
     var categorizedCards = GameBoard.validateAndCategorizeDiscardCards(List.of(card1, card2, card3, card4));
-    assertEquals(2, categorizedCards.size());
-    assertTrue(categorizedCards.containsKey(CardType.BASIC_RESOURCE));
-    assertTrue(categorizedCards.containsKey(CardType.LEVEL_ONE_RESOURCE));
-    assertEquals(3, categorizedCards.get(CardType.BASIC_RESOURCE).size());
-    assertEquals(1, categorizedCards.get(CardType.LEVEL_ONE_RESOURCE).size());
-    assertEquals(List.of(card1, card2, card3), categorizedCards.get(CardType.BASIC_RESOURCE));
-    assertEquals(List.of(card4), categorizedCards.get(CardType.LEVEL_ONE_RESOURCE));
+    assertEquals(expected, categorizedCards);
   }
 
-  @ParameterizedTest
-  @MethodSource("gameBoardProvider")
-  void validateAndCategorizeDiscardCardsShouldThrowTest1(GameBoard gameBoard) {
+  @Test
+  void validateAndCategorizeDiscardCardsShouldThrowTest1() {
     var card1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2)).build();
     var card3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 2)).build();
@@ -299,41 +291,40 @@ class GameBoardTest {
     var invalidCard2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999)).build();
     var invalidCard3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 99999)).build();
 
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard2)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard3)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard2)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard3)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard2)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard3)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard2)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard3)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, card2, card3, invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard1, invalidCard2)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard2)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard3)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard2)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard3)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard2)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard3)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard2)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard3)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, card2, card3, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard1, invalidCard2)));
   }
 
-  @ParameterizedTest
-  @MethodSource("gameBoardProvider")
-  void validateAndCategorizeDiscardCardsShouldThrowTest2(GameBoard gameBoard) {
+  @Test
+  void validateAndCategorizeDiscardCardsShouldThrowTest2() {
     var card1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2)).build();
     var card3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 2)).build();
 
     var invalidCard1 = BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
 
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard1)));
-    assertThrows(DisplayPileException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, card2, card3, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card2, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card3, invalidCard1)));
+    assertThrows(CardIdentitiesException.class, () -> GameBoard.validateAndCategorizeDiscardCards(List.of(card1, card2, card3, invalidCard1)));
   }
 
   @ParameterizedTest
   @MethodSource("gameBoardProvider")
-  void discardCardsTest(GameBoard gameBoard) throws DisplayPileException {
+  void discardCardsTest(GameBoard gameBoard) throws CardIdentitiesException {
     var card1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build();
     var card3 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2)).build();
@@ -344,16 +335,16 @@ class GameBoardTest {
 
     var gameBoardState = gameBoard.gameBoardState();
     var basicResourceDisplay = gameBoardState.basicResource().displaying();
-    var initNumOfCard1 = numOfCardsWithCardIdentityInDisplaying(basicResourceDisplay, card1.getCardIdentity());
-    var initNumOfCard3 = numOfCardsWithCardIdentityInDisplaying(basicResourceDisplay, card3.getCardIdentity());
+    var initNumOfCard1 = numOfCardsInDisplaying(basicResourceDisplay, card1.getCardIdentity());
+    var initNumOfCard3 = numOfCardsInDisplaying(basicResourceDisplay, card3.getCardIdentity());
 
     var categorizedCards = GameBoard.validateAndCategorizeDiscardCards(List.of(card1, card2, card3, card4, card5, card6, card7));
     gameBoard.discardCards(categorizedCards);
 
     var gameBoardStateAfterDiscard = gameBoard.gameBoardState();
     var basicResourceDisplayAfterDiscard = gameBoardStateAfterDiscard.basicResource().displaying();
-    var numOfCard1AfterDiscard = numOfCardsWithCardIdentityInDisplaying(basicResourceDisplayAfterDiscard, card1.getCardIdentity());
-    var numOfCard3AfterDiscard = numOfCardsWithCardIdentityInDisplaying(basicResourceDisplayAfterDiscard, card3.getCardIdentity());
+    var numOfCard1AfterDiscard = numOfCardsInDisplaying(basicResourceDisplayAfterDiscard, card1.getCardIdentity());
+    var numOfCard3AfterDiscard = numOfCardsInDisplaying(basicResourceDisplayAfterDiscard, card3.getCardIdentity());
 
     assertEquals(initNumOfCard1 + 2, numOfCard1AfterDiscard);
     assertEquals(initNumOfCard3 + 1, numOfCard3AfterDiscard);
