@@ -63,16 +63,15 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
     return discardPile.size();
   }
 
-  private ResourceCard cardInDisplay(CardIdentity cardIdentity) {
+  private Optional<ResourceCard> cardInDisplay(CardIdentity cardIdentity) {
     var listWithSameCardIdentity = findTheListWithTheSameCardIdentity(cardIdentity);
-    return listWithSameCardIdentity.map(cards -> cards.get(0)).orElse(null);
+    return listWithSameCardIdentity.map(cards -> cards.get(0));
   }
 
   @Override
-  public List<ResourceCard> cardsInDisplay(List<CardIdentity> cardIdentities) {
+  public Optional<List<ResourceCard>> cardsInDisplay(List<CardIdentity> cardIdentities) {
     if (cardIdentities.size() == 1) {
-      var card = cardInDisplay(cardIdentities.get(0));
-      return card == null ? null : List.of(card);
+      return cardInDisplay(cardIdentities.get(0)).map(Collections::singletonList);
     }
 
     var cardsInDisplaying = new ArrayList<ResourceCard>();
@@ -87,11 +86,11 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
         var list = listWithSameCardIdentity.get();
         cardsInDisplaying.addAll(list.subList(0, quantity));
       } else {
-        return null;
+        return Optional.empty();
       }
     }
 
-    return cardsInDisplaying;
+    return Optional.of(cardsInDisplaying);
   }
 
   @Override

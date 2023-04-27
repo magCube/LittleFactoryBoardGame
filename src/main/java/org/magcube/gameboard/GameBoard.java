@@ -57,11 +57,11 @@ public class GameBoard {
     for (var entry : categorizedCardIdentities.entrySet()) {
       var cardType = entry.getKey();
       DisplayingPile<? extends Card> pile = cardType == CardType.BUILDING ? getBuildingPile() : getResourcePile(cardType);
-      var cards = pile.cardsInDisplay(entry.getValue());
-      if (cards == null) {
+      var optCards = pile.cardsInDisplay(entry.getValue());
+      if (optCards.isEmpty()) {
         return null;
       }
-      categorizedCards.put(cardType, cards);
+      categorizedCards.put(cardType, optCards.get());
     }
     return categorizedCards;
   }

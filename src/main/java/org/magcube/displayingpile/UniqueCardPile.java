@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.magcube.card.Card;
@@ -65,34 +67,20 @@ public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T
     return cardIdentitiesSet.size() != cardIdentities.size();
   }
 
-  private T cardInDisplay(CardIdentity cardIdentity) {
-    var card = availableCards.stream().filter(x -> x != null && x.isIdentical(cardIdentity)).findFirst();
-    return card.orElse(null);
-  }
-
   @Override
-  public List<T> cardsInDisplay(List<CardIdentity> cardIdentities) {
+  public Optional<List<T>> cardsInDisplay(List<CardIdentity> cardIdentities) {
     if (haveDuplicatedCardIdentities(cardIdentities)) {
-      return null;
+      return Optional.empty();
     }
 
-    if (cardIdentities.size() == 1) {
-      var card = cardInDisplay(cardIdentities.get(0));
-      return card == null ? null : List.of(card);
-    }
+    List<T> cardsInDisplaying = availableCards.stream()
+        .filter(Objects::nonNull)
+        .filter(card -> cardIdentities.stream().anyMatch(card::isIdentical))
+        .collect(Collectors.toList());
 
-    var cardsInDisplaying = new ArrayList<T>();
-
-    for (CardIdentity cardIdentity : cardIdentities) {
-      var card = availableCards.stream().filter(x -> x != null && x.isIdentical(cardIdentity)).findFirst();
-      if (card.isPresent()) {
-        cardsInDisplaying.add(card.get());
-      } else {
-        return null;
-      }
-    }
-
-    return cardsInDisplaying;
+    return cardsInDisplaying.size() == cardIdentities.size()
+        ? Optional.of(cardsInDisplaying)
+        : Optional.empty();
   }
 
   @Override

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
@@ -58,20 +59,15 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
     return 0;
   }
 
-  private ResourceCard cardInDisplay(CardIdentity cardIdentity) {
-    var cards = availableCards.get(cardIdentity.typeId());
-    if (cards == null || cards.isEmpty()) {
-      return null;
-    } else {
-      return cards.get(0);
-    }
+  private Optional<ResourceCard> cardInDisplay(CardIdentity cardIdentity) {
+    List<ResourceCard> cards = availableCards.getOrDefault(cardIdentity.typeId(), Collections.emptyList());
+    return cards.isEmpty() ? Optional.empty() : Optional.of(cards.get(0));
   }
 
   @Override
-  public List<ResourceCard> cardsInDisplay(List<CardIdentity> cardIdentities) {
+  public Optional<List<ResourceCard>> cardsInDisplay(List<CardIdentity> cardIdentities) {
     if (cardIdentities.size() == 1) {
-      var card = cardInDisplay(cardIdentities.get(0));
-      return card == null ? null : List.of(card);
+      return cardInDisplay(cardIdentities.get(0)).map(Collections::singletonList);
     }
 
     var cardsInDisplaying = new ArrayList<ResourceCard>();
@@ -84,13 +80,13 @@ public class BasicResourceDisplayingPile implements DisplayingPile<ResourceCard>
       var quantity = entry.getValue();
       var cards = availableCards.get(typeId);
       if (cards == null || cards.size() < quantity) {
-        return null;//TODO:@Tam null is consider anti-pattern now, may think of using Optional
-      } else {
-        cardsInDisplaying.addAll(cards.subList(0, quantity));
+        return Optional.empty();
       }
+      cardsInDisplaying.addAll(cards.subList(0, quantity));
+
     }
 
-    return cardsInDisplaying;
+    return Optional.of(cardsInDisplaying);
   }
 
   @Override

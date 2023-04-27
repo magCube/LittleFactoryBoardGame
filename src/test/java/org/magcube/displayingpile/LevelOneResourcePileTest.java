@@ -2,8 +2,7 @@ package org.magcube.displayingpile;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.magcube.displayingpile.DisplayingPileTestUtil.numOfCardsInDisplaying;
 import static org.magcube.displayingpile.DisplayingPileTestUtil.takeCardHelper;
@@ -59,7 +58,7 @@ class LevelOneResourcePileTest {
     ArrayList<ResourceCard> mockDeck = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 3; j++) {
-        mockDeck.add(new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, i), "test" + i + j, 1, null, null));
+        mockDeck.add(ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, i)).name("test" + i + j).value(1).build());
       }
     }
     assertDoesNotThrow(() -> new LevelOneResourcePile(mockDeck));
@@ -140,7 +139,7 @@ class LevelOneResourcePileTest {
     ArrayList<ResourceCard> mockDeck = new ArrayList<>();
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < 3; j++) {
-        mockDeck.add(new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, i), "test" + i + j, 1, null, null));
+        mockDeck.add(ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, i)).name("test" + i + j).value(1).build());
       }
     }
     var pile = new LevelOneResourcePile(mockDeck);
@@ -172,8 +171,9 @@ class LevelOneResourcePileTest {
 
     for (List<ResourceCard> resourceCards : displaying) {
       var card = resourceCards.get(0);
-      var cards = pile.cardsInDisplay(List.of(card.getCardIdentity()));
-      assertNotNull(cards);
+      var optCards = pile.cardsInDisplay(List.of(card.getCardIdentity()));
+      assertTrue(optCards.isPresent());
+      var cards = optCards.get();
       assertEquals(1, cards.size());
       assertEquals(List.of(card), cards);
     }
@@ -181,9 +181,9 @@ class LevelOneResourcePileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void cardsInDisplaySingleCardShouldReturnNullTest(DisplayingPile<ResourceCard> pile) {
-    var card = new ResourceCard(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999), "test", 1, null, null);
-    assertNull(pile.cardsInDisplay(List.of(card.getCardIdentity())));
+  void cardsInDisplaySingleCardShouldReturnOptionalEmptyTest(DisplayingPile<ResourceCard> pile) {
+    var card = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999)).name("test").value(1).build();
+    assertTrue(pile.cardsInDisplay(List.of(card.getCardIdentity())).isEmpty());
   }
 
   @ParameterizedTest
@@ -193,15 +193,15 @@ class LevelOneResourcePileTest {
     var initNumOfCardWithCardIdentity1 = pile.getDisplaying().get(0).size();
 
     for (int i = 0; i < initNumOfCardWithCardIdentity1; i++) {
-      var cards = pile.cardsInDisplay(List.of(cardIdentity1));
-      assertNotNull(cards);
-      pile.takeCards(cards);
+      var optCards = pile.cardsInDisplay(List.of(cardIdentity1));
+      assertTrue(optCards.isPresent());
+      pile.takeCards(optCards.get());
     }
 
     var curNumOfCardWithCardIdentity1 = numOfCardsInDisplaying(pile.getDisplaying(), cardIdentity1);
 
     assertEquals(0, curNumOfCardWithCardIdentity1);
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity1)));
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity1)).isEmpty());
   }
 
   @ParameterizedTest
@@ -218,8 +218,9 @@ class LevelOneResourcePileTest {
     var list = new ArrayList<CardIdentity>();
     list.addAll(Collections.nCopies(initNumOfCardWithCardIdentity1, cardIdentity1));
     list.addAll(Collections.nCopies(initNumOfCardWithCardIdentity2, cardIdentity2));
-    var cards = pile.cardsInDisplay(list);
-    assertNotNull(cards);
+    var optCards = pile.cardsInDisplay(list);
+    assertTrue(optCards.isPresent());
+    var cards = optCards.get();
     assertEquals(initNumOfCardWithCardIdentity1 + initNumOfCardWithCardIdentity2, cards.size());
     assertEquals(initNumOfCardWithCardIdentity1, cards.stream().filter(x -> x.isIdentical(cardIdentity1)).count());
     assertEquals(initNumOfCardWithCardIdentity2, cards.stream().filter(x -> x.isIdentical(cardIdentity2)).count());
@@ -227,20 +228,20 @@ class LevelOneResourcePileTest {
 
   @ParameterizedTest
   @MethodSource("pileProvider")
-  void cardsInDisplayMultipleCardsShouldReturnNullTest(DisplayingPile<ResourceCard> pile) {
+  void cardsInDisplayMultipleCardsShouldReturnOptionalEmptyTest(DisplayingPile<ResourceCard> pile) {
     var cardIdentity1 = pile.getDisplaying().get(0).get(0).getCardIdentity();
     var cardIdentity2 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999);
     var cardIdentity3 = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 99999);
 
-    assertNotNull(pile.cardsInDisplay(List.of(cardIdentity1)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity2)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity3)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity1)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity3)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity3, cardIdentity1)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity3)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2, cardIdentity3)));
+    assertFalse(pile.cardsInDisplay(List.of(cardIdentity1)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity2)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity3)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity1)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity3)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity3, cardIdentity1)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity3)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2, cardIdentity3)).isEmpty());
   }
 
   @ParameterizedTest
@@ -254,16 +255,16 @@ class LevelOneResourcePileTest {
     var initNumOfCardWithCardIdentity1 = numOfCardsInDisplaying(pile.getDisplaying(), cardIdentity1);
     var initNumOfCardWithCardIdentity2 = numOfCardsInDisplaying(pile.getDisplaying(), cardIdentity2);
 
-    assertNull(pile.cardsInDisplay(Collections.nCopies(initNumOfCardWithCardIdentity1 + 1, cardIdentity1)));
-    assertNull(pile.cardsInDisplay(Collections.nCopies(initNumOfCardWithCardIdentity2 + 1, cardIdentity2)));
+    assertTrue(pile.cardsInDisplay(Collections.nCopies(initNumOfCardWithCardIdentity1 + 1, cardIdentity1)).isEmpty());
+    assertTrue(pile.cardsInDisplay(Collections.nCopies(initNumOfCardWithCardIdentity2 + 1, cardIdentity2)).isEmpty());
 
     var list = new ArrayList<CardIdentity>();
     list.addAll(Collections.nCopies(initNumOfCardWithCardIdentity1, cardIdentity1));
     list.addAll(Collections.nCopies(initNumOfCardWithCardIdentity2, cardIdentity2));
 
-    var cards = pile.cardsInDisplay(list);
-
-    assertNotNull(cards);
+    var optCards = pile.cardsInDisplay(list);
+    assertTrue(optCards.isPresent());
+    var cards = optCards.get();
     assertEquals(initNumOfCardWithCardIdentity1 + initNumOfCardWithCardIdentity2, cards.size());
     assertEquals(initNumOfCardWithCardIdentity1, cards.stream().filter(x -> x.isIdentical(cardIdentity1)).count());
     assertEquals(initNumOfCardWithCardIdentity2, cards.stream().filter(x -> x.isIdentical(cardIdentity2)).count());
@@ -276,10 +277,10 @@ class LevelOneResourcePileTest {
     assertEquals(0, curNumOfCardWithCardIdentity1);
     assertEquals(0, curNumOfCardWithCardIdentity2);
 
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity1)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity2)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2)));
-    assertNull(pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity1)));
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity1)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity2)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity1, cardIdentity2)).isEmpty());
+    assertTrue(pile.cardsInDisplay(List.of(cardIdentity2, cardIdentity1)).isEmpty());
   }
 
   @ParameterizedTest
@@ -293,8 +294,9 @@ class LevelOneResourcePileTest {
 
     for (int i = 0; i < displaying.size(); i++) {
       var card = pile.getDisplaying().get(i).get(0);
-      var cardsInDisplay = pile.cardsInDisplay(List.of(card.getCardIdentity()));
-      pile.takeCards(cardsInDisplay);
+      var optCardsInDisplay = pile.cardsInDisplay(List.of(card.getCardIdentity()));
+      assertTrue(optCardsInDisplay.isPresent());
+      pile.takeCards(optCardsInDisplay.get());
       sizes.set(i, sizes.get(i) - 1);
       assertEquals(sizes, pile.getDisplaying().stream().map(List::size).toList());
     }
@@ -315,9 +317,9 @@ class LevelOneResourcePileTest {
     list.addAll(Collections.nCopies(initNumOfCardWithCardIdentity1, cardIdentity1));
     list.addAll(Collections.nCopies(initNumOfCardWithCardIdentity2, cardIdentity2));
 
-    var cards = pile.cardsInDisplay(list);
-    assertNotNull(cards);
-    pile.takeCards(cards);
+    var optCards = pile.cardsInDisplay(list);
+    assertTrue(optCards.isPresent());
+    pile.takeCards(optCards.get());
 
     var curNumOfCardWithCardIdentity1 = numOfCardsInDisplaying(pile.getDisplaying(), cardIdentity1);
     var curNumOfCardWithCardIdentity2 = numOfCardsInDisplaying(pile.getDisplaying(), cardIdentity2);

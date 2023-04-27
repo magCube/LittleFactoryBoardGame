@@ -7,10 +7,11 @@ import org.magcube.card.CardIdentity;
 public class DisplayingPileTestUtil {
 
   public static <T extends Card> List<T> takeCardHelper(DisplayingPile<T> pile, List<CardIdentity> cardIdentities) {
-    var cardsInDisplay = pile.cardsInDisplay(cardIdentities);
-    if (cardsInDisplay == null) {
+    var optCardsInDisplay = pile.cardsInDisplay(cardIdentities);
+    if (optCardsInDisplay.isEmpty()) {
       throw new RuntimeException("Not all cards are in display");
     }
+    var cardsInDisplay = optCardsInDisplay.get();
     pile.takeCards(cardsInDisplay);
     return cardsInDisplay;
   }
