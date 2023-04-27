@@ -8,11 +8,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.jetbrains.annotations.NotNull;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
-import org.magcube.exception.DisplayPileException;
 
 public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
 
@@ -20,13 +18,9 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
   private final List<List<ResourceCard>> displaying;
   private final List<ResourceCard> deck;
   private final List<ResourceCard> discardPile;
-  // default to 5, put it as a field so that flexible to change in future
   private final int maxDisplayingSize = 5;
 
-  public LevelOneResourcePile(List<ResourceCard> deck) throws DisplayPileException {
-    if (!isConsistentCardType(deck)) {
-      throw new DisplayPileException("Deck cardType is not consistent");
-    }
+  public LevelOneResourcePile(List<ResourceCard> deck) {
     displaying = new ArrayList<>(new ArrayList<>());
     this.deck = new ArrayList<>();
     IntStream.range(0, maxDisplayingSize).forEach(i -> displaying.add(new ArrayList<>()));
@@ -75,11 +69,7 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
   }
 
   @Override
-  public List<ResourceCard> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException {
-    if (!isConsistentCardTypeInCardIdentity(cardIdentities)) {
-      throw new DisplayPileException("Inconsistent card type in requesting cards");
-    }
-
+  public List<ResourceCard> cardsInDisplay(List<CardIdentity> cardIdentities) {
     if (cardIdentities.size() == 1) {
       var card = cardInDisplay(cardIdentities.get(0));
       return card == null ? null : List.of(card);
@@ -104,37 +94,17 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
     return cardsInDisplaying;
   }
 
-  @NotNull
   @Override
-  public List<ResourceCard> takeCards(List<ResourceCard> cardsInDisplaying) throws DisplayPileException {
-    var correspondingInnerLists = new ArrayList<List<ResourceCard>>();
+  public void takeCards(List<ResourceCard> cardsInDisplaying) {
     for (ResourceCard card : cardsInDisplaying) {
       var list = findTheListWithTheSameCardIdentity(card.getCardIdentity());
-      if (list.isPresent() && list.get().contains(card)) {
-        correspondingInnerLists.add(list.get());
-      } else {
-        // guarded by GameBoard, should not happen in real game
-        throw new DisplayPileException("Cards not in displaying");
-      }
+      list.ifPresent(cards -> cards.remove(card));
     }
-
-    for (int i = 0; i < cardsInDisplaying.size(); i++) {
-      var card = cardsInDisplaying.get(i);
-      var list = correspondingInnerLists.get(i);
-      list.remove(card);
-    }
-
-    return cardsInDisplaying;
   }
 
   @Override
-  public void discardCards(List<ResourceCard> cards) throws DisplayPileException {
-    if (isConsistentCardType(cards)) {
-      this.discardPile.addAll(cards);
-    } else {
-      // guarded by GameBoard, should not happen in real game
-      throw new DisplayPileException("Cards to discard are not consistent");
-    }
+  public void discardCards(List<ResourceCard> cards) {
+    this.discardPile.addAll(cards);
   }
 
   private void fillDeckWithDiscardPileIfDeckUsedUp() {
@@ -152,7 +122,7 @@ public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
   }
 
   @Override
-  public void refillCards() throws DisplayPileException {
+  public void refillCards() {
     fillDeckWithDiscardPileIfDeckUsedUp();
 
     var emptyList = findEmptyListInDisplayingPile();

@@ -14,13 +14,8 @@ public class LevelTwoResourcePile extends UniqueCardPile<ResourceCard> {
   }
 
   @Override
-  public void discardCards(List<ResourceCard> cards) throws DisplayPileException {
-    if (isConsistentCardType(cards) && !haveDuplicatedCards(cards)) {
-      this.discardPile.addAll(cards);
-    } else {
-      // guarded by GameBoard, should not happen in real game
-      throw new DisplayPileException("Cards to discard are not consistent");
-    }
+  public void discardCards(List<ResourceCard> cards) {
+    this.discardPile.addAll(cards);
   }
 
   @Override

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -32,6 +33,24 @@ class CardDeckTest {
   @EnumSource
   void shouldHaveDataTest(NumOfPlayers numOfPlayers) {
     assertNotNull(CardDeck.get(numOfPlayers));
+  }
+
+  @ParameterizedTest
+  @EnumSource
+  void cardTypeShouldConsistentTest(NumOfPlayers numOfPlayers) {
+    var deck = CardDeck.get(numOfPlayers);
+    assertTrue(deck.basicResource.stream().allMatch(x -> x.cardType() == CardType.BASIC_RESOURCE));
+    assertTrue(deck.levelOneResource.stream().allMatch(x -> x.cardType() == CardType.LEVEL_ONE_RESOURCE));
+    assertTrue(deck.levelTwoResource.stream().allMatch(x -> x.cardType() == CardType.LEVEL_TWO_RESOURCE));
+    assertTrue(deck.building.stream().allMatch(x -> x.cardType() == CardType.BUILDING));
+  }
+
+  @ParameterizedTest
+  @EnumSource
+  void levelTwoResourceAndBuildingShouldNotHaveDuplicateTest(NumOfPlayers numOfPlayers) {
+    var deck = CardDeck.get(numOfPlayers);
+    assertEquals(deck.levelTwoResource.size(), (new HashSet<>(deck.levelTwoResource.stream().mapToInt(Card::typeId).boxed().toList())).size());
+    assertEquals(deck.building.size(), (new HashSet<>(deck.building.stream().mapToInt(Card::typeId).boxed().toList())).size());
   }
 
   // note: this test only check if the card is shallow clone

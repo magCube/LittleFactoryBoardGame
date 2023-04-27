@@ -6,11 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.jetbrains.annotations.NotNull;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
-import org.magcube.exception.DisplayPileException;
 
 public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T> {
 
@@ -18,30 +16,13 @@ public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T
   protected final List<T> availableCards;
   protected final List<T> deck;
   protected final List<T> discardPile;
-  // default to 5, put it as a field so that flexible to change in future
   protected final int maxDisplayingSize = 5;
 
-  public UniqueCardPile(CardType cardType, List<T> deck) throws DisplayPileException {
+  public UniqueCardPile(CardType cardType, List<T> deck) {
     this.cardType = cardType;
-    if (!isConsistentCardType(deck)) {
-      throw new DisplayPileException("Deck cardType is not consistent");
-    }
-    if (haveDuplicatedCards(deck)) {
-      throw new DisplayPileException("Deck has duplicated cards");
-    }
     availableCards = new ArrayList<>(Collections.nCopies(maxDisplayingSize, null));
     this.deck = new ArrayList<>();
     discardPile = new ArrayList<>(deck);
-  }
-
-  private interface PileInitializer {
-
-    void init();
-  }
-
-  protected boolean haveDuplicatedCards(List<T> cards) {
-    var cardIdentities = cards.stream().map(Card::getCardIdentity).collect(Collectors.toSet());
-    return cardIdentities.size() != cards.size();
   }
 
   @Override
@@ -90,13 +71,9 @@ public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T
   }
 
   @Override
-  public List<T> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException {
-    if (!isConsistentCardTypeInCardIdentity(cardIdentities)) {
-      throw new DisplayPileException("Inconsistent card type in requesting cards");
-    }
-
+  public List<T> cardsInDisplay(List<CardIdentity> cardIdentities) {
     if (haveDuplicatedCardIdentities(cardIdentities)) {
-      throw new DisplayPileException("Not all cards are in displaying pile");
+      return null;
     }
 
     if (cardIdentities.size() == 1) {
@@ -118,23 +95,12 @@ public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T
     return cardsInDisplaying;
   }
 
-  @NotNull
   @Override
-  public List<T> takeCards(List<T> cardsInDisplaying) throws DisplayPileException {
-    var indexes = new ArrayList<Integer>();
-
+  public void takeCards(List<T> cardsInDisplaying) {
     for (T card : cardsInDisplaying) {
       int index = availableCards.indexOf(card);
-      if (index == -1) {
-        // guarded by GameBoard, should not happen in real game
-        throw new DisplayPileException("Not all cards are in displaying pile");
-      }
-      indexes.add(index);
+      availableCards.set(index, null);
     }
-
-    indexes.forEach(index -> availableCards.set(index, null));
-
-    return cardsInDisplaying;
   }
 
   protected List<Integer> nullIndexesInAvailableCards() {

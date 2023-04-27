@@ -34,8 +34,8 @@ public class BuildingPile extends UniqueCardPile<BuildingCard> {
   }
 
   @Override
-  public void discardCards(List<BuildingCard> cards) throws DisplayPileException {
-    throw new DisplayPileException("BuildingPile does not support discardCards");
+  public void discardCards(List<BuildingCard> cards) {
+    // do nothing
   }
 
   @Override

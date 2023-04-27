@@ -1,12 +1,10 @@
 package org.magcube.displayingpile;
 
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
-import org.magcube.exception.DisplayPileException;
 
 public interface DisplayingPile<T extends Card> {
 
@@ -29,22 +27,13 @@ public interface DisplayingPile<T extends Card> {
   }
 
   @Nullable
-  List<T> cardsInDisplay(List<CardIdentity> cardIdentities) throws DisplayPileException;
+  List<T> cardsInDisplay(List<CardIdentity> cardIdentities);
 
-  @NotNull
-  List<T> takeCards(List<T> cardsInDisplaying) throws DisplayPileException;
+  void takeCards(List<T> cardsInDisplaying);
 
-  void discardCards(List<T> cards) throws DisplayPileException;
+  void discardCards(List<T> cards);
 
-  void refillCards() throws DisplayPileException;
-
-  default boolean isConsistentCardTypeInCardIdentity(CardIdentity cardIdentity) {
-    return cardIdentity.cardType() == getCardType();
-  }
-
-  default boolean isConsistentCardTypeInCardIdentity(List<CardIdentity> cardIdentities) {
-    return cardIdentities.stream().allMatch(this::isConsistentCardTypeInCardIdentity);
-  }
+  void refillCards();
 
   default boolean isConsistentCardType(T card) {
     return card.cardType() == getCardType();
