@@ -4,11 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
-import org.magcube.exception.DisplayPileException;
 
 public class LevelTwoResourcePile extends UniqueCardPile<ResourceCard> {
 
-  public LevelTwoResourcePile(List<ResourceCard> deck) throws DisplayPileException {
+  public LevelTwoResourcePile(List<ResourceCard> deck) {
     super(CardType.LEVEL_TWO_RESOURCE, deck);
     refillCards();
   }

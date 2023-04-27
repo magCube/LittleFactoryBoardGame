@@ -4,12 +4,11 @@ import java.util.Collections;
 import java.util.List;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.CardType;
-import org.magcube.exception.DisplayPileException;
 import org.magcube.player.NumOfPlayers;
 
 public class BuildingPile extends UniqueCardPile<BuildingCard> {
 
-  public BuildingPile(List<BuildingCard> deck, NumOfPlayers numOfPlayers) throws DisplayPileException {
+  public BuildingPile(List<BuildingCard> deck, NumOfPlayers numOfPlayers) {
     super(CardType.BUILDING, deck);
     this.deck.addAll(discardPile);
     Collections.shuffle(this.deck);

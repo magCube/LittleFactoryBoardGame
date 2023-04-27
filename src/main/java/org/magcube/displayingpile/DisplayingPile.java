@@ -34,12 +34,4 @@ public interface DisplayingPile<T extends Card> {
   void discardCards(List<T> cards);
 
   void refillCards();
-
-  default boolean isConsistentCardType(T card) {
-    return card.cardType() == getCardType();
-  }
-
-  default boolean isConsistentCardType(List<T> cards) {
-    return cards.stream().allMatch(this::isConsistentCardType);
-  }
 }
