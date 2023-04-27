@@ -1,5 +1,8 @@
 package org.magcube;
 
+import static org.magcube.gameboard.GameBoards.flattenResourceCardsFromCategorizedCards;
+import static org.magcube.gameboard.GameBoards.sumOfCardsValue;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,6 +21,7 @@ import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.InvalidTradingException;
+import org.magcube.exception.InvalidTradingMsg;
 import org.magcube.exception.NotAvailableInGameBoardException;
 import org.magcube.exception.PlayerDoesNotOwnCardsException;
 import org.magcube.gameboard.GameBoard;
@@ -30,11 +34,10 @@ public class GameInstance {
 
   private GameBoard gameBoard;
   private List<Player> players;
-  private Player currentPlayer; // only accessible by this object itself, need to be thread safe
+  private Player currentPlayer;
   private boolean isTradedOrPlayerProduced;
 
   public GameInstance() {
-    players = new ArrayList<>();
   }
 
   // todo: the following is temp implementation
@@ -63,95 +66,15 @@ public class GameInstance {
     isTradedOrPlayerProduced = false;
   }
 
-  private HashMap<CardType, List<? extends Card>> availableCardsInGameBoard(List<CardIdentity> cardIdentities)
-      throws NotAvailableInGameBoardException {
-    var optCards = gameBoard.cardsInDisplay(cardIdentities);
-    if (optCards.isEmpty()) {
-      throw new NotAvailableInGameBoardException();
-    }
-    return optCards.get();
-  }
-
-  private int sumOfCardsValue(List<? extends Card> cards) {
-    return cards.stream().map(Card::getValue).reduce(0, Integer::sum);
-  }
-
-  private int sumOfCardsValue(HashMap<CardType, List<? extends Card>> categorizedCards) {
-    var value = 0;
-    for (var cardType : categorizedCards.keySet()) {
-      value += categorizedCards.get(cardType).stream().map(Card::getValue).reduce(0, Integer::sum);
-    }
-    return value;
-  }
-
-  private void checkIsTradedOrPlayerProduced() throws AlreadyTradedOrProducedException {
-    if (isTradedOrPlayerProduced) {
-      throw new AlreadyTradedOrProducedException();
-    }
-  }
-
-  private void checkWillExceedMaxNumOfResourceCard(int take) throws ExceededMaxNumOfHandException {
-    if (currentPlayer.willExceedMaxNumOfResourceCard(take)) {
-      throw new ExceededMaxNumOfHandException();
-    }
-  }
-
-  private void checkWillExceedMaxNumOfResourceCard(int take, int discard) throws ExceededMaxNumOfHandException {
-    if (currentPlayer.willExceedMaxNumOfResourceCard(take, discard)) {
-      throw new ExceededMaxNumOfHandException();
-    }
-  }
-
-  private void checkWillExceedMaxNumOfResourceCard(CardIdentity cardIdentity) throws ExceededMaxNumOfHandException {
-    if (cardIdentity.cardType() != CardType.BUILDING) {
-      checkWillExceedMaxNumOfResourceCard(1);
-    }
-  }
-
-  private void checkWillExceedMaxNumOfResourceCard(List<CardIdentity> cardIdentities) throws ExceededMaxNumOfHandException {
-    int take = (int) cardIdentities.stream().filter(cardIdentity -> cardIdentity.cardType() != CardType.BUILDING).count();
-    checkWillExceedMaxNumOfResourceCard(take);
-  }
-
-  private void checkWillExceedMaxNumOfResourceCard(List<CardIdentity> take, List<CardIdentity> discard) throws ExceededMaxNumOfHandException {
-    int takeCount = (int) take.stream().filter(cardIdentity -> cardIdentity.cardType() != CardType.BUILDING).count();
-    // building is not allow to discard
-    int discardCount = discard.size();
-    checkWillExceedMaxNumOfResourceCard(takeCount, discardCount);
-  }
-
-  private void validateCardIdentities(List<CardIdentity> cardIdentities) throws CardIdentitiesException {
-    if (cardIdentities.isEmpty()) {
-      throw new CardIdentitiesException();
-    }
-    if (!GameBoards.isCardIdentitiesValid(cardIdentities)) {
-      throw new CardIdentitiesException();
-    }
-  }
-
-  private List<ResourceCard> playerEquivalentResourcesCards(List<CardIdentity> payment) throws PlayerDoesNotOwnCardsException {
-    var playerEquivalentResourcesCards = currentPlayer.equivalentResources(payment);
-    if (playerEquivalentResourcesCards == null) {
-      throw new PlayerDoesNotOwnCardsException("resource");
-    }
-    return playerEquivalentResourcesCards;
-  }
-
-  private void checkPlayerOwnResourcesCards(List<CardIdentity> payment) throws DisplayPileException {
-    if (currentPlayer.equivalentResources(payment) == null) {
-      throw new DisplayPileException("Player do not own the payment cards!");
-    }
-  }
-
   public void tradeCardsByCoins(List<CardIdentity> targets)
-      throws DisplayPileException, AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, NotAvailableInGameBoardException, InvalidTradingException {
+      throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, NotAvailableInGameBoardException, InvalidTradingException {
     checkIsTradedOrPlayerProduced();
     validateCardIdentities(targets);
     checkWillExceedMaxNumOfResourceCard(targets);
     var availableCardsInGameBoard = availableCardsInGameBoard(targets);
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
     if (currentPlayer.getCoin() < sumOfTargetsValue) {
-      throw new InvalidTradingException(InvalidTradingException.paymentNoEnough);
+      throw new InvalidTradingException(InvalidTradingMsg.PAYMENT_NO_ENOUGH);
     }
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.spendCoin();
@@ -159,11 +82,11 @@ public class GameInstance {
   }
 
   public void tradeCardsByCards(List<CardIdentity> payment, List<CardIdentity> targets)
-      throws DisplayPileException, AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException {
+      throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException {
     checkIsTradedOrPlayerProduced();
 
     if (!(payment.size() == 1 || targets.size() == 1)) {
-      throw new InvalidTradingException(InvalidTradingException.notOneToNOrNToOne);
+      throw new InvalidTradingException(InvalidTradingMsg.NOT_ONE_TO_N_OR_N_TO_ONE);
     }
     validateCardIdentities(payment);
     validateCardIdentities(targets);
@@ -176,7 +99,7 @@ public class GameInstance {
     var sumOfPaymentValue = sumOfCardsValue(cardsForPayment);
     var sumOfTargetsValue = sumOfCardsValue(availableCardsInGameBoard);
     if (sumOfPaymentValue < sumOfTargetsValue) {
-      throw new InvalidTradingException(InvalidTradingException.paymentNoEnough);
+      throw new InvalidTradingException(InvalidTradingMsg.PAYMENT_NO_ENOUGH);
     }
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.discardCards(cardsForPayment);
@@ -184,25 +107,15 @@ public class GameInstance {
     isTradedOrPlayerProduced = true;
   }
 
-  private List<ResourceCard> flattenResourceCardsFromCategorizedCards(HashMap<CardType, List<? extends Card>> categorizedCards) {
-    var resourceCards = new ArrayList<ResourceCard>();
-    for (var cardType : categorizedCards.keySet()) {
-      if (cardType != CardType.BUILDING) {
-        resourceCards.addAll(categorizedCards.get(cardType).stream()
-            .map(card -> (ResourceCard) card)
-            .toList());
-      }
-    }
-    return resourceCards;
-  }
-
   private void produceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity,
       BiPredicate<List<CardIdentity>, Card> costMatchFn)
-      throws DisplayPileException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException {
+      throws CardIdentitiesException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException {
     validateCardIdentities(costCardIdentities);
     validateCardIdentities(List.of(productCardIdentity));
-    // currently, it is impossible to throw, because the cost size is always larger than or equal to 1 and the product size is always equal to 1
-    checkWillExceedMaxNumOfResourceCard(List.of(productCardIdentity), costCardIdentities);
+
+    // currently, it is impossible to throw
+    // because the cost size is always larger than or equal to 1 and the product size is always equal to 1
+    // checkWillExceedMaxNumOfResourceCard(List.of(productCardIdentity), costCardIdentities);
 
     var playerEquivalentResources = playerEquivalentResourcesCards(costCardIdentities);
     var categorizedCardsForDiscard = GameBoard.validateAndCategorizeDiscardCards(playerEquivalentResources);
@@ -212,7 +125,7 @@ public class GameInstance {
 
     var costMatch = costMatchFn.test(costCardIdentities, productCard);
     if (!costMatch) {
-      throw new InvalidTradingException(InvalidTradingException.costNotMatch);
+      throw new InvalidTradingException(InvalidTradingMsg.COST_NOT_MATCH);
     }
 
     playerTakeCardsFormGameBoard(cardsInGameBoard);
@@ -221,7 +134,7 @@ public class GameInstance {
   }
 
   public void playerProduceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity)
-      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
+      throws AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, InvalidTradingException {
     checkIsTradedOrPlayerProduced();
 
     BiPredicate<List<CardIdentity>, Card> costMatchFn = (costCardIds, productCard) -> productCard.cardType() == CardType.BUILDING
@@ -247,7 +160,7 @@ public class GameInstance {
 
     boolean capitalMatch = capitalMatchFn.test(capitalCardIdentities, productCard);
     if (!capitalMatch) {
-      throw new InvalidTradingException(InvalidTradingException.capitalNotMatch);
+      throw new InvalidTradingException(InvalidTradingMsg.CAPITAL_NOT_MATCH);
     }
 
     playerTakeCardsFormGameBoard(cardsInGameBoard);
@@ -293,7 +206,7 @@ public class GameInstance {
 
     boolean costMatch = building.effectCostMatch(costCardIdentities);
     if (!costMatch) {
-      throw new InvalidTradingException(InvalidTradingException.costNotMatch);
+      throw new InvalidTradingException(InvalidTradingMsg.COST_NOT_MATCH);
     }
 
     currentPlayer.activateBuilding(building);
@@ -371,4 +284,71 @@ public class GameInstance {
     // todo: check if the current user have enough points to win, if
   }
 
+  private HashMap<CardType, List<? extends Card>> availableCardsInGameBoard(List<CardIdentity> cardIdentities)
+      throws NotAvailableInGameBoardException {
+    var optCards = gameBoard.cardsInDisplay(cardIdentities);
+    if (optCards.isEmpty()) {
+      throw new NotAvailableInGameBoardException();
+    }
+    return optCards.get();
+  }
+
+  private void checkIsTradedOrPlayerProduced() throws AlreadyTradedOrProducedException {
+    if (isTradedOrPlayerProduced) {
+      throw new AlreadyTradedOrProducedException();
+    }
+  }
+
+  private void checkWillExceedMaxNumOfResourceCard(int take) throws ExceededMaxNumOfHandException {
+    if (currentPlayer.willExceedMaxNumOfResourceCard(take)) {
+      throw new ExceededMaxNumOfHandException();
+    }
+  }
+
+  private void checkWillExceedMaxNumOfResourceCard(int take, int discard) throws ExceededMaxNumOfHandException {
+    if (currentPlayer.willExceedMaxNumOfResourceCard(take, discard)) {
+      throw new ExceededMaxNumOfHandException();
+    }
+  }
+
+  private void checkWillExceedMaxNumOfResourceCard(CardIdentity cardIdentity) throws ExceededMaxNumOfHandException {
+    if (cardIdentity.cardType() != CardType.BUILDING) {
+      checkWillExceedMaxNumOfResourceCard(1);
+    }
+  }
+
+  private void checkWillExceedMaxNumOfResourceCard(List<CardIdentity> cardIdentities) throws ExceededMaxNumOfHandException {
+    int take = (int) cardIdentities.stream().filter(cardIdentity -> cardIdentity.cardType() != CardType.BUILDING).count();
+    checkWillExceedMaxNumOfResourceCard(take);
+  }
+
+  private void checkWillExceedMaxNumOfResourceCard(List<CardIdentity> take, List<CardIdentity> discard) throws ExceededMaxNumOfHandException {
+    int takeCount = (int) take.stream().filter(cardIdentity -> cardIdentity.cardType() != CardType.BUILDING).count();
+    // building is not allow to discard
+    int discardCount = discard.size();
+    checkWillExceedMaxNumOfResourceCard(takeCount, discardCount);
+  }
+
+  private void validateCardIdentities(List<CardIdentity> cardIdentities) throws CardIdentitiesException {
+    if (cardIdentities.isEmpty()) {
+      throw new CardIdentitiesException();
+    }
+    if (!GameBoards.isCardIdentitiesValid(cardIdentities)) {
+      throw new CardIdentitiesException();
+    }
+  }
+
+  private List<ResourceCard> playerEquivalentResourcesCards(List<CardIdentity> payment) throws PlayerDoesNotOwnCardsException {
+    var playerEquivalentResourcesCards = currentPlayer.equivalentResources(payment);
+    if (playerEquivalentResourcesCards == null) {
+      throw new PlayerDoesNotOwnCardsException("resource");
+    }
+    return playerEquivalentResourcesCards;
+  }
+
+  private void checkPlayerOwnResourcesCards(List<CardIdentity> payment) throws DisplayPileException {
+    if (currentPlayer.equivalentResources(payment) == null) {
+      throw new DisplayPileException("Player do not own the payment cards!");
+    }
+  }
 }

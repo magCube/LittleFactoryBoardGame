@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.InvalidTradingException;
+import org.magcube.exception.InvalidTradingMsg;
 import org.magcube.exception.NotAvailableInGameBoardException;
 import org.magcube.exception.PlayerDoesNotOwnCardsException;
 import org.magcube.player.NumOfPlayers;
@@ -44,7 +46,7 @@ public class GameInstanceTest {
   GameInstance game;
 
   @BeforeEach
-  void initGame() throws DisplayPileException, GameStartupException {
+  void initGame() throws GameStartupException {
     game = Mockito.spy(new GameInstance());
     game.setPlayers(NumOfPlayers.TWO);
     game.startGame();
@@ -52,7 +54,7 @@ public class GameInstanceTest {
 
   @ParameterizedTest
   @EnumSource
-  void setPlayersTest(NumOfPlayers numOfPlayers) throws DisplayPileException {
+  void setPlayersTest(NumOfPlayers numOfPlayers) {
     var gameInstance = new GameInstance();
     gameInstance.setPlayers(numOfPlayers);
     assertEquals(numOfPlayers.getValue(), gameInstance.getPlayers().size());
@@ -61,7 +63,7 @@ public class GameInstanceTest {
 
   @ParameterizedTest
   @EnumSource
-  void startGameNormally(NumOfPlayers numOfPlayers) throws DisplayPileException {
+  void startGameNormally(NumOfPlayers numOfPlayers) {
     var gameInstance = new GameInstance();
     gameInstance.setPlayers(numOfPlayers);
     assertDoesNotThrow(gameInstance::startGame);
@@ -74,21 +76,19 @@ public class GameInstanceTest {
   }
 
   @Test
-  void playersAreUnmodifiableAfterStartGame()
-      throws GameStartupException, DisplayPileException {
+  void playersAreUnmodifiableAfterStartGame() throws GameStartupException {
     var gameInstance = new GameInstance();
     gameInstance.setPlayers(NumOfPlayers.FOUR);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
-    assertThrows(UnsupportedOperationException.class,
-        () -> resultList.add(new Player("1", "player1")));
+    assertThrows(UnsupportedOperationException.class, () -> resultList.add(new Player("1", "player1")));
   }
 
-  @Test
-  void playersWereDistributedWithCorrectAmountOfCoinsAfterStartGame()
-      throws GameStartupException, DisplayPileException {
+  @ParameterizedTest
+  @EnumSource
+  void playersWereDistributedWithCorrectAmountOfCoinsAfterStartGame(NumOfPlayers numOfPlayers) throws GameStartupException {
     var gameInstance = new GameInstance();
-    gameInstance.setPlayers(NumOfPlayers.FOUR);
+    gameInstance.setPlayers(numOfPlayers);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
     var expectedCoins = 3;
@@ -147,8 +147,8 @@ public class GameInstanceTest {
     void noAvailableInGameBoardTest() {
       List<CardIdentity> cardIdentities = List.of(new CardIdentity(CardType.BUILDING, 1));
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(cardIdentities)).thenReturn(null);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        GameTestUtils.mockCardsInDisplayReturnOptionalEmpty(mockedGameBoard);
       });
       assertThrows(NotAvailableInGameBoardException.class, () -> game.tradeCardsByCoins(cardIdentities));
     }
@@ -159,10 +159,10 @@ public class GameInstanceTest {
       List<CardIdentity> cardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
       var mockedCard = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(999).build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(cardIdentities)).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(cardIdentities)).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(mockedCard));
-        }});
+        }}));
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -170,7 +170,7 @@ public class GameInstanceTest {
 
       Exception exception = assertThrows(InvalidTradingException.class, () -> game.tradeCardsByCoins(cardIdentities));
       assertEquals(InvalidTradingException.class, exception.getClass());
-      assertEquals(InvalidTradingException.paymentNoEnough, exception.getMessage());
+      assertEquals(InvalidTradingMsg.PAYMENT_NO_ENOUGH.msg(), exception.getMessage());
     }
 
     @ParameterizedTest
@@ -179,10 +179,10 @@ public class GameInstanceTest {
       List<CardIdentity> cardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
       var mockedCard = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(999).build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(cardIdentities)).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(cardIdentities)).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(mockedCard));
-        }});
+        }}));
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -192,9 +192,9 @@ public class GameInstanceTest {
     }
 
     @Test
-    void shouldSuccessTest() throws DisplayPileException {
+    void shouldSuccessTest() {
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
         GameTestUtils.mockCardsInDisplayReturnDummyCards(mockedGameBoard);
       });
 
@@ -251,7 +251,7 @@ public class GameInstanceTest {
       List<CardIdentity> payment = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
       List<CardIdentity> targets = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 2));
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
         GameTestUtils.mockCardsInDisplayReturnDummyCards(mockedGameBoard);
       });
       var currentPlayer = game.getCurrentPlayer();
@@ -268,7 +268,7 @@ public class GameInstanceTest {
           new CardIdentity(CardType.BASIC_RESOURCE, 4)
       );
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
         GameTestUtils.mockCardsInDisplayReturnDummyCards(mockedGameBoard);
       });
       var currentPlayer = game.getCurrentPlayer();
@@ -285,7 +285,7 @@ public class GameInstanceTest {
       );
       List<CardIdentity> targets = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 4));
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
         GameTestUtils.mockCardsInDisplayReturnDummyCards(mockedGameBoard);
       });
       var currentPlayer = game.getCurrentPlayer();
@@ -310,7 +310,7 @@ public class GameInstanceTest {
           new CardIdentity(CardType.BASIC_RESOURCE, 6)
       );
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
         GameTestUtils.mockCardsInDisplayReturnDummyCards(mockedGameBoard);
       });
       var currentPlayer = game.getCurrentPlayer();
@@ -321,7 +321,7 @@ public class GameInstanceTest {
       ));
       Exception exception = assertThrows(InvalidTradingException.class, () -> game.tradeCardsByCards(payment, targets));
       assertEquals(InvalidTradingException.class, exception.getClass());
-      assertEquals(InvalidTradingException.notOneToNOrNToOne, exception.getMessage());
+      assertEquals(InvalidTradingMsg.NOT_ONE_TO_N_OR_N_TO_ONE.msg(), exception.getMessage());
     }
 
     @Test
@@ -354,7 +354,7 @@ public class GameInstanceTest {
       assertEquals(7, currentPlayer.getResources().size());
 
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
         GameTestUtils.mockCardsInDisplayReturnDummyCards(mockedGameBoard);
       });
 
@@ -379,7 +379,7 @@ public class GameInstanceTest {
       assertEquals(7, currentPlayer.getResources().size());
 
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
         GameTestUtils.mockCardsInDisplayReturnDummyCards(mockedGameBoard);
       });
 
@@ -396,8 +396,8 @@ public class GameInstanceTest {
       List<CardIdentity> payment = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
       List<CardIdentity> targets = List.of(new CardIdentity(CardType.BUILDING, 1));
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(null);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        GameTestUtils.mockCardsInDisplayReturnOptionalEmpty(mockedGameBoard);
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -412,10 +412,10 @@ public class GameInstanceTest {
       var mockedPaymentCard = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(1).build();
       var mockedTargetCard = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).value(999).build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.BUILDING, List.of(mockedTargetCard));
-        }});
+        }}));
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -423,7 +423,7 @@ public class GameInstanceTest {
 
       Exception exception = assertThrows(InvalidTradingException.class, () -> game.tradeCardsByCards(payment, targets));
       assertEquals(InvalidTradingException.class, exception.getClass());
-      assertEquals(InvalidTradingException.paymentNoEnough, exception.getMessage());
+      assertEquals(InvalidTradingMsg.PAYMENT_NO_ENOUGH.msg(), exception.getMessage());
     }
 
     @Test
@@ -437,10 +437,10 @@ public class GameInstanceTest {
       var mockedPaymentCard2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 2)).value(10).build();
       var mockedTargetCard = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).value(999).build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.BUILDING, List.of(mockedTargetCard));
-        }});
+        }}));
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -448,7 +448,7 @@ public class GameInstanceTest {
 
       Exception exception = assertThrows(InvalidTradingException.class, () -> game.tradeCardsByCards(payment, targets));
       assertEquals(InvalidTradingException.class, exception.getClass());
-      assertEquals(InvalidTradingException.paymentNoEnough, exception.getMessage());
+      assertEquals(InvalidTradingMsg.PAYMENT_NO_ENOUGH.msg(), exception.getMessage());
     }
 
     @Test
@@ -462,10 +462,10 @@ public class GameInstanceTest {
       var mockedTargetCard1 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).value(1).build();
       var mockedTargetCard2 = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 2)).value(999).build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.BUILDING, List.of(mockedTargetCard1, mockedTargetCard2));
-        }});
+        }}));
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -473,11 +473,11 @@ public class GameInstanceTest {
 
       Exception exception = assertThrows(InvalidTradingException.class, () -> game.tradeCardsByCards(payment, targets));
       assertEquals(InvalidTradingException.class, exception.getClass());
-      assertEquals(InvalidTradingException.paymentNoEnough, exception.getMessage());
+      assertEquals(InvalidTradingMsg.PAYMENT_NO_ENOUGH.msg(), exception.getMessage());
     }
 
     @Test
-    void shouldSuccessTest1() throws DisplayPileException {
+    void shouldSuccessTest1() {
       List<CardIdentity> payment = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
       var paymentCard = ResourceCard.builder().cardIdentity(payment.get(0)).value(999).build();
       var targets = List.of(
@@ -494,12 +494,12 @@ public class GameInstanceTest {
       );
 
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.BASIC_RESOURCE, List.of(targetCards.get(0), targetCards.get(1)));
           put(CardType.LEVEL_ONE_RESOURCE, List.of(targetCards.get(2)));
           put(CardType.BUILDING, List.of(targetCards.get(3)));
-        }});
+        }}));
       });
 
       GameTestUtils.spyCurrentPlayer(game);
@@ -588,10 +588,10 @@ public class GameInstanceTest {
           .cost(new CardIdentity[][]{{new CardIdentity(CardType.BASIC_RESOURCE, 1)}})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
 
       assertDoesNotThrow(() -> game.playerProduceBySpentCost(costCardIdentities, productCardIdentity));
@@ -606,10 +606,10 @@ public class GameInstanceTest {
           .cost(new CardIdentity[][]{{new CardIdentity(CardType.BASIC_RESOURCE, 1)}})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
 
       assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.playerProduceBySpentCost(costCardIdentities, productCardIdentity));
@@ -620,8 +620,8 @@ public class GameInstanceTest {
       List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
       var productCardIdentity = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(null);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        GameTestUtils.mockCardsInDisplayReturnOptionalEmpty(mockedGameBoard);
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -639,21 +639,21 @@ public class GameInstanceTest {
           .cost(new CardIdentity[][]{{new CardIdentity(CardType.BASIC_RESOURCE, 2)}})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
       var currentPlayer = game.getCurrentPlayer();
       currentPlayer.takeResourceCards(List.of(ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).build()));
 
       Exception exception = assertThrows(InvalidTradingException.class, () -> game.playerProduceBySpentCost(costCardIdentities, productCardIdentity));
       assertEquals(InvalidTradingException.class, exception.getClass());
-      assertEquals(InvalidTradingException.costNotMatch, exception.getMessage());
+      assertEquals(InvalidTradingMsg.COST_NOT_MATCH.msg(), exception.getMessage());
     }
 
     @Test
-    void shouldSuccessTest1() throws DisplayPileException {
+    void shouldSuccessTest1() {
       List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
       var costCard = ResourceCard.builder().cardIdentity(costCardIdentities.get(0)).build();
       var productCardIdentity = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
@@ -662,10 +662,10 @@ public class GameInstanceTest {
           .cost(new CardIdentity[][]{{new CardIdentity(CardType.BASIC_RESOURCE, 1)}})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
 
       GameTestUtils.spyCurrentPlayer(game);
@@ -690,7 +690,7 @@ public class GameInstanceTest {
     }
 
     @Test
-    void shouldSuccessTest2() throws DisplayPileException {
+    void shouldSuccessTest2() {
       List<CardIdentity> costCardIdentities = List.of(
           new CardIdentity(CardType.BASIC_RESOURCE, 1),
           new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2),
@@ -712,10 +712,10 @@ public class GameInstanceTest {
           }})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.BUILDING, List.of(productCard));
-        }});
+        }}));
       });
 
       GameTestUtils.spyCurrentPlayer(game);
@@ -788,10 +788,10 @@ public class GameInstanceTest {
           .capital(new CardIdentity[]{new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
 
       assertDoesNotThrow(() -> game.playerProduceByOwningCapital(capitalCardIdentities, productCardIdentity));
@@ -818,10 +818,10 @@ public class GameInstanceTest {
           .capital(new CardIdentity[]{new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
 
       assertThrows(ExceededMaxNumOfHandException.class, () -> game.playerProduceByOwningCapital(capitalCardIdentities, productCardIdentity));
@@ -836,10 +836,10 @@ public class GameInstanceTest {
           .capital(new CardIdentity[]{capitalCardIdentities.get(0)})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        GameTestUtils.mockTakeCards(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
 
       assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.playerProduceBySpentCost(capitalCardIdentities, productCardIdentity));
@@ -851,7 +851,8 @@ public class GameInstanceTest {
       var productCardIdentity = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1);
 
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(null);
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        GameTestUtils.mockCardsInDisplayReturnOptionalEmpty(mockedGameBoard);
       });
 
       var currentPlayer = game.getCurrentPlayer();
@@ -869,9 +870,10 @@ public class GameInstanceTest {
           .capital(new CardIdentity[]{new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2)})
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
+        GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(productCard));
-        }});
+        }}));
       });
       var currentPlayer = game.getCurrentPlayer();
       currentPlayer.takeResourceCards(List.of(ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).build()));
@@ -879,11 +881,11 @@ public class GameInstanceTest {
       Exception exception = assertThrows(
           InvalidTradingException.class, () -> game.playerProduceByOwningCapital(capitalCardIdentities, productCardIdentity));
       assertEquals(InvalidTradingException.class, exception.getClass());
-      assertEquals(InvalidTradingException.capitalNotMatch, exception.getMessage());
+      assertEquals(InvalidTradingMsg.CAPITAL_NOT_MATCH.msg(), exception.getMessage());
     }
 
     @Test
-    void shouldSuccessTest1() throws DisplayPileException {
+    void shouldSuccessTest1() {
       var capitalCardIdentities = List.of(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1));
       var capitalCard = ResourceCard.builder().cardIdentity(capitalCardIdentities.get(0)).build();
       var productCardIdentity = new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1);
@@ -891,11 +893,10 @@ public class GameInstanceTest {
           .cardIdentity(productCardIdentity)
           .capital(new CardIdentity[]{capitalCardIdentities.get(0)})
           .build();
-      GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
-        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(new HashMap<>() {{
-          put(CardType.LEVEL_TWO_RESOURCE, List.of(productCard));
-        }});
-      });
+      GameTestUtils.injectMockGameBoard(game,
+          (mockedGameBoard) -> Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
+            put(CardType.LEVEL_TWO_RESOURCE, List.of(productCard));
+          }})));
 
       GameTestUtils.spyCurrentPlayer(game);
       var currentPlayer = game.getCurrentPlayer();
@@ -996,11 +997,11 @@ public class GameInstanceTest {
         Exception exception = assertThrows(InvalidTradingException.class,
             () -> game.activateBuildingToGetPointsTokenBySpendCost(buildingCardIdentity, costCardIdentities));
         assertEquals(InvalidTradingException.class, exception.getClass());
-        assertEquals(InvalidTradingException.costNotMatch, exception.getMessage());
+        assertEquals(InvalidTradingMsg.COST_NOT_MATCH.msg(), exception.getMessage());
       }
 
       @Test
-      void shouldSuccessTest() throws DisplayPileException {
+      void shouldSuccessTest() {
         List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
         ResourceCard costCard = ResourceCard.builder()
             .cardIdentity(costCardIdentities.get(0))
@@ -1078,7 +1079,7 @@ public class GameInstanceTest {
 
         GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
           GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
-          GameTestUtils.mockTakeCards(gameBoard);
+          GameTestUtils.mockTakeCardsDoNothing(gameBoard);
         });
 
         var currentPlayer = game.getCurrentPlayer();
@@ -1088,11 +1089,11 @@ public class GameInstanceTest {
         Exception exception = assertThrows(InvalidTradingException.class,
             () -> game.activateBuildingToProduceBySpendCost(buildingCardIdentity, costCardIdentities));
         assertEquals(InvalidTradingException.class, exception.getClass());
-        assertEquals(InvalidTradingException.costNotMatch, exception.getMessage());
+        assertEquals(InvalidTradingMsg.COST_NOT_MATCH.msg(), exception.getMessage());
       }
 
       @Test
-      void shouldSuccessTest() throws DisplayPileException {
+      void shouldSuccessTest() {
         CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
         List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
         ResourceCard costCard = ResourceCard.builder()
@@ -1109,7 +1110,7 @@ public class GameInstanceTest {
 
         GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
           GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
-          GameTestUtils.mockTakeCards(gameBoard);
+          GameTestUtils.mockTakeCardsDoNothing(gameBoard);
         });
 
         var categorizedCostCards = new HashMap<CardType, List<? extends Card>>() {{
@@ -1179,7 +1180,7 @@ public class GameInstanceTest {
 
         GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
           GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
-          GameTestUtils.mockTakeCards(gameBoard);
+          GameTestUtils.mockTakeCardsDoNothing(gameBoard);
         });
 
         var currentPlayer = game.getCurrentPlayer();
@@ -1189,11 +1190,11 @@ public class GameInstanceTest {
         Exception exception = assertThrows(InvalidTradingException.class,
             () -> game.activateBuildingToProduceByOwningCapital(buildingCardIdentity, capitalCardIdentities));
         assertEquals(InvalidTradingException.class, exception.getClass());
-        assertEquals(InvalidTradingException.capitalNotMatch, exception.getMessage());
+        assertEquals(InvalidTradingMsg.CAPITAL_NOT_MATCH.msg(), exception.getMessage());
       }
 
       @Test
-      void shouldSuccessTest() throws DisplayPileException {
+      void shouldSuccessTest() {
         CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
         List<CardIdentity> capitalCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
         ResourceCard capitalCard = ResourceCard.builder()
@@ -1210,7 +1211,7 @@ public class GameInstanceTest {
 
         GameTestUtils.injectMockGameBoard(game, (gameBoard) -> {
           GameTestUtils.mockCardsInDisplayReturnDummyCards(gameBoard);
-          GameTestUtils.mockTakeCards(gameBoard);
+          GameTestUtils.mockTakeCardsDoNothing(gameBoard);
         });
 
         var categorizedProductCards = new HashMap<CardType, List<? extends Card>>() {{

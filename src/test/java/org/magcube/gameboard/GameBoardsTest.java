@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -273,5 +274,98 @@ class GameBoardsTest {
     assertFalse(GameBoards.isNoBuildingCards(List.of(building1, resource3)));
     assertFalse(GameBoards.isNoBuildingCards(List.of(resource1, resource2, resource3, building1)));
     assertFalse(GameBoards.isNoBuildingCards(List.of(building1, resource1, resource2, resource3)));
+  }
+
+  @Test
+  void sumOfCardsValueTest1() {
+    var cards = List.of(
+        BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).value(6).build()
+    );
+    assertEquals(6, GameBoards.sumOfCardsValue(cards));
+
+    HashMap<CardType, List<? extends Card>> categorizedCards = new HashMap<>();
+    categorizedCards.put(CardType.BUILDING, cards);
+    assertEquals(6, GameBoards.sumOfCardsValue(categorizedCards));
+  }
+
+  @Test
+  void sumOfCardsValueTest2() {
+    var cards = List.of(
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).value(1).build(),
+        BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).value(6).build()
+    );
+    assertEquals(7, GameBoards.sumOfCardsValue(cards));
+
+    HashMap<CardType, List<? extends Card>> categorizedCards = new HashMap<>();
+    categorizedCards.put(CardType.BASIC_RESOURCE, List.of(cards.get(0)));
+    categorizedCards.put(CardType.BUILDING, List.of(cards.get(1)));
+    assertEquals(7, GameBoards.sumOfCardsValue(categorizedCards));
+  }
+
+  @Test
+  void sumOfCardsValueTest3() {
+    var cards = List.of(
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).value(3).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).value(3).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2)).value(5).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(8).build(),
+        BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).value(6).build()
+    );
+    assertEquals(28, GameBoards.sumOfCardsValue(cards));
+
+    HashMap<CardType, List<? extends Card>> categorizedCards = new HashMap<>();
+    categorizedCards.put(CardType.BASIC_RESOURCE, List.of(cards.get(0), cards.get(1), cards.get(2)));
+    categorizedCards.put(CardType.LEVEL_ONE_RESOURCE, List.of(cards.get(3), cards.get(4), cards.get(5)));
+    categorizedCards.put(CardType.LEVEL_TWO_RESOURCE, List.of(cards.get(6)));
+    categorizedCards.put(CardType.BUILDING, List.of(cards.get(7)));
+    assertEquals(28, GameBoards.sumOfCardsValue(categorizedCards));
+  }
+
+  @Test
+  void flattenResourceCardsFromCategorizedCardsTest1() {
+    var cards = List.of(
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(8).build()
+    );
+
+    var categorizedCards = new HashMap<CardType, List<? extends Card>>();
+    categorizedCards.put(CardType.BASIC_RESOURCE, List.of(cards.get(0), cards.get(1), cards.get(2)));
+    categorizedCards.put(CardType.LEVEL_TWO_RESOURCE, List.of(cards.get(3)));
+
+    var flattenedCards = GameBoards.flattenResourceCardsFromCategorizedCards(categorizedCards);
+    assertEquals(4, flattenedCards.size());
+    assertTrue(flattenedCards.containsAll(cards));
+    assertTrue(GameBoards.isNoBuildingCards(flattenedCards));
+  }
+
+  @Test
+  void flattenResourceCardsFromCategorizedCardsTest2() {
+    var cards = List.of(
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 1)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.BASIC_RESOURCE, 2)).value(1).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).value(3).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1)).value(3).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2)).value(5).build(),
+        ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(8).build(),
+        BuildingCard.builder().cardIdentity(new CardIdentity(CardType.BUILDING, 1)).value(6).build()
+    );
+
+    HashMap<CardType, List<? extends Card>> categorizedCards = new HashMap<>();
+    categorizedCards.put(CardType.BASIC_RESOURCE, List.of(cards.get(0), cards.get(1), cards.get(2)));
+    categorizedCards.put(CardType.LEVEL_ONE_RESOURCE, List.of(cards.get(3), cards.get(4), cards.get(5)));
+    categorizedCards.put(CardType.LEVEL_TWO_RESOURCE, List.of(cards.get(6)));
+    categorizedCards.put(CardType.BUILDING, List.of(cards.get(7)));
+
+    var expected = cards.subList(0, 7);
+    var resourceCards = GameBoards.flattenResourceCardsFromCategorizedCards(categorizedCards);
+    resourceCards.sort(Comparator.comparing(Card::getCardIdentity));
+    assertEquals(expected, resourceCards);
+    assertTrue(GameBoards.isNoBuildingCards(resourceCards));
   }
 }

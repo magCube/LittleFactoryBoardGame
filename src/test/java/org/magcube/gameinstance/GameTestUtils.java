@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 import org.magcube.GameInstance;
 import org.magcube.card.BuildingCard;
@@ -13,7 +14,6 @@ import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
 import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
-import org.magcube.exception.DisplayPileException;
 import org.magcube.gameboard.GameBoard;
 import org.magcube.gameboard.GameBoards;
 import org.mockito.Mockito;
@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 public class GameTestUtils {
 
   @FunctionalInterface
-  interface ThrowingConsumer<T, E extends Exception> {
+  interface ThrowableConsumer<T, E extends Exception> {
 
     void accept(T t) throws E;
   }
@@ -40,23 +40,19 @@ public class GameTestUtils {
     return GameBoards.categorizeCards(cards);
   }
 
-  public static void mockTakeCards(GameBoard gameBoardMock) {
-    try {
-      Mockito.when(gameBoardMock.takeCards(any())).thenAnswer((args) -> args.getArgument(0));
-    } catch (DisplayPileException e) {
-      throw new RuntimeException(e);
-    }
+  public static void mockTakeCardsDoNothing(GameBoard gameBoardMock) {
+    Mockito.doNothing().when(gameBoardMock).takeCards(any());
   }
 
   public static void mockCardsInDisplayReturnDummyCards(GameBoard gameBoardMock) {
-    try {
-      Mockito.when(gameBoardMock.cardsInDisplay(any())).thenAnswer((args) -> cardsInDisplayReturnDummyCards(args.getArgument(0)));
-    } catch (DisplayPileException e) {
-      throw new RuntimeException(e);
-    }
+    Mockito.when(gameBoardMock.cardsInDisplay(any())).thenAnswer((args) -> Optional.of(cardsInDisplayReturnDummyCards(args.getArgument(0))));
   }
 
-  public static void injectMockGameBoard(GameInstance game, ThrowingConsumer<GameBoard, Exception> MockingFn) {
+  public static void mockCardsInDisplayReturnOptionalEmpty(GameBoard gameBoard) {
+    Mockito.when(gameBoard.cardsInDisplay(any())).thenReturn(Optional.empty());
+  }
+
+  public static void injectMockGameBoard(GameInstance game, ThrowableConsumer<GameBoard, Exception> MockingFn) {
     try {
       GameBoard mockedGameBoard = Mockito.mock(GameBoard.class);
       MockingFn.accept(mockedGameBoard);

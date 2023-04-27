@@ -1,6 +1,8 @@
 package org.magcube.gameboard;
 
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -88,5 +90,28 @@ public class GameBoards {
 
   public static boolean isNoBuildingCards(List<? extends Card> cards) {
     return cards.stream().noneMatch(card -> card.cardType() == CardType.BUILDING);
+  }
+
+  public static int sumOfCardsValue(List<? extends Card> cards) {
+    return cards.stream().mapToInt(Card::getValue).sum();
+  }
+
+  public static int sumOfCardsValue(HashMap<CardType, List<? extends Card>> categorizedCards) {
+    return categorizedCards.values().stream()
+        .flatMap(Collection::stream)
+        .mapToInt(Card::getValue)
+        .sum();
+  }
+
+  public static List<ResourceCard> flattenResourceCardsFromCategorizedCards(HashMap<CardType, List<? extends Card>> categorizedCards) {
+    var resourceCards = new ArrayList<ResourceCard>();
+    for (var cardType : categorizedCards.keySet()) {
+      if (cardType != CardType.BUILDING) {
+        resourceCards.addAll(categorizedCards.get(cardType).stream()
+            .map(card -> (ResourceCard) card)
+            .toList());
+      }
+    }
+    return resourceCards;
   }
 }
