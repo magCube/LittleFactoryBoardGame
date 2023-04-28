@@ -19,6 +19,7 @@ import org.magcube.exception.BuildingActivationException;
 import org.magcube.exception.CardIdentitiesException;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
+import org.magcube.exception.GameEndException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.InvalidTradingException;
 import org.magcube.exception.InvalidTradingMsg;
@@ -35,7 +36,7 @@ public class GameInstance {
   private GameBoard gameBoard;
   private List<Player> players;
   private Player currentPlayer;
-  private boolean isTradedOrPlayerProduced;
+  private Player winner;
 
   public GameInstance() {
   }
@@ -63,11 +64,12 @@ public class GameInstance {
     players = Collections.unmodifiableList(players);
     distributeCoin();
     currentPlayer = players.get(0);
-    isTradedOrPlayerProduced = false;
+    currentPlayer.setTradedOrPlayerProduced(false);
   }
 
   public void tradeCardsByCoins(List<CardIdentity> targets)
-      throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, NotAvailableInGameBoardException, InvalidTradingException {
+      throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, NotAvailableInGameBoardException, InvalidTradingException, GameEndException {
+    checkIsGameEnd();
     checkIsTradedOrPlayerProduced();
     validateCardIdentities(targets);
     checkWillExceedMaxNumOfResourceCard(targets);
@@ -78,11 +80,12 @@ public class GameInstance {
     }
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.spendCoin();
-    isTradedOrPlayerProduced = true;
+    currentPlayer.setTradedOrPlayerProduced(true);
   }
 
   public void tradeCardsByCards(List<CardIdentity> payment, List<CardIdentity> targets)
-      throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException {
+      throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException, GameEndException {
+    checkIsGameEnd();
     checkIsTradedOrPlayerProduced();
 
     if (!(payment.size() == 1 || targets.size() == 1)) {
@@ -104,7 +107,7 @@ public class GameInstance {
     playerTakeCardsFormGameBoard(availableCardsInGameBoard);
     currentPlayer.discardCards(cardsForPayment);
     gameBoard.discardCards(categorizedCardsForDiscard);
-    isTradedOrPlayerProduced = true;
+    currentPlayer.setTradedOrPlayerProduced(true);
   }
 
   private void produceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity,
@@ -134,7 +137,8 @@ public class GameInstance {
   }
 
   public void playerProduceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity)
-      throws AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, InvalidTradingException {
+      throws AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, InvalidTradingException, GameEndException {
+    checkIsGameEnd();
     checkIsTradedOrPlayerProduced();
 
     BiPredicate<List<CardIdentity>, Card> costMatchFn = (costCardIds, productCard) -> productCard.cardType() == CardType.BUILDING
@@ -143,7 +147,7 @@ public class GameInstance {
 
     produceBySpentCost(costCardIdentities, productCardIdentity, costMatchFn);
 
-    isTradedOrPlayerProduced = true;
+    currentPlayer.setTradedOrPlayerProduced(true);
   }
 
   private void produceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity,
@@ -168,14 +172,15 @@ public class GameInstance {
 
   // todo: we don't need to provide capitalCardIdentities, currently we only have 1 option in capital
   public void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity)
-      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
+      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException {
+    checkIsGameEnd();
     checkIsTradedOrPlayerProduced();
 
     BiPredicate<List<CardIdentity>, Card> capitalMatchFn = (capitalCardIds, productCard) -> productCard.cardType() != CardType.BUILDING
         && ((ResourceCard) productCard).capitalMatch(capitalCardIdentities);
 
     produceByOwningCapital(capitalCardIdentities, productCardIdentity, capitalMatchFn);
-    isTradedOrPlayerProduced = true;
+    currentPlayer.setTradedOrPlayerProduced(true);
   }
 
   private BuildingCard playerEquivalentBuildingCardWhichCanActivate(CardIdentity cardIdentity)
@@ -191,7 +196,8 @@ public class GameInstance {
   }
 
   public void activateBuildingToGetPointsTokenBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
-      throws CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException, InvalidTradingException {
+      throws CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException, InvalidTradingException, GameEndException {
+    checkIsGameEnd();
     var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
 
     validateCardIdentities(costCardIdentities);
@@ -225,7 +231,8 @@ public class GameInstance {
   }
 
   public void activateBuildingToProduceBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
-      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
+      throws PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, InvalidTradingException, GameEndException {
+    checkIsGameEnd();
     var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
 
     var productCardIdentity = buildingProduct(building);
@@ -237,7 +244,8 @@ public class GameInstance {
   }
 
   public void activateBuildingToProduceByOwningCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities)
-      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException {
+      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException {
+    checkIsGameEnd();
     var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
 
     var productCardIdentity = buildingProduct(building);
@@ -248,8 +256,11 @@ public class GameInstance {
     currentPlayer.activateBuilding(building);
   }
 
-  public void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity) throws PlayerDoesNotOwnCardsException, BuildingActivationException {
+  public void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity)
+      throws PlayerDoesNotOwnCardsException, BuildingActivationException, GameEndException {
+    checkIsGameEnd();
     var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
+    System.out.println(building);
     throw new RuntimeException("Not implemented yet!");
   }
 
@@ -279,9 +290,17 @@ public class GameInstance {
     currentPlayer.resetActivatedBuildings();
     currentPlayer = players.get((players.indexOf(currentPlayer) + 1) % players.size());
     gameBoard.refillCards();
-    isTradedOrPlayerProduced = false;
+    currentPlayer.setTradedOrPlayerProduced(false);
 
-    // todo: check if the current user have enough points to win, if
+    if (currentPlayer.points() >= 10) {
+      winner = currentPlayer;
+    }
+  }
+
+  private void checkIsGameEnd() throws GameEndException {
+    if (winner != null) {
+      throw new GameEndException();
+    }
   }
 
   private HashMap<CardType, List<? extends Card>> availableCardsInGameBoard(List<CardIdentity> cardIdentities)
@@ -294,7 +313,7 @@ public class GameInstance {
   }
 
   private void checkIsTradedOrPlayerProduced() throws AlreadyTradedOrProducedException {
-    if (isTradedOrPlayerProduced) {
+    if (currentPlayer.isTradedOrPlayerProduced()) {
       throw new AlreadyTradedOrProducedException();
     }
   }
@@ -308,12 +327,6 @@ public class GameInstance {
   private void checkWillExceedMaxNumOfResourceCard(int take, int discard) throws ExceededMaxNumOfHandException {
     if (currentPlayer.willExceedMaxNumOfResourceCard(take, discard)) {
       throw new ExceededMaxNumOfHandException();
-    }
-  }
-
-  private void checkWillExceedMaxNumOfResourceCard(CardIdentity cardIdentity) throws ExceededMaxNumOfHandException {
-    if (cardIdentity.cardType() != CardType.BUILDING) {
-      checkWillExceedMaxNumOfResourceCard(1);
     }
   }
 

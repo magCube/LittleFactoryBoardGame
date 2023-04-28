@@ -32,6 +32,7 @@ import org.magcube.exception.BuildingActivationException;
 import org.magcube.exception.CardIdentitiesException;
 import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
+import org.magcube.exception.GameEndException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.InvalidTradingException;
 import org.magcube.exception.InvalidTradingMsg;
@@ -111,6 +112,13 @@ public class GameInstanceTest {
 
   @Nested
   class tradeCardsByCoins {
+
+    @Test
+    void gameEndTest() {
+      GameTestUtils.setWinner(game);
+      List<CardIdentity> cardIdentities = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
+      assertThrows(GameEndException.class, () -> game.tradeCardsByCoins(cardIdentities));
+    }
 
     @Test
     void alreadyTradedTest() {
@@ -230,13 +238,22 @@ public class GameInstanceTest {
       assertTrue(currentPlayer.getResources().containsAll(expectedResourceCards));
       assertTrue(currentPlayer.getBuildings().containsAll(expectedBuildingCards));
       assertEquals(0, currentPlayer.getCoin());
-      assertTrue(game.isTradedOrPlayerProduced());
+      assertTrue(game.getCurrentPlayer().isTradedOrPlayerProduced());
       verify(game.getGameBoard()).takeCards(expectedCategorizedCard);
     }
   }
 
   @Nested
   class tradeCardsByCards {
+
+    @Test
+    void gameEndTest() {
+      GameTestUtils.setWinner(game);
+      List<CardIdentity> payment = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
+      List<CardIdentity> targets = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 2));
+      assertThrows(GameEndException.class, () -> game.tradeCardsByCards(payment, targets));
+    }
+
 
     @Test
     void alreadyTradedTest() {
@@ -535,7 +552,7 @@ public class GameInstanceTest {
           ownBuildingCard,
           targetCards.get(3)
       )));
-      assertTrue(game.isTradedOrPlayerProduced());
+      assertTrue(game.getCurrentPlayer().isTradedOrPlayerProduced());
       verify(game.getGameBoard()).takeCards(expectedCategorizedTargetCards);
       verify(game.getGameBoard()).discardCards(expectedCategorizedPaymentCards);
       verify(currentPlayer).discardCards(List.of(paymentCard));
@@ -544,6 +561,14 @@ public class GameInstanceTest {
 
   @Nested
   class playerProduceBySpentCost {
+
+    @Test
+    void gameEndTest() {
+      GameTestUtils.setWinner(game);
+      List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.BASIC_RESOURCE, 1));
+      CardIdentity productCardIdentity = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1);
+      assertThrows(GameEndException.class, () -> game.playerProduceBySpentCost(costCardIdentities, productCardIdentity));
+    }
 
     @Test
     void alreadyProducedTest() {
@@ -683,7 +708,7 @@ public class GameInstanceTest {
       assertDoesNotThrow(() -> game.playerProduceBySpentCost(costCardIdentities, productCardIdentity));
       assertEquals(1, currentPlayer.getResources().size());
       assertTrue(currentPlayer.getResources().contains(productCard));
-      assertTrue(game.isTradedOrPlayerProduced());
+      assertTrue(game.getCurrentPlayer().isTradedOrPlayerProduced());
       verify(game.getGameBoard()).takeCards(expectedCategorizedProductCard);
       verify(game.getGameBoard()).discardCards(expectedCategorizedCostCard);
       verify(currentPlayer).discardCards(List.of(costCard));
@@ -736,7 +761,7 @@ public class GameInstanceTest {
       assertEquals(0, currentPlayer.getResources().size());
       assertEquals(1, currentPlayer.getBuildings().size());
       assertTrue(currentPlayer.getBuildings().contains(productCard));
-      assertTrue(game.isTradedOrPlayerProduced());
+      assertTrue(game.getCurrentPlayer().isTradedOrPlayerProduced());
       verify(game.getGameBoard()).takeCards(expectedCategorizedProductCard);
       verify(game.getGameBoard()).discardCards(expectedCategorizedCostCard);
       verify(currentPlayer).discardCards(costCards);
@@ -745,6 +770,14 @@ public class GameInstanceTest {
 
   @Nested
   class playerProduceByOwningCapital {
+
+    @Test
+    void gameEndTest() {
+      GameTestUtils.setWinner(game);
+      List<CardIdentity> capitalCardIdentities = List.of(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1));
+      CardIdentity productCardIdentity = new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 2);
+      assertThrows(GameEndException.class, () -> game.playerProduceByOwningCapital(capitalCardIdentities, productCardIdentity));
+    }
 
     @Test
     void alreadyProducedTest() {
@@ -956,6 +989,17 @@ public class GameInstanceTest {
     class activateBuildingToGetPointsTokenBySpendCost {
 
       @Test
+      void gameEndTest() {
+        GameTestUtils.setWinner(game);
+        var buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        var buildingCard = BuildingCard.builder().cardIdentity(buildingCardIdentity).effectPoints(1).build();
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+        currentPlayer.activateBuilding(buildingCard);
+        assertThrows(GameEndException.class, () -> game.activateBuildingToGetPointsTokenBySpendCost(buildingCardIdentity, null));
+      }
+
+      @Test
       void cannotProducePoint() {
         List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
         ResourceCard costCard = ResourceCard.builder()
@@ -1041,6 +1085,26 @@ public class GameInstanceTest {
 
     @Nested
     class activateBuildingToProduceBySpendCost {
+
+      @Test
+      void gameEndTest()
+          throws NotAvailableInGameBoardException, GameEndException, PlayerDoesNotOwnCardsException, BuildingActivationException, CardIdentitiesException, InvalidTradingException {
+        GameTestUtils.setWinner(game);
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1));
+        ResourceCard costCard = ResourceCard.builder()
+            .cardIdentity(costCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCost(new CardIdentity[][]{costCardIdentities.toArray(new CardIdentity[0])})
+            .effectProduct(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1))
+            .build();
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(costCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+        assertThrows(GameEndException.class, () -> game.activateBuildingToProduceBySpendCost(buildingCardIdentity, costCardIdentities));
+      }
 
       @Test
       void cannotProduceProductTest() {
@@ -1142,6 +1206,26 @@ public class GameInstanceTest {
 
     @Nested
     class activateBuildingToProduceByOwningCapital {
+
+      @Test
+      void gameEndTest() {
+        GameTestUtils.setWinner(game);
+        CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
+        List<CardIdentity> capitalCardIdentities = List.of(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1));
+        ResourceCard capitalCard = ResourceCard.builder()
+            .cardIdentity(capitalCardIdentities.get(0))
+            .build();
+        BuildingCard buildingCard = BuildingCard.builder()
+            .cardIdentity(buildingCardIdentity)
+            .effectCapital(new CardIdentity[]{new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)})
+            .effectProduct(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1))
+            .build();
+
+        var currentPlayer = game.getCurrentPlayer();
+        currentPlayer.takeResourceCards(List.of(capitalCard));
+        currentPlayer.takeBuildingCards(List.of(buildingCard));
+        assertThrows(GameEndException.class, () -> game.activateBuildingToProduceByOwningCapital(buildingCardIdentity, capitalCardIdentities));
+      }
 
       @Test
       void cannotProduceProductTest() {

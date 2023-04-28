@@ -65,13 +65,7 @@ public class GameTestUtils {
   }
 
   public static void setIsTradedOrPlayerProduced(GameInstance game, boolean isTradedOrPlayerProduced) {
-    try {
-      Field field = GameInstance.class.getDeclaredField("isTradedOrPlayerProduced");
-      field.setAccessible(true);
-      field.set(game, isTradedOrPlayerProduced);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
+    game.getCurrentPlayer().setTradedOrPlayerProduced(isTradedOrPlayerProduced);
   }
 
   public static void spyCurrentPlayer(GameInstance game) {
@@ -79,6 +73,16 @@ public class GameTestUtils {
       var field = GameInstance.class.getDeclaredField("currentPlayer");
       field.setAccessible(true);
       field.set(game, Mockito.spy(game.getCurrentPlayer()));
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void setWinner(GameInstance game) {
+    try {
+      var field = GameInstance.class.getDeclaredField("winner");
+      field.setAccessible(true);
+      field.set(game, game.getCurrentPlayer());
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }

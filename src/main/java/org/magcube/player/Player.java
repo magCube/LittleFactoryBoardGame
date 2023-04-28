@@ -25,6 +25,7 @@ public class Player {
   private final String name;
   private int coin;
   private int pointTokens;
+  private boolean isTradedOrPlayerProduced;
 
   @Builder
   public Player(String id, String name) {
@@ -116,5 +117,9 @@ public class Player {
 
   public void activateBuilding(BuildingCard buildingCard) {
     activatedBuildings.add(buildingCard);
+  }
+
+  public void setTradedOrPlayerProduced(boolean isTradedOrPlayerProduced) {
+    this.isTradedOrPlayerProduced = isTradedOrPlayerProduced;
   }
 }
