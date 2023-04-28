@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
+import org.magcube.enums.CardType;
 
 public abstract class UniqueCardPile<T extends Card> implements DisplayingPile<T> {
 

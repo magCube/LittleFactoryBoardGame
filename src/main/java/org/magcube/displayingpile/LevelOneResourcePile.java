@@ -9,8 +9,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.enums.CardType;
 
 public class LevelOneResourcePile implements DisplayingPile<ResourceCard> {
 

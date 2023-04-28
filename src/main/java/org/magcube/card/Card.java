@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.magcube.enums.CardType;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,12 +18,12 @@ public abstract class Card {
   protected String name;
   protected int value;
 
-  // don't use getCardType as name as Jackson will parse it is a field
+  // don't use getCardType as name as Jackson will parse it as a field
   public CardType cardType() {
     return cardIdentity.cardType();
   }
 
-  // don't use getTypeId as name as Jackson will parse it is a field
+  // don't use getTypeId as name as Jackson will parse it as a field
   public int typeId() {
     return cardIdentity.typeId();
   }

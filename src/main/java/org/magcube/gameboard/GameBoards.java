@@ -12,8 +12,8 @@ import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardData;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.enums.CardType;
 
 public class GameBoards {
 
@@ -61,7 +61,7 @@ public class GameBoards {
       if (cardType == null) {
         return false;
       } else {
-        int typeId = cardIdentity.typeId();
+        var typeId = cardIdentity.typeId();
         if (typeId > CardData.maxTypeId.get(cardType) || typeId < 1) {
           return false;
         }

@@ -1,5 +1,7 @@
 package org.magcube.card;
 
+import org.magcube.enums.CardType;
+
 public record CardIdentity(CardType cardType, int typeId) implements Comparable<CardIdentity> {
 
   @Override

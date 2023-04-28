@@ -24,24 +24,23 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.enums.CardType;
+import org.magcube.enums.InvalidTradingMsg;
+import org.magcube.enums.NumOfPlayers;
 import org.magcube.exception.AlreadyTradedOrProducedException;
 import org.magcube.exception.BuildingActivationException;
 import org.magcube.exception.CardIdentitiesException;
-import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
 import org.magcube.exception.GameEndException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.InvalidTradingException;
-import org.magcube.exception.InvalidTradingMsg;
 import org.magcube.exception.NotAvailableInGameBoardException;
 import org.magcube.exception.PlayerDoesNotOwnCardsException;
-import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 import org.mockito.Mockito;
 
-public class GameInstanceTest {
+public class GameImplTest {
 
   Game game;
 
@@ -98,7 +97,7 @@ public class GameInstanceTest {
   }
 
   @Test
-  void endTurnTest() throws DisplayPileException, GameStartupException {
+  void endTurnTest() throws GameStartupException {
     var gameInstance = new GameImpl();
     gameInstance.setPlayers(NumOfPlayers.TWO);
     gameInstance.startGame();
@@ -167,7 +166,7 @@ public class GameInstanceTest {
       var mockedCard = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(999).build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
         GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(cardIdentities)).thenReturn(Optional.of(new HashMap<>() {{
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(mockedCard));
         }}));
       });
@@ -187,7 +186,7 @@ public class GameInstanceTest {
       var mockedCard = ResourceCard.builder().cardIdentity(new CardIdentity(CardType.LEVEL_TWO_RESOURCE, 1)).value(999).build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
         GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(cardIdentities)).thenReturn(Optional.of(new HashMap<>() {{
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_TWO_RESOURCE, List.of(mockedCard));
         }}));
       });
@@ -613,7 +612,7 @@ public class GameInstanceTest {
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
         GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
         }}));
       });
@@ -631,7 +630,7 @@ public class GameInstanceTest {
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
         GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
         }}));
       });
@@ -664,7 +663,7 @@ public class GameInstanceTest {
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
         GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
         }}));
       });
@@ -687,7 +686,7 @@ public class GameInstanceTest {
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
         GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.LEVEL_ONE_RESOURCE, List.of(productCard));
         }}));
       });
@@ -737,7 +736,7 @@ public class GameInstanceTest {
           .build();
       GameTestUtils.injectMockGameBoard(game, (mockedGameBoard) -> {
         GameTestUtils.mockTakeCardsDoNothing(mockedGameBoard);
-        Mockito.when(mockedGameBoard.cardsInDisplay(List.of(productCardIdentity))).thenReturn(Optional.of(new HashMap<>() {{
+        Mockito.when(mockedGameBoard.cardsInDisplay(any())).thenReturn(Optional.of(new HashMap<>() {{
           put(CardType.BUILDING, List.of(productCard));
         }}));
       });
@@ -874,7 +873,7 @@ public class GameInstanceTest {
         }}));
       });
 
-      assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.playerProduceBySpentCost(capitalCardIdentities, productCardIdentity));
+      assertThrows(PlayerDoesNotOwnCardsException.class, () -> game.playerProduceByOwningCapital(capitalCardIdentities, productCardIdentity));
     }
 
     @Test
@@ -1086,8 +1085,7 @@ public class GameInstanceTest {
     class activateBuildingToProduceBySpendCost {
 
       @Test
-      void gameEndTest()
-          throws NotAvailableInGameBoardException, GameEndException, PlayerDoesNotOwnCardsException, BuildingActivationException, CardIdentitiesException, InvalidTradingException {
+      void gameEndTest() {
         GameTestUtils.setWinner(game);
         CardIdentity buildingCardIdentity = new CardIdentity(CardType.BUILDING, 1);
         List<CardIdentity> costCardIdentities = List.of(new CardIdentity(CardType.LEVEL_ONE_RESOURCE, 1));

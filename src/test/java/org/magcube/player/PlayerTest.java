@@ -8,8 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.enums.CardType;
 
 public class PlayerTest {
 
@@ -53,9 +53,9 @@ public class PlayerTest {
     assertTrue(user.getBuildings().containsAll(buildings));
 
     assertEquals(2, user.points());
-    user.addPoints(1);
+    user.addPointTokens(1);
     assertEquals(3, user.points());
-    user.addPoints(10);
+    user.addPointTokens(10);
     assertEquals(13, user.points());
 
     user.discardCards(List.of(card1));

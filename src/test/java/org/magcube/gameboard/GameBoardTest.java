@@ -17,10 +17,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.enums.CardType;
+import org.magcube.enums.NumOfPlayers;
 import org.magcube.exception.CardIdentitiesException;
-import org.magcube.player.NumOfPlayers;
 
 
 class GameBoardTest {

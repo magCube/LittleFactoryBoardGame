@@ -2,7 +2,6 @@ package org.magcube.player;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 
 @Getter
@@ -54,16 +52,6 @@ public class Player {
     return resources.size() + take > maxNumOfResourceCard;
   }
 
-  public void takeCards(HashMap<CardType, List<? extends Card>> categorizedCards) {
-    for (var entry : categorizedCards.entrySet()) {
-      if (entry.getKey() == CardType.BUILDING) {
-        takeBuildingCards((List<BuildingCard>) entry.getValue());
-      } else {
-        takeResourceCards((List<ResourceCard>) entry.getValue());
-      }
-    }
-  }
-
   public void takeResourceCards(List<ResourceCard> cards) {
     this.resources.addAll(cards);
   }
@@ -84,8 +72,8 @@ public class Player {
     coin = 0;
   }
 
-  public void addPoints(int points) {
-    this.pointTokens += points;
+  public void addPointTokens(int pointTokens) {
+    this.pointTokens += pointTokens;
   }
 
   @Nullable

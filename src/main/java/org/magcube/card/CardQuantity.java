@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import org.magcube.enums.CardType;
+import org.magcube.enums.NumOfPlayers;
 import org.magcube.exception.CardQuantityException;
-import org.magcube.player.NumOfPlayers;
 
 public record CardQuantity(CardIdentity cardIdentity, int twoPlayers, int threePlayers, int fourPlayers) {
 

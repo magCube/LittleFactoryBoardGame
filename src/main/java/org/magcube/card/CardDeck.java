@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.magcube.enums.NumOfPlayers;
 import org.magcube.exception.CardQuantityException;
-import org.magcube.player.NumOfPlayers;
 
 public class CardDeck {
 

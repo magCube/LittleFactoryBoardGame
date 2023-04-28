@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
+import org.magcube.enums.CardType;
 
 public interface DisplayingPile<T extends Card> {
 

@@ -22,9 +22,9 @@ import org.magcube.card.Card;
 import org.magcube.card.CardData;
 import org.magcube.card.CardDeck;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
-import org.magcube.player.NumOfPlayers;
+import org.magcube.enums.CardType;
+import org.magcube.enums.NumOfPlayers;
 
 class BasicResourceDisplayingPileTest {
 

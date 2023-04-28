@@ -1,6 +1,6 @@
 package org.magcube.exception;
 
-import org.magcube.card.CardType;
+import org.magcube.enums.CardType;
 
 public class CardQuantityException extends Exception {
 

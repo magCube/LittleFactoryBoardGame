@@ -3,8 +3,8 @@ package org.magcube.displayingpile;
 import java.util.Collections;
 import java.util.List;
 import org.magcube.card.BuildingCard;
-import org.magcube.card.CardType;
-import org.magcube.player.NumOfPlayers;
+import org.magcube.enums.CardType;
+import org.magcube.enums.NumOfPlayers;
 
 public class BuildingPile extends UniqueCardPile<BuildingCard> {
 

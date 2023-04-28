@@ -1,4 +1,4 @@
-package org.magcube.card;
+package org.magcube.enums;
 
 public enum CardType {
   BASIC_RESOURCE(0),

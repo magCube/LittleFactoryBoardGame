@@ -7,7 +7,6 @@ import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardDeck;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
 import org.magcube.displayingpile.BasicResourceDisplayingPile;
 import org.magcube.displayingpile.BuildingPile;
@@ -15,9 +14,9 @@ import org.magcube.displayingpile.DisplayingPile;
 import org.magcube.displayingpile.LevelOneResourcePile;
 import org.magcube.displayingpile.LevelTwoResourcePile;
 import org.magcube.displayingpile.PileState;
+import org.magcube.enums.CardType;
+import org.magcube.enums.NumOfPlayers;
 import org.magcube.exception.CardIdentitiesException;
-import org.magcube.exception.DisplayPileException;
-import org.magcube.player.NumOfPlayers;
 
 public class GameBoard {
 
@@ -83,7 +82,6 @@ public class GameBoard {
     if (!GameBoards.isCardsValidate(cards) || !GameBoards.isNoBuildingCards(cards)) {
       throw new CardIdentitiesException();
     }
-
     return GameBoards.categorizeCards(cards);
   }
 
@@ -91,13 +89,14 @@ public class GameBoard {
     for (var entry : categorizedCards.entrySet()) {
       var cardType = entry.getKey();
       var pile = getResourcePile(cardType);
+      // checked by validateAndCategorizeDiscardCards method
       @SuppressWarnings("unchecked")
       var cards = (List<ResourceCard>) entry.getValue();
       pile.discardCards(cards);
     }
   }
 
-  public void refillCards() throws DisplayPileException {
+  public void refillCards() {
     basicResourcesPile.refillCards();
     levelOneResourcesPile.refillCards();
     levelTwoResourcesPile.refillCards();

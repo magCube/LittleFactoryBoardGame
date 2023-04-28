@@ -1,4 +1,4 @@
-package org.magcube.player;
+package org.magcube.enums;
 
 public enum NumOfPlayers {
   TWO(2),

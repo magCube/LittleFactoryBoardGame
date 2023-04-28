@@ -12,23 +12,22 @@ import lombok.Getter;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.enums.CardType;
+import org.magcube.enums.InvalidTradingMsg;
+import org.magcube.enums.NumOfPlayers;
 import org.magcube.exception.AlreadyTradedOrProducedException;
 import org.magcube.exception.BuildingActivationException;
 import org.magcube.exception.CardIdentitiesException;
-import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
 import org.magcube.exception.GameEndException;
 import org.magcube.exception.GameStartupException;
 import org.magcube.exception.InvalidTradingException;
-import org.magcube.exception.InvalidTradingMsg;
 import org.magcube.exception.NotAvailableInGameBoardException;
 import org.magcube.exception.PlayerDoesNotOwnCardsException;
 import org.magcube.gameboard.GameBoard;
 import org.magcube.gameboard.GameBoardState;
 import org.magcube.gameboard.GameBoards;
-import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 
 @Getter
@@ -163,7 +162,7 @@ public class GameImpl implements Game {
 
   private void produceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity,
       BiPredicate<List<CardIdentity>, Card> capitalMatchFn)
-      throws DisplayPileException, ExceededMaxNumOfHandException, CardIdentitiesException, NotAvailableInGameBoardException, InvalidTradingException {
+      throws ExceededMaxNumOfHandException, CardIdentitiesException, NotAvailableInGameBoardException, InvalidTradingException, PlayerDoesNotOwnCardsException {
     checkWillExceedMaxNumOfResourceCard(1);
     validateCardIdentities(capitalCardIdentities);
     validateCardIdentities(List.of(productCardIdentity));
@@ -184,7 +183,7 @@ public class GameImpl implements Game {
   // todo: we don't need to provide capitalCardIdentities, currently we only have 1 option in capital
   @Override
   public void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity)
-      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException {
+      throws AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException, PlayerDoesNotOwnCardsException {
     checkIsGameEnd();
     checkIsTradedOrPlayerProduced();
 
@@ -231,7 +230,7 @@ public class GameImpl implements Game {
     currentPlayer.activateBuilding(building);
     currentPlayer.discardCards(playerEquivalentResources);
     gameBoard.discardCards(categorizeDiscardCards);
-    currentPlayer.addPoints(effectPoints);
+    currentPlayer.addPointTokens(effectPoints);
   }
 
   private CardIdentity buildingProduct(BuildingCard card) throws BuildingActivationException {
@@ -259,7 +258,7 @@ public class GameImpl implements Game {
 
   @Override
   public void activateBuildingToProduceByOwningCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities)
-      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException {
+      throws PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
     var building = playerEquivalentBuildingCardWhichCanActivate(buildingCardIdentity);
 
@@ -303,7 +302,7 @@ public class GameImpl implements Game {
   }
 
   @Override
-  public void endTurn() throws DisplayPileException {
+  public void endTurn() {
     currentPlayer.resetActivatedBuildings();
     currentPlayer = players.get((players.indexOf(currentPlayer) + 1) % players.size());
     gameBoard.refillCards();
@@ -376,9 +375,9 @@ public class GameImpl implements Game {
     return playerEquivalentResourcesCards;
   }
 
-  private void checkPlayerOwnResourcesCards(List<CardIdentity> payment) throws DisplayPileException {
+  private void checkPlayerOwnResourcesCards(List<CardIdentity> payment) throws PlayerDoesNotOwnCardsException {
     if (currentPlayer.equivalentResources(payment) == null) {
-      throw new DisplayPileException("Player do not own the payment cards!");
+      throw new PlayerDoesNotOwnCardsException("resource");
     }
   }
 }

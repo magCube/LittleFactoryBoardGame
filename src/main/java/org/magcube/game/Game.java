@@ -2,10 +2,10 @@ package org.magcube.game;
 
 import java.util.List;
 import org.magcube.card.CardIdentity;
+import org.magcube.enums.NumOfPlayers;
 import org.magcube.exception.AlreadyTradedOrProducedException;
 import org.magcube.exception.BuildingActivationException;
 import org.magcube.exception.CardIdentitiesException;
-import org.magcube.exception.DisplayPileException;
 import org.magcube.exception.ExceededMaxNumOfHandException;
 import org.magcube.exception.GameEndException;
 import org.magcube.exception.GameStartupException;
@@ -14,7 +14,6 @@ import org.magcube.exception.NotAvailableInGameBoardException;
 import org.magcube.exception.PlayerDoesNotOwnCardsException;
 import org.magcube.gameboard.GameBoard;
 import org.magcube.gameboard.GameBoardState;
-import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 
 public interface Game {
@@ -43,7 +42,7 @@ public interface Game {
       throws AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, InvalidTradingException, GameEndException;
 
   void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity)
-      throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException;
+      throws AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException, PlayerDoesNotOwnCardsException;
 
   void activateBuildingToGetPointsTokenBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
       throws CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException, InvalidTradingException, GameEndException;
@@ -52,10 +51,10 @@ public interface Game {
       throws PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, InvalidTradingException, GameEndException;
 
   void activateBuildingToProduceByOwningCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities)
-      throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException;
+      throws PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException;
 
   void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity)
       throws PlayerDoesNotOwnCardsException, BuildingActivationException, GameEndException;
 
-  void endTurn() throws DisplayPileException;
+  void endTurn();
 }

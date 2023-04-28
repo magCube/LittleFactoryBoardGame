@@ -2,8 +2,8 @@ package org.magcube.displayingpile;
 
 import java.util.Collections;
 import java.util.List;
-import org.magcube.card.CardType;
 import org.magcube.card.ResourceCard;
+import org.magcube.enums.CardType;
 
 public class LevelTwoResourcePile extends UniqueCardPile<ResourceCard> {
 
