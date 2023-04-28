@@ -1,4 +1,4 @@
-package org.magcube;
+package org.magcube.game;
 
 import static org.magcube.gameboard.GameBoards.flattenResourceCardsFromCategorizedCards;
 import static org.magcube.gameboard.GameBoards.sumOfCardsValue;
@@ -26,22 +26,24 @@ import org.magcube.exception.InvalidTradingMsg;
 import org.magcube.exception.NotAvailableInGameBoardException;
 import org.magcube.exception.PlayerDoesNotOwnCardsException;
 import org.magcube.gameboard.GameBoard;
+import org.magcube.gameboard.GameBoardState;
 import org.magcube.gameboard.GameBoards;
 import org.magcube.player.NumOfPlayers;
 import org.magcube.player.Player;
 
 @Getter
-public class GameInstance {
+public class GameImpl implements Game {
 
   private GameBoard gameBoard;
   private List<Player> players;
   private Player currentPlayer;
   private Player winner;
 
-  public GameInstance() {
+  public GameImpl() {
   }
 
   // todo: the following is temp implementation
+  @Override
   public void setPlayers(NumOfPlayers numOfPlayers) {
     players = new ArrayList<>();
     for (var i = 1; i <= numOfPlayers.getValue(); i++) {
@@ -51,6 +53,7 @@ public class GameInstance {
     gameBoard = new GameBoard(numOfPlayers);
   }
 
+  @Override
   public void startGame() throws GameStartupException {
     if (gameBoard == null || players == null || players.isEmpty() ||
         !players.stream().allMatch(player ->
@@ -67,6 +70,12 @@ public class GameInstance {
     currentPlayer.setTradedOrPlayerProduced(false);
   }
 
+  @Override
+  public GameBoardState gameBoardState() {
+    return gameBoard.gameBoardState();
+  }
+
+  @Override
   public void tradeCardsByCoins(List<CardIdentity> targets)
       throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, NotAvailableInGameBoardException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
@@ -83,6 +92,7 @@ public class GameInstance {
     currentPlayer.setTradedOrPlayerProduced(true);
   }
 
+  @Override
   public void tradeCardsByCards(List<CardIdentity> payment, List<CardIdentity> targets)
       throws AlreadyTradedOrProducedException, CardIdentitiesException, ExceededMaxNumOfHandException, PlayerDoesNotOwnCardsException, NotAvailableInGameBoardException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
@@ -136,6 +146,7 @@ public class GameInstance {
     gameBoard.discardCards(categorizedCardsForDiscard);
   }
 
+  @Override
   public void playerProduceBySpentCost(List<CardIdentity> costCardIdentities, CardIdentity productCardIdentity)
       throws AlreadyTradedOrProducedException, NotAvailableInGameBoardException, PlayerDoesNotOwnCardsException, CardIdentitiesException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
@@ -171,6 +182,7 @@ public class GameInstance {
   }
 
   // todo: we don't need to provide capitalCardIdentities, currently we only have 1 option in capital
+  @Override
   public void playerProduceByOwningCapital(List<CardIdentity> capitalCardIdentities, CardIdentity productCardIdentity)
       throws DisplayPileException, AlreadyTradedOrProducedException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
@@ -195,6 +207,7 @@ public class GameInstance {
     return playerEquivalentBuildingCard;
   }
 
+  @Override
   public void activateBuildingToGetPointsTokenBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
       throws CardIdentitiesException, PlayerDoesNotOwnCardsException, BuildingActivationException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
@@ -230,6 +243,7 @@ public class GameInstance {
     }
   }
 
+  @Override
   public void activateBuildingToProduceBySpendCost(CardIdentity buildingCardIdentity, List<CardIdentity> costCardIdentities)
       throws PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
@@ -243,6 +257,7 @@ public class GameInstance {
     currentPlayer.activateBuilding(building);
   }
 
+  @Override
   public void activateBuildingToProduceByOwningCapital(CardIdentity buildingCardIdentity, List<CardIdentity> capitalCardIdentities)
       throws DisplayPileException, PlayerDoesNotOwnCardsException, BuildingActivationException, NotAvailableInGameBoardException, CardIdentitiesException, ExceededMaxNumOfHandException, InvalidTradingException, GameEndException {
     checkIsGameEnd();
@@ -256,6 +271,7 @@ public class GameInstance {
     currentPlayer.activateBuilding(building);
   }
 
+  @Override
   public void activateBuildingForSpecialEffect(CardIdentity buildingCardIdentity)
       throws PlayerDoesNotOwnCardsException, BuildingActivationException, GameEndException {
     checkIsGameEnd();
@@ -286,6 +302,7 @@ public class GameInstance {
     }
   }
 
+  @Override
   public void endTurn() throws DisplayPileException {
     currentPlayer.resetActivatedBuildings();
     currentPlayer = players.get((players.indexOf(currentPlayer) + 1) % players.size());

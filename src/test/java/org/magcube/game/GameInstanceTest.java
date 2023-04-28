@@ -1,4 +1,4 @@
-package org.magcube.gameinstance;
+package org.magcube.game;
 
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.magcube.GameInstance;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
@@ -44,11 +43,11 @@ import org.mockito.Mockito;
 
 public class GameInstanceTest {
 
-  GameInstance game;
+  Game game;
 
   @BeforeEach
   void initGame() throws GameStartupException {
-    game = Mockito.spy(new GameInstance());
+    game = Mockito.spy(new GameImpl());
     game.setPlayers(NumOfPlayers.TWO);
     game.startGame();
   }
@@ -56,7 +55,7 @@ public class GameInstanceTest {
   @ParameterizedTest
   @EnumSource
   void setPlayersTest(NumOfPlayers numOfPlayers) {
-    var gameInstance = new GameInstance();
+    var gameInstance = new GameImpl();
     gameInstance.setPlayers(numOfPlayers);
     assertEquals(numOfPlayers.getValue(), gameInstance.getPlayers().size());
     assertNotNull(gameInstance.getGameBoard());
@@ -65,20 +64,20 @@ public class GameInstanceTest {
   @ParameterizedTest
   @EnumSource
   void startGameNormally(NumOfPlayers numOfPlayers) {
-    var gameInstance = new GameInstance();
+    var gameInstance = new GameImpl();
     gameInstance.setPlayers(numOfPlayers);
     assertDoesNotThrow(gameInstance::startGame);
   }
 
   @Test
   void startGameWithoutInitializePlayersShouldThrowException() {
-    var gameInstance = new GameInstance();
+    var gameInstance = new GameImpl();
     assertThrows(GameStartupException.class, gameInstance::startGame);
   }
 
   @Test
   void playersAreUnmodifiableAfterStartGame() throws GameStartupException {
-    var gameInstance = new GameInstance();
+    var gameInstance = new GameImpl();
     gameInstance.setPlayers(NumOfPlayers.FOUR);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
@@ -88,7 +87,7 @@ public class GameInstanceTest {
   @ParameterizedTest
   @EnumSource
   void playersWereDistributedWithCorrectAmountOfCoinsAfterStartGame(NumOfPlayers numOfPlayers) throws GameStartupException {
-    var gameInstance = new GameInstance();
+    var gameInstance = new GameImpl();
     gameInstance.setPlayers(numOfPlayers);
     gameInstance.startGame();
     var resultList = gameInstance.getPlayers();
@@ -100,7 +99,7 @@ public class GameInstanceTest {
 
   @Test
   void endTurnTest() throws DisplayPileException, GameStartupException {
-    var gameInstance = new GameInstance();
+    var gameInstance = new GameImpl();
     gameInstance.setPlayers(NumOfPlayers.TWO);
     gameInstance.startGame();
     var player1 = gameInstance.getPlayers().get(0);
@@ -962,7 +961,7 @@ public class GameInstanceTest {
       };
       Arrays.sort(expectedMethods);
 
-      assertArrayEquals(expectedMethods, Arrays.stream(GameInstance.class.getDeclaredMethods())
+      assertArrayEquals(expectedMethods, Arrays.stream(GameImpl.class.getDeclaredMethods())
           .map(Method::getName)
           .filter(name -> name.startsWith("activateBuilding"))
           .sorted().toArray());

@@ -1,4 +1,4 @@
-package org.magcube.gameinstance;
+package org.magcube.game;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
-import org.magcube.GameInstance;
 import org.magcube.card.BuildingCard;
 import org.magcube.card.Card;
 import org.magcube.card.CardIdentity;
@@ -52,11 +51,11 @@ public class GameTestUtils {
     Mockito.when(gameBoard.cardsInDisplay(any())).thenReturn(Optional.empty());
   }
 
-  public static void injectMockGameBoard(GameInstance game, ThrowableConsumer<GameBoard, Exception> MockingFn) {
+  public static void injectMockGameBoard(Game game, ThrowableConsumer<GameBoard, Exception> MockingFn) {
     try {
       GameBoard mockedGameBoard = Mockito.mock(GameBoard.class);
       MockingFn.accept(mockedGameBoard);
-      Field gameBoardField = GameInstance.class.getDeclaredField("gameBoard");
+      Field gameBoardField = GameImpl.class.getDeclaredField("gameBoard");
       gameBoardField.setAccessible(true);
       gameBoardField.set(game, mockedGameBoard);
     } catch (Exception e) {
@@ -64,13 +63,13 @@ public class GameTestUtils {
     }
   }
 
-  public static void setIsTradedOrPlayerProduced(GameInstance game, boolean isTradedOrPlayerProduced) {
+  public static void setIsTradedOrPlayerProduced(Game game, boolean isTradedOrPlayerProduced) {
     game.getCurrentPlayer().setTradedOrPlayerProduced(isTradedOrPlayerProduced);
   }
 
-  public static void spyCurrentPlayer(GameInstance game) {
+  public static void spyCurrentPlayer(Game game) {
     try {
-      var field = GameInstance.class.getDeclaredField("currentPlayer");
+      var field = GameImpl.class.getDeclaredField("currentPlayer");
       field.setAccessible(true);
       field.set(game, Mockito.spy(game.getCurrentPlayer()));
     } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -78,9 +77,9 @@ public class GameTestUtils {
     }
   }
 
-  public static void setWinner(GameInstance game) {
+  public static void setWinner(Game game) {
     try {
-      var field = GameInstance.class.getDeclaredField("winner");
+      var field = GameImpl.class.getDeclaredField("winner");
       field.setAccessible(true);
       field.set(game, game.getCurrentPlayer());
     } catch (NoSuchFieldException | IllegalAccessException e) {
