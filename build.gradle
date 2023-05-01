@@ -1,17 +1,24 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.8.20'
-    id 'org.springframework.boot' version '3.0.5'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'maven-publish'
 }
 
 group 'org.magcube'
-version '0.0.1-SNAPSHOT'
+version '0.0.1'
 sourceCompatibility = '17'
 
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
+    }
+}
+
+publishing {
+    publications {
+        littleFactoryCore(MavenPublication) {
+            from components.java
+        }
     }
 }
 
@@ -21,8 +28,8 @@ repositories {
 
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation 'org.projectlombok:lombok:1.18.26'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
