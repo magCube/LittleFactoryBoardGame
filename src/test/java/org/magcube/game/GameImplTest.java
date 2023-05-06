@@ -4,7 +4,6 @@ package org.magcube.game;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,8 +45,7 @@ public class GameImplTest {
 
   @BeforeEach
   void initGame() throws GameStartupException {
-    game = Mockito.spy(new GameImpl());
-    game.setPlayers(NumOfPlayers.TWO);
+    game = Mockito.spy(new GameImpl(NumOfPlayers.TWO));
     game.startGame();
   }
 
@@ -57,7 +55,6 @@ public class GameImplTest {
     var gameInstance = new GameImpl();
     gameInstance.setPlayers(numOfPlayers);
     assertEquals(numOfPlayers.getValue(), gameInstance.getPlayers().size());
-    assertNotNull(gameInstance.getGameBoard());
   }
 
   @ParameterizedTest

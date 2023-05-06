@@ -1,5 +1,6 @@
 package org.magcube.game;
 
+import static org.magcube.enums.NumOfPlayers.fromValue;
 import static org.magcube.gameboard.GameBoards.flattenResourceCardsFromCategorizedCards;
 import static org.magcube.gameboard.GameBoards.sumOfCardsValue;
 
@@ -38,7 +39,16 @@ public class GameImpl implements Game {
   private Player currentPlayer;
   private Player winner;
 
+  // todo: the following is temp implementation
   public GameImpl() {
+  }
+
+  public GameImpl(NumOfPlayers numOfPlayers) {
+    players = new ArrayList<>();
+    for (var i = 1; i <= numOfPlayers.getValue(); i++) {
+      var tempPlayer = new Player(String.valueOf(i), "Player" + i);
+      players.add(tempPlayer);
+    }
   }
 
   // todo: the following is temp implementation
@@ -49,18 +59,19 @@ public class GameImpl implements Game {
       var tempPlayer = new Player(String.valueOf(i), "Player" + i);
       players.add(tempPlayer);
     }
-    gameBoard = new GameBoard(numOfPlayers);
   }
 
   @Override
   public void startGame() throws GameStartupException {
-    if (gameBoard == null || players == null || players.isEmpty() ||
-        !players.stream().allMatch(player ->
-            player.getResources().isEmpty() &&
-                player.getBuildings().isEmpty() &&
-                player.points() == 0)
+    if (players == null || players.isEmpty() || !players.stream().allMatch(player ->
+        player.getResources().isEmpty() && player.getBuildings().isEmpty() && player.points() == 0)
     ) {
       throw new GameStartupException();
+    }
+    try {
+      gameBoard = new GameBoard(fromValue(players.size()));
+    } catch (IllegalArgumentException ex) {
+      throw new GameStartupException("failed to create game board with given argument:" + players.size() + ex.getMessage());
     }
     Collections.shuffle(players);
     players = Collections.unmodifiableList(players);
